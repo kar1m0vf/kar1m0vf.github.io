@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Contact - Kamil Kerimov</title>
+    <meta
+      name="description"
+      content="Contact Kamil Kerimov for Full-Stack development, Python automation, and Telegram bot projects."
+    />
+    <script>
+      (function () {
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        try {
+          var savedTheme = localStorage.getItem('site-theme');
+          var resolvedTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : prefersDark ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', resolvedTheme);
+        } catch (error) {
+          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="preload"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+      as="style"
+      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+      />
+    </noscript>
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="topbar-wrap container">
+      <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Homepage">
+          <span data-site-brand>Kamil Kerimov</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="projects.html">Projects</a>
+          <a href="contact.html" aria-current="page">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="theme-toggle" type="button">
+            <span class="theme-icon" aria-hidden="true"></span>
+            <span class="sr-only" data-theme-label>Dark mode</span>
+          </button>
+          <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+          <a class="link-button primary desktop-only" href="contact.html">Start a Project</a>
+        </div>
+      </header>
+    </div>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <article class="page-hero-card reveal">
+            <span class="eyebrow">Contact</span>
+            <h1 class="page-title">Let's build your next product.</h1>
+            <p class="page-intro">
+              Share your brief, goals, and timeline. I reply with scope, approach, and clear next steps.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <div class="contact-grid">
+            <article class="contact-card reveal">
+              <div class="card-icon"><i class="fa-solid fa-paper-plane"></i></div>
+              <h3>Telegram</h3>
+              <p>Fastest channel for project discussion, clarifications, and quick updates.</p>
+              <a data-site-telegramHref href="https://t.me/kar1m0vf"><span data-site-telegram>@kar1m0vf</span></a>
+            </article>
+            <article class="contact-card reveal delay-1">
+              <div class="card-icon"><i class="fa-regular fa-envelope"></i></div>
+              <h3>Email</h3>
+              <p>Best for detailed requirements, attachments, and long-form communication.</p>
+              <a data-site-emailHref href="mailto:kamil16092006@gmail.com"><span data-site-email>kamil16092006@gmail.com</span></a>
+            </article>
+            <article class="contact-card reveal delay-2">
+              <div class="card-icon"><i class="fa-brands fa-linkedin-in"></i></div>
+              <h3>LinkedIn</h3>
+              <p>Professional background, references, and collaboration context.</p>
+              <a data-site-linkedinHref href="https://linkedin.com/in/kamil-kerimov"><span data-site-linkedin>linkedin.com/in/kamil-kerimov</span></a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container split-grid">
+          <article class="form-shell reveal">
+            <span class="eyebrow">Project Brief</span>
+            <h3>Send a project brief</h3>
+            <p>Share goals, constraints, stack preferences, and timeline. I respond with a practical execution plan.</p>
+            <form data-demo-form>
+              <div class="form-row">
+                <div class="input-wrap">
+                  <label for="name">Name</label>
+                  <input id="name" name="name" type="text" placeholder="Your full name" required />
+                </div>
+                <div class="input-wrap">
+                  <label for="email">Email</label>
+                  <input id="email" name="email" type="email" placeholder="name@domain.com" required />
+                </div>
+              </div>
+              <div class="input-wrap">
+                <label for="message">Message</label>
+                <textarea
+                  id="message"
+                  name="message"
+                  placeholder="Tell me about your project, goals, and timeline."
+                  required
+                ></textarea>
+              </div>
+              <button class="button primary" type="submit">Send Brief</button>
+              <p class="form-note" data-form-response>I usually reply within 24 hours.</p>
+            </form>
+          </article>
+
+          <div class="grid-2">
+            <article class="info-card reveal delay-1">
+              <span class="badge">GitHub</span>
+              <h3>Code Samples</h3>
+              <p>Browse repositories, commit history, and implementation quality.</p>
+              <a class="subtle-link" data-site-githubHref href="https://github.com/kar1m0vf"><span data-site-github>github.com/kar1m0vf</span></a>
+            </article>
+
+            <article class="info-card reveal delay-2">
+              <span class="badge">CV / Resume</span>
+              <h3>Experience Overview</h3>
+              <p>Download my resume for a concise summary of skills and project experience.</p>
+              <a class="subtle-link" data-site-resumeHref href="assets/resume/kamilkarimovcv.pdf"><span data-site-resumeLabel>Download CV</span></a>
+            </article>
+
+            <article class="info-card reveal delay-1">
+              <span class="badge">Availability</span>
+              <h3>Freelance and Product Work</h3>
+              <p>Open to project-based collaboration and long-term product ownership roles.</p>
+            </article>
+
+            <article class="info-card reveal delay-2">
+              <span class="badge">Timezone</span>
+              <h3>UTC+4</h3>
+              <p>Flexible scheduling for remote collaboration across regions and time zones.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-shell">
+        <div class="footer-grid">
+          <div class="footer-copy">
+            <strong data-site-name>Kamil Kerimov</strong>
+            <p class="muted-note">Full-Stack Web Developer | Python Engineer | Telegram Bot Developer</p>
+          </div>
+          <nav class="footer-nav" aria-label="Footer navigation">
+            <a class="footer-link" href="index.html">Home</a>
+            <a class="footer-link" href="about.html">About</a>
+            <a class="footer-link" href="projects.html">Projects</a>
+            <a class="footer-link" href="contact.html">Contact</a>
+          </nav>
+          <div class="footer-links">
+            <a class="footer-link" data-site-telegramHref href="https://t.me/kar1m0vf">Telegram</a>
+            <a class="footer-link" data-site-githubHref href="https://github.com/kar1m0vf">GitHub</a>
+            <a class="footer-link" data-site-linkedinHref href="https://linkedin.com/in/kamil-kerimov">LinkedIn</a>
+          </div>
+        </div>
+        <div class="divider"></div>
+      </div>
+    </footer>
+
+    <script src="assets/js/site-config.js"></script>
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
+
+
+
+

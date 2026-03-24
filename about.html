@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About - Kamil Kerimov</title>
+    <meta
+      name="description"
+      content="About Kamil Kerimov - Full-Stack Web Developer, Python Engineer, and Telegram Bot Developer."
+    />
+    <script>
+      (function () {
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        try {
+          var savedTheme = localStorage.getItem('site-theme');
+          var resolvedTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : prefersDark ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', resolvedTheme);
+        } catch (error) {
+          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="topbar-wrap container">
+      <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Homepage">
+          <span data-site-brand>Kamil Kerimov</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html">Home</a>
+          <a href="about.html" aria-current="page">About</a>
+          <a href="projects.html">Projects</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="theme-toggle" type="button">
+            <span class="theme-icon" aria-hidden="true"></span>
+            <span class="sr-only" data-theme-label>Dark mode</span>
+          </button>
+          <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+          <a class="link-button primary desktop-only" href="contact.html">Start a Project</a>
+        </div>
+      </header>
+    </div>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <article class="page-hero-card reveal">
+            <span class="eyebrow">About</span>
+            <h1 class="page-title">I build web products that are fast, stable, and easy to scale.</h1>
+            <p class="page-intro">
+              Full-Stack Developer with a strong Python focus. I deliver product features, internal tools,
+              and Telegram bots used in real operations.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container split-grid">
+          <div class="section-heading reveal">
+            <span class="eyebrow">Profile</span>
+            <h2>Engineer focused on outcomes, not vanity complexity.</h2>
+            <p>
+              I work with founders, teams, and clients to ship features that solve real problems and stay
+              maintainable after release.
+            </p>
+            <div class="highlight-box spacer-top">
+              <strong class="text-gold">What you can expect:</strong>
+              <p class="muted-note">
+                Clear communication, clean architecture, and ownership from kickoff to release.
+              </p>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <article class="timeline-card reveal delay-1">
+              <span class="badge">Communication</span>
+              <h3>Direct and Clear</h3>
+              <p>Scope, milestones, and risks are aligned early to avoid late surprises.</p>
+            </article>
+            <article class="timeline-card reveal delay-2">
+              <span class="badge">Architecture</span>
+              <h3>Scalable Structure</h3>
+              <p>Code structure supports long-term maintenance, team work, and confident scaling.</p>
+            </article>
+            <article class="timeline-card reveal delay-1">
+              <span class="badge">Reliability</span>
+              <h3>Stable Delivery</h3>
+              <p>Critical user flows are tested before release to reduce production regressions.</p>
+            </article>
+            <article class="timeline-card reveal delay-2">
+              <span class="badge">Ownership</span>
+              <h3>From Brief to Release</h3>
+              <p>I own delivery end-to-end and stay involved until the feature is stable in production.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <div class="section-heading reveal">
+            <span class="eyebrow">Process</span>
+            <h2>How I run projects from idea to release.</h2>
+            <p>A lightweight process keeps speed high and engineering risk low.</p>
+          </div>
+
+          <div class="process-grid">
+            <article class="process-card reveal">
+              <div class="card-icon">A</div>
+              <h3>Discovery</h3>
+              <p>Define goals, user flows, constraints, and clear success criteria.</p>
+              <ul class="list-clean">
+                <li>Project scope and priorities</li>
+                <li>User flow and feature mapping</li>
+                <li>Delivery plan and milestones</li>
+              </ul>
+            </article>
+
+            <article class="process-card reveal delay-1">
+              <div class="card-icon">B</div>
+              <h3>Build</h3>
+              <p>Implement features in short iterations with transparent technical decisions.</p>
+              <ul class="list-clean">
+                <li>Frontend and backend implementation</li>
+                <li>API integrations and automation logic</li>
+                <li>Quality checks for critical flows</li>
+              </ul>
+            </article>
+
+            <article class="process-card reveal delay-2">
+              <div class="card-icon">C</div>
+              <h3>Launch and Improve</h3>
+              <p>Release, monitor behavior, and prioritize improvements based on real usage data.</p>
+              <ul class="list-clean">
+                <li>Deployment and release notes</li>
+                <li>Issue fixes and performance updates</li>
+                <li>Roadmap for follow-up features</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <article class="quote-card reveal">
+            <span class="eyebrow">Personal Principle</span>
+            <blockquote>Build less, but build the right thing well.</blockquote>
+            <p>That principle guides both my technical decisions and product priorities.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-shell">
+        <div class="footer-grid">
+          <div class="footer-copy">
+            <strong data-site-name>Kamil Kerimov</strong>
+            <p class="muted-note">Full-Stack Web Developer | Python Engineer | Telegram Bot Developer</p>
+          </div>
+          <nav class="footer-nav" aria-label="Footer navigation">
+            <a class="footer-link" href="index.html">Home</a>
+            <a class="footer-link" href="about.html">About</a>
+            <a class="footer-link" href="projects.html">Projects</a>
+            <a class="footer-link" href="contact.html">Contact</a>
+          </nav>
+          <div class="footer-links">
+            <a class="footer-link" data-site-telegramHref href="https://t.me/kar1m0vf">Telegram</a>
+            <a class="footer-link" data-site-githubHref href="https://github.com/kar1m0vf">GitHub</a>
+            <a class="footer-link" data-site-linkedinHref href="https://linkedin.com/in/kamil-kerimov">LinkedIn</a>
+          </div>
+        </div>
+        <div class="divider"></div>
+      </div>
+    </footer>
+
+    <script src="assets/js/site-config.js"></script>
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
+
+
+
+

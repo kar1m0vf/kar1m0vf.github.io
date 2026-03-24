@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Projects - Kamil Kerimov</title>
+    <meta
+      name="description"
+      content="Selected projects by Kamil Kerimov: web development, Python systems, and Telegram bots."
+    />
+    <script>
+      (function () {
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        try {
+          var savedTheme = localStorage.getItem('site-theme');
+          var resolvedTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : prefersDark ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', resolvedTheme);
+        } catch (error) {
+          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="topbar-wrap container">
+      <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Homepage">
+          <span data-site-brand>Kamil Kerimov</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html">Home</a>
+          <a href="about.html">About</a>
+          <a href="projects.html" aria-current="page">Projects</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="theme-toggle" type="button">
+            <span class="theme-icon" aria-hidden="true"></span>
+            <span class="sr-only" data-theme-label>Dark mode</span>
+          </button>
+          <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+          <a class="link-button primary desktop-only" href="contact.html">Start a Project</a>
+        </div>
+      </header>
+    </div>
+
+    <main>
+      <section class="page-hero">
+        <div class="container">
+          <article class="page-hero-card reveal">
+            <span class="eyebrow">Projects</span>
+            <h1 class="page-title">Projects designed for real users and real business goals.</h1>
+            <p class="page-intro">
+              A selection of web products, automation systems, and Telegram bot solutions delivered for
+              practical use.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <div class="projects-grid" data-project-grid>
+            <article
+              class="project-card reveal"
+              data-project-card
+              data-order="1"
+              data-title="Trendyol Price Tracker"
+              data-tags="automation,telegram,python,scraping"
+            >
+              <div class="project-top">
+                <div>
+                  <div class="project-index">01</div>
+                  <h3>Trendyol Price Tracker</h3>
+                </div>
+                <span class="project-metric">Python | Aiogram | Scraping</span>
+              </div>
+              <div class="project-preview preview-tracker" aria-hidden="true">
+                <span class="preview-glare"></span>
+                <div class="tracker-price-card">
+                  <span class="tracker-title-line"></span>
+                  <div class="tracker-prices">
+                    <span class="tracker-price-old"></span>
+                    <span class="tracker-price-new"></span>
+                  </div>
+                  <div class="tracker-sparkline">
+                    <span></span>
+                  </div>
+                </div>
+                <div class="tracker-alert-card">
+                  <div class="tracker-chat-head">
+                    <span class="tracker-chat-dot" aria-hidden="true"></span>
+                    <span class="tracker-chat-title">Telegram</span>
+                  </div>
+                  <span class="tracker-chat-bubble"></span>
+                  <span class="tracker-chat-bubble out"></span>
+                  <div class="tracker-chat-foot">
+                    <span class="tracker-chat-typing" aria-hidden="true"></span>
+                    <span class="tracker-alert-chip">online</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gold-line"></div>
+              <div class="project-copy">
+                <p>
+                  Telegram bot for tracking Trendyol prices and notifying users when subscribed products
+                  get discounted.
+                </p>
+                <div class="metrics">
+                  <span class="tag">Price Tracker</span>
+                  <span class="tag">Telegram Alerts</span>
+                  <span class="tag">Web Scraping</span>
+                </div>
+                <ul class="list-clean">
+                  <li>Product subscriptions with user-specific tracking</li>
+                  <li>Periodic parsing of current prices on Trendyol</li>
+                  <li>Instant Telegram alerts when discounts appear</li>
+                </ul>
+              </div>
+              <div class="project-links">
+                <a
+                  class="link-button secondary"
+                  href="https://github.com/kar1m0vf/trendyol-price-tracker"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Repository
+                </a>
+                <a class="link-button secondary" href="contact.html">Discuss Project</a>
+              </div>
+            </article>
+
+            <article
+              class="project-card reveal delay-1"
+              data-project-card
+              data-order="2"
+              data-title="Blaster Game"
+              data-tags="game,python,desktop,arcade"
+            >
+              <div class="project-top">
+                <div>
+                  <div class="project-index">02</div>
+                  <h3>Blaster Game</h3>
+                </div>
+                <span class="project-metric">Python | Arcade</span>
+              </div>
+              <div class="project-preview preview-blaster" aria-hidden="true">
+                <span class="preview-glare"></span>
+                <div class="preview-arena">
+                  <span class="ship"></span>
+                  <span class="projectile"></span>
+                  <span class="enemy"></span>
+                  <span class="enemy enemy-2"></span>
+                </div>
+              </div>
+              <div class="gold-line"></div>
+              <div class="project-copy">
+                <p>
+                  Arcade shooter game with level progression, score tracking, and responsive controls
+                  designed for fast gameplay.
+                </p>
+                <div class="metrics">
+                  <span class="tag">Game Loop</span>
+                  <span class="tag">Rendering</span>
+                  <span class="tag">Input Logic</span>
+                </div>
+                <ul class="list-clean">
+                  <li>Enemy wave behavior with increasing difficulty</li>
+                  <li>Collision and scoring systems</li>
+                  <li>Simple architecture for adding new mechanics</li>
+                </ul>
+              </div>
+              <div class="project-links">
+                <a class="link-button secondary" href="https://github.com/kar1m0vf/blaster-game" target="_blank" rel="noopener noreferrer">View Repository</a>
+                <a class="link-button secondary" href="contact.html">Discuss Project</a>
+              </div>
+            </article>
+
+            <article
+              class="project-card reveal delay-2"
+              data-project-card
+              data-project-cta
+              data-order="3"
+              data-title="More Projects"
+              data-tags="portfolio,github"
+            >
+              <div class="project-top">
+                <div>
+                  <div class="project-index">03</div>
+                  <h3>More Projects</h3>
+                </div>
+                <span class="project-metric">GitHub Portfolio</span>
+              </div>
+              <div class="gold-line"></div>
+              <div class="project-copy">
+                <p>
+                  Explore additional repositories, experiments, and production code samples on my GitHub
+                  profile.
+                </p>
+              </div>
+              <div class="project-links">
+                <a
+                  class="link-button secondary"
+                  data-site-githubHref
+                  href="https://github.com/kar1m0vf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  More projects here
+                </a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container split-grid">
+          <article class="surface-card reveal">
+            <span class="eyebrow">Tech Stack</span>
+            <h3 class="serif-title serif-feature-title">JavaScript, Python, APIs, and automation.</h3>
+            <p>
+              Typical delivery includes frontend interfaces, backend services, integrations, and operational
+              automation.
+            </p>
+          </article>
+          <article class="surface-card reveal delay-1">
+            <span class="eyebrow">Collaboration</span>
+            <h3 class="serif-title serif-feature-title">Clear execution with teams and founders.</h3>
+            <p>
+              I adapt to startup speed and team processes while keeping delivery transparent, structured, and
+              predictable.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <div class="project-modal" id="project-modal" data-project-modal hidden aria-hidden="true">
+        <button
+          class="project-modal-backdrop"
+          type="button"
+          data-project-modal-close
+          aria-label="Close project details"
+        ></button>
+        <article
+          class="project-modal-card project-card"
+          data-project-modal-card
+          role="dialog"
+          aria-modal="true"
+          tabindex="-1"
+        >
+          <button class="project-modal-close" type="button" data-project-modal-close aria-label="Close project details">
+            &#10005;
+          </button>
+          <div class="project-modal-content" data-project-modal-content></div>
+        </article>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-shell">
+        <div class="footer-grid">
+          <div class="footer-copy">
+            <strong data-site-name>Kamil Kerimov</strong>
+            <p class="muted-note">Full-Stack Web Developer | Python Engineer | Telegram Bot Developer</p>
+          </div>
+          <nav class="footer-nav" aria-label="Footer navigation">
+            <a class="footer-link" href="index.html">Home</a>
+            <a class="footer-link" href="about.html">About</a>
+            <a class="footer-link" href="projects.html">Projects</a>
+            <a class="footer-link" href="contact.html">Contact</a>
+          </nav>
+          <div class="footer-links">
+            <a class="footer-link" data-site-telegramHref href="https://t.me/kar1m0vf">Telegram</a>
+            <a class="footer-link" data-site-githubHref href="https://github.com/kar1m0vf">GitHub</a>
+            <a class="footer-link" data-site-linkedinHref href="https://linkedin.com/in/kamil-kerimov">LinkedIn</a>
+          </div>
+        </div>
+        <div class="divider"></div>
+      </div>
+    </footer>
+
+    <script src="assets/js/site-config.js"></script>
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
+
+
+
+
+

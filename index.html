@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kamil Kerimov - Full-Stack Developer</title>
+    <meta
+      name="description"
+      content="Portfolio of Kamil Kerimov, Full-Stack Web Developer, Python Engineer, and Telegram Bot Developer."
+    />
+    <script>
+      (function () {
+        var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        try {
+          var savedTheme = localStorage.getItem('site-theme');
+          var resolvedTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : prefersDark ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', resolvedTheme);
+        } catch (error) {
+          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        }
+      })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+  </head>
+  <body>
+    <div class="topbar-wrap container">
+      <header class="topbar">
+        <a class="brand" href="index.html" aria-label="Homepage">
+          <span data-site-brand>Kamil Kerimov</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="index.html" aria-current="page">Home</a>
+          <a href="about.html">About</a>
+          <a href="projects.html">Projects</a>
+          <a href="contact.html">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+          <button class="theme-toggle" type="button">
+            <span class="theme-icon" aria-hidden="true"></span>
+            <span class="sr-only" data-theme-label>Dark mode</span>
+          </button>
+          <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false">
+            <span class="menu-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+          <a class="link-button primary desktop-only" href="contact.html">Start a Project</a>
+        </div>
+      </header>
+    </div>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy reveal">
+            <span class="eyebrow">Full-Stack Web Developer</span>
+            <h1 class="hero-title" data-site-name>Kamil Kerimov</h1>
+            <div class="hero-subtitle">
+              <span class="role-chip">Full-Stack Development</span>
+              <span class="role-chip">Python Automation</span>
+              <span class="role-chip">Telegram Bot Development</span>
+            </div>
+            <p class="lead">
+              I design and ship web products, Python services, and Telegram bots that stay stable in
+              production. My focus is scalable architecture, fast iteration, and measurable business value.
+            </p>
+            <div class="hero-actions">
+              <a class="link-button primary" href="projects.html">View Projects</a>
+              <a class="link-button secondary" data-site-resumeHref href="assets/resume/kamilkarimovcv.pdf">
+                <span data-site-resumeLabel>Download CV</span>
+              </a>
+            </div>
+            <p class="hero-note">Available for freelance work and long-term product collaboration.</p>
+          </div>
+
+          <div class="hero-panel reveal delay-1">
+            <div class="hero-visual page-hero-card">
+              <div class="hero-frame">
+                <div class="frame-head">
+                  <div class="frame-window">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div class="frame-label">Core Focus</div>
+                </div>
+
+                <div class="orbit-system" aria-hidden="true">
+                  <div class="system-glow"></div>
+                  <div class="system-core"></div>
+
+                  <div class="orbit orbit-primary">
+                    <span class="planet planet-primary"></span>
+                  </div>
+                  <div class="orbit orbit-secondary">
+                    <span class="planet planet-secondary"></span>
+                  </div>
+                  <div class="orbit orbit-tertiary">
+                    <span class="planet planet-tertiary"></span>
+                  </div>
+
+                  <span class="orbit-spark spark-a"></span>
+                  <span class="orbit-spark spark-b"></span>
+                  <span class="orbit-caption">Engineering Orbit</span>
+                </div>
+
+                <div class="frame-stack">
+                  <div class="stack-line">
+                    <strong>Web Applications</strong>
+                    <span>Frontend and backend development for business products</span>
+                  </div>
+                  <div class="stack-line">
+                    <strong>Python Automation</strong>
+                    <span>Scripts and services that reduce repetitive manual tasks</span>
+                  </div>
+                  <div class="stack-line">
+                    <strong>Telegram Bots</strong>
+                    <span>User flows, command systems, and admin automation tools</span>
+                  </div>
+                </div>
+
+                <div class="stat-cluster">
+                  <div class="stat-card">
+                    <strong>End-to-End</strong>
+                    <span>From requirement analysis to deployment and support</span>
+                  </div>
+                  <div class="stat-card">
+                    <strong>Product Mindset</strong>
+                    <span>Engineering decisions based on user and business outcomes</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <div class="section-heading reveal">
+            <span class="eyebrow">Services</span>
+            <h2>What I deliver for products and businesses.</h2>
+            <p>
+              From interface to backend and automation, I build systems that are easy to maintain and ready
+              for growth.
+            </p>
+          </div>
+
+          <div class="grid-3">
+            <article class="surface-card reveal">
+              <div class="card-icon">01</div>
+              <h3>Frontend Development</h3>
+              <p>Fast, responsive interfaces with strong UX and component structure that scales.</p>
+            </article>
+
+            <article class="surface-card reveal delay-1">
+              <div class="card-icon">02</div>
+              <h3>Backend and APIs</h3>
+              <p>Python services, API integrations, and backend logic built for reliability under load.</p>
+            </article>
+
+            <article class="surface-card reveal delay-2">
+              <div class="card-icon">03</div>
+              <h3>Telegram Bot Systems</h3>
+              <p>Bots for sales, support, onboarding, and internal operations with practical admin tooling.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container split-grid">
+          <div class="section-heading reveal">
+            <span class="eyebrow">Execution</span>
+            <h2>Clear scope, fast delivery, and maintainable code.</h2>
+            <p>
+              I split work into short, verifiable iterations. This keeps momentum high and technical debt
+              under control.
+            </p>
+            <div class="hero-actions spacer-top">
+              <a class="link-button secondary" href="about.html">More About Me</a>
+              <a class="link-button secondary" href="contact.html">Contact</a>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <article class="info-card reveal delay-1">
+              <span class="badge">Planning</span>
+              <h3>Requirements First</h3>
+              <p>I define goals, user flow, and constraints before writing production code.</p>
+            </article>
+            <article class="info-card reveal delay-2">
+              <span class="badge">Implementation</span>
+              <h3>Maintainable Codebase</h3>
+              <p>Clean modules, clear conventions, and architecture teams can safely extend.</p>
+            </article>
+            <article class="info-card reveal delay-1">
+              <span class="badge">Quality</span>
+              <h3>Testing and Validation</h3>
+              <p>Critical flows are validated to reduce regressions and release-day surprises.</p>
+            </article>
+            <article class="info-card reveal delay-2">
+              <span class="badge">Support</span>
+              <h3>Post-Launch Iteration</h3>
+              <p>After launch, I handle refinements, performance tuning, and next-step priorities.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <div class="section-heading reveal">
+            <span class="eyebrow">Selected Projects</span>
+            <h2>Production-ready examples of my work.</h2>
+            <p>
+              Each project reflects practical decisions in architecture, UX, and delivery quality.
+            </p>
+          </div>
+          <div class="projects-grid">
+            <article class="project-card reveal">
+              <div class="project-top">
+                <div>
+                  <div class="project-index">01</div>
+                  <h3>Trendyol Price Tracker</h3>
+                </div>
+                <span class="project-metric">Python | Aiogram | Scraping</span>
+              </div>
+              <div class="project-preview preview-tracker" aria-hidden="true">
+                <span class="preview-glare"></span>
+                <div class="tracker-price-card">
+                  <span class="tracker-title-line"></span>
+                  <div class="tracker-prices">
+                    <span class="tracker-price-old"></span>
+                    <span class="tracker-price-new"></span>
+                  </div>
+                  <div class="tracker-sparkline">
+                    <span></span>
+                  </div>
+                </div>
+                <div class="tracker-alert-card">
+                  <div class="tracker-chat-head">
+                    <span class="tracker-chat-dot" aria-hidden="true"></span>
+                    <span class="tracker-chat-title">Telegram</span>
+                  </div>
+                  <span class="tracker-chat-bubble"></span>
+                  <span class="tracker-chat-bubble out"></span>
+                  <div class="tracker-chat-foot">
+                    <span class="tracker-chat-typing" aria-hidden="true"></span>
+                    <span class="tracker-alert-chip">online</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gold-line"></div>
+              <div class="project-copy">
+                <p>
+                  Telegram bot that tracks Trendyol prices and alerts users when discounts appear on products
+                  they follow.
+                </p>
+                <div class="project-tags">
+                  <span class="tag">Price Tracking</span>
+                  <span class="tag">Web Scraping</span>
+                  <span class="tag">Telegram Alerts</span>
+                </div>
+              </div>
+              <div class="project-links">
+                <a class="subtle-link" href="https://github.com/kar1m0vf/trendyol-price-tracker" target="_blank" rel="noopener noreferrer">
+                  Open on GitHub
+                </a>
+              </div>
+            </article>
+
+            <article class="project-card reveal delay-1">
+              <div class="project-top">
+                <div>
+                  <div class="project-index">02</div>
+                  <h3>Blaster Game</h3>
+                </div>
+                <span class="project-metric">Python | Arcade</span>
+              </div>
+              <div class="project-preview preview-blaster" aria-hidden="true">
+                <span class="preview-glare"></span>
+                <div class="preview-arena">
+                  <span class="ship"></span>
+                  <span class="projectile"></span>
+                  <span class="enemy"></span>
+                  <span class="enemy enemy-2"></span>
+                </div>
+              </div>
+              <div class="gold-line"></div>
+              <div class="project-copy">
+                <p>
+                  Arcade shooter game with progressive difficulty, scoring mechanics, and clean gameplay
+                  architecture.
+                </p>
+                <div class="project-tags">
+                  <span class="tag">Game Loop</span>
+                  <span class="tag">Collision</span>
+                  <span class="tag">Python</span>
+                </div>
+              </div>
+              <div class="project-links">
+                <a class="subtle-link" href="https://github.com/kar1m0vf/blaster-game" target="_blank" rel="noopener noreferrer">
+                  Open on GitHub
+                </a>
+              </div>
+            </article>
+
+            <article class="project-card reveal delay-2">
+              <div class="project-top">
+                <div>
+                  <div class="project-index">03</div>
+                  <h3>More Projects</h3>
+                </div>
+                <span class="project-metric">GitHub Portfolio</span>
+              </div>
+              <div class="project-copy">
+                <p>
+                  Explore additional repositories, experiments, and production code samples on my GitHub
+                  profile.
+                </p>
+              </div>
+              <div class="project-links">
+                <a
+                  class="link-button secondary"
+                  data-site-githubHref
+                  href="https://github.com/kar1m0vf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  More projects here
+                </a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <article class="quote-card reveal">
+            <span class="eyebrow">Approach</span>
+            <blockquote>
+              Good software is clear for users, maintainable for teams, and useful for the business.
+            </blockquote>
+            <p>I focus on practical solutions that are stable in production and easy to improve over time.</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-shell">
+        <div class="footer-grid">
+          <div class="footer-copy">
+            <strong data-site-name>Kamil Kerimov</strong>
+            <p class="muted-note">Full-Stack Web Developer | Python Engineer | Telegram Bot Developer</p>
+          </div>
+
+          <nav class="footer-nav" aria-label="Footer navigation">
+            <a class="footer-link" href="index.html">Home</a>
+            <a class="footer-link" href="about.html">About</a>
+            <a class="footer-link" href="projects.html">Projects</a>
+            <a class="footer-link" href="contact.html">Contact</a>
+          </nav>
+
+          <div class="footer-links">
+            <a class="footer-link" data-site-telegramHref href="https://t.me/kar1m0vf">Telegram</a>
+            <a class="footer-link" data-site-githubHref href="https://github.com/kar1m0vf">GitHub</a>
+            <a class="footer-link" data-site-linkedinHref href="https://linkedin.com/in/kamil-kerimov">LinkedIn</a>
+          </div>
+        </div>
+        <div class="divider"></div>
+      </div>
+    </footer>
+
+    <script src="assets/js/site-config.js"></script>
+    <script src="assets/js/main.js"></script>
+  </body>
+</html>
+
+
+
+
+
