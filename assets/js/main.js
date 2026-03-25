@@ -413,6 +413,16 @@
     });
   };
 
+  const updateThemeChrome = () => {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    const themeColor = isDark ? '#010204' : '#f3f5f8';
+
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+      meta.setAttribute('content', themeColor);
+    });
+  };
+
   const updateThemeLabel = () => {
     const isDark = root.getAttribute('data-theme') === 'dark';
     const nextModeLabel = isDark ? 'Light mode' : 'Dark mode';
@@ -429,8 +439,11 @@
   const setTheme = (next) => {
     root.setAttribute('data-theme', next);
     localStorage.setItem('site-theme', next);
+    updateThemeChrome();
     updateThemeLabel();
   };
+
+  updateThemeChrome();
 
   const toggleTheme = () => {
     const current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
@@ -2066,5 +2079,7 @@
   applyConfig();
   updateThemeLabel();
 })();
+
+
 
 

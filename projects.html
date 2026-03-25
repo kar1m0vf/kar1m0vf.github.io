@@ -2,7 +2,11 @@
 <html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f3f5f8" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <title>Projects - Kamil Kerimov</title>
     <meta
       name="description"
@@ -11,12 +15,20 @@
     <script>
       (function () {
         var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var resolvedTheme = prefersDark ? 'dark' : 'light';
         try {
           var savedTheme = localStorage.getItem('site-theme');
-          var resolvedTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : prefersDark ? 'dark' : 'light';
-          document.documentElement.setAttribute('data-theme', resolvedTheme);
+          resolvedTheme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : resolvedTheme;
         } catch (error) {
-          document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+          resolvedTheme = prefersDark ? 'dark' : 'light';
+        }
+
+        document.documentElement.setAttribute('data-theme', resolvedTheme);
+        document.documentElement.style.colorScheme = resolvedTheme;
+
+        var themeColorMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#010204' : '#f3f5f8');
         }
       })();
     </script>
@@ -299,6 +311,9 @@
     <script src="assets/js/main.js"></script>
   </body>
 </html>
+
+
+
 
 
 
