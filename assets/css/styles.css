@@ -356,15 +356,34 @@ html.perf-lite .project-modal-backdrop {
 }
 
 html.perf-lite .bg-orb,
-html.perf-lite .orbit,
-html.perf-lite .orbit-spark,
-html.perf-lite .system-glow,
 html.perf-lite .preview-glare {
   animation: none !important;
 }
 
 html.perf-lite .bg-orb {
   filter: blur(5px);
+}
+
+html.perf-lite .orbit-primary {
+  animation-duration: 18s !important;
+}
+
+html.perf-lite .orbit-secondary {
+  animation-duration: 24s !important;
+}
+
+html.perf-lite .orbit-tertiary {
+  animation-duration: 34s !important;
+}
+
+html.perf-lite .system-glow {
+  animation-duration: 8.4s !important;
+  opacity: 0.82;
+}
+
+html.perf-lite .orbit-spark {
+  animation-duration: 4s !important;
+  opacity: 0.78;
 }
 
 html.perf-lite .bg-particles-canvas {
@@ -2615,10 +2634,15 @@ html[data-theme='dark'] .projects-grid.project-focus-mode.is-focus-active .proje
 }
 
 @media (hover: none), (pointer: coarse) {
-  .projects-grid.project-focus-mode.is-focus-active .project-card:not([data-project-modal-card]).is-muted {
-    --focus-scale: 1;
-    --focus-opacity: 0.72;
-    --focus-saturate: 0.92;
+  .projects-grid.project-focus-mode .project-card:not([data-project-modal-card]) {
+    --focus-scale: 1 !important;
+    --focus-opacity: 1 !important;
+    --focus-saturate: 1 !important;
+    --lift: 0px !important;
+  }
+
+  .projects-grid.project-focus-mode .project-card:not([data-project-modal-card]).is-muted .project-preview {
+    opacity: 1 !important;
   }
 }
 
@@ -4141,6 +4165,8 @@ html[data-theme='dark'] .footer-shell {
     display: none;
   }
 }
+
+
 
 
 

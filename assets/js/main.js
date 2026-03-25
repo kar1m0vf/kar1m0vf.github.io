@@ -1582,7 +1582,10 @@
       return;
     }
 
-    const coarsePointerQuery = window.matchMedia('(hover: none), (pointer: coarse)');
+    const finePointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    if (!finePointerQuery.matches) {
+      return;
+    }
 
     projectGrids.forEach((grid) => {
       const cards = Array.from(grid.querySelectorAll('.project-card:not([data-project-modal-card])'));
@@ -1616,20 +1619,6 @@
         card.addEventListener(
           'pointerenter',
           () => {
-            if (coarsePointerQuery.matches) {
-              return;
-            }
-            applyFocusState(card);
-          },
-          { passive: true }
-        );
-
-        card.addEventListener(
-          'pointerdown',
-          (event) => {
-            if (!event.isPrimary || !coarsePointerQuery.matches) {
-              return;
-            }
             applyFocusState(card);
           },
           { passive: true }
@@ -1642,9 +1631,6 @@
         card.addEventListener(
           'pointerleave',
           (event) => {
-            if (coarsePointerQuery.matches) {
-              return;
-            }
 
             const nextCard =
               event.relatedTarget &&
@@ -1664,9 +1650,6 @@
       grid.addEventListener(
         'pointerleave',
         () => {
-          if (coarsePointerQuery.matches) {
-            return;
-          }
           clearFocusState();
         },
         { passive: true }
@@ -1683,7 +1666,7 @@
       document.addEventListener(
         'pointerdown',
         (event) => {
-          if (!coarsePointerQuery.matches || grid.contains(event.target)) {
+          if (grid.contains(event.target)) {
             return;
           }
           clearFocusState();
@@ -2083,4 +2066,5 @@
   applyConfig();
   updateThemeLabel();
 })();
+
 
