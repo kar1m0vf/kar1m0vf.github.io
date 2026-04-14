@@ -1,0 +1,40 @@
+{
+  "name": "Kamil Kerimov Portfolio",
+  "short_name": "KamilDev",
+  "id": "./",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f8f9",
+  "theme_color": "#f4f8f9",
+  "description": "Portfolio of Kamil Kerimov with production web, Python, and automation projects.",
+  "icons": [
+    {
+      "src": "assets/icons/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Projects",
+      "short_name": "Projects",
+      "url": "./projects.html",
+      "description": "Browse selected engineering projects."
+    },
+    {
+      "name": "Contact",
+      "short_name": "Contact",
+      "url": "./contact.html",
+      "description": "Open contact channels and send a project brief."
+    }
+  ]
+}
+

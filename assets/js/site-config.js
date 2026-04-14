@@ -11,11 +11,9 @@ window.siteConfig = {
   githubHref: 'https://github.com/kar1m0vf',
   linkedin: 'linkedin.com/in/kamil-kerimov',
   linkedinHref: 'https://linkedin.com/in/kamil-kerimov',
-  resumeHref: 'assets/resume/kamilkarimovcv.pdf',
-  resumeLabel: 'Download CV',
   projectPrimaryLabel: 'Featured Projects',
   effects: {
-    ambientParticles: 'lite',
+    ambientParticles: 'auto',
     customCursor: false,
     pointerEffects: true,
     pageTransitions: false,

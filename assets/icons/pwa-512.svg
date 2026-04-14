@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Kamil Kerimov portfolio icon large">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#121d22" />
+      <stop offset="100%" stop-color="#0b1114" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+  <rect x="8" y="8" width="496" height="496" rx="104" fill="none" stroke="#22353b" />
+  <path d="M144 96h56v144l112-144h80L264 264l136 152h-80L200 288v128h-56z" fill="#e9f2f4" />
+  <circle cx="400" cy="112" r="20" fill="#62b8c7" />
+</svg>

@@ -2,36 +2,106 @@
   const root = document.documentElement;
   const siteConfig = window.siteConfig || {};
   const effectsConfig = siteConfig.effects || {};
-  const storedTheme = localStorage.getItem('site-theme');
+  const storage = {
+    get(key) {
+      try {
+        return window.localStorage.getItem(key);
+      } catch (error) {
+        return null;
+      }
+    },
+    set(key, value) {
+      try {
+        window.localStorage.setItem(key, value);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    },
+  };
+  const storedTheme = storage.get('site-theme');
   const preferredDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
   const theme = storedTheme || (preferredDark ? 'dark' : 'light');
   root.setAttribute('data-theme', theme);
+  const normalizeDeviceProfile = (value) => (value === 'strong' || value === 'weak' ? value : null);
   const nav = window.navigator || {};
   const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
   const saveData = Boolean(connection && connection.saveData);
   const lowMemory = typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 4;
   const lowCpu = typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 4;
+  const detectedDeviceProfile = saveData || lowMemory || lowCpu ? 'weak' : 'strong';
+  const storedDeviceProfile = normalizeDeviceProfile(storage.get('site-device-profile'));
+  const deviceProfileSource = storedDeviceProfile ? 'manual' : 'auto';
+  const deviceProfile = storedDeviceProfile || detectedDeviceProfile;
+  const weakProfileActive = deviceProfile === 'weak';
+  root.dataset.deviceDetected = detectedDeviceProfile;
+  root.dataset.deviceProfile = deviceProfile;
+  root.dataset.deviceProfileSource = deviceProfileSource;
+  root.classList.toggle('device-strong', deviceProfile === 'strong');
+  root.classList.toggle('device-weak', deviceProfile === 'weak');
   const forcedPerfLite = effectsConfig.perfLite === true;
+  const autoPerfLiteSignals = weakProfileActive;
   const normalizeAmbientMode = (mode) => (mode === 'off' || mode === 'lite' || mode === 'full' ? mode : 'auto');
   const forcedAmbientMode = normalizeAmbientMode(effectsConfig.ambientParticles);
-  const ambientAutoMode = reduceMotionQuery.matches || saveData ? 'off' : lowMemory || lowCpu ? 'lite' : 'full';
+  const ambientAutoMode = reduceMotionQuery.matches || saveData || weakProfileActive ? 'lite' : 'full';
   const ambientMode = forcedAmbientMode === 'auto' ? ambientAutoMode : forcedAmbientMode;
-  const perfLite = forcedPerfLite || saveData || lowMemory || lowCpu;
+  let effectsTier = reduceMotionQuery.matches ? 'off' : autoPerfLiteSignals ? 'lite' : 'full';
+  let perfLite = forcedPerfLite || reduceMotionQuery.matches || autoPerfLiteSignals;
+  let visualEffectsActive = false;
   const customCursorEnabled = effectsConfig.customCursor !== false;
   const pointerEffectsEnabled = effectsConfig.pointerEffects !== false;
   const pageTransitionsEnabled = effectsConfig.pageTransitions !== false;
+  const ambientWorkerScriptUrl = 'assets/js/ambient-particles-worker.js';
+  let ambientParticlesWorker = null;
+  const postAmbientWorkerMessage = (payload) => {
+    if (!ambientParticlesWorker) {
+      return;
+    }
+    try {
+      ambientParticlesWorker.postMessage(payload);
+    } catch (error) {
+      // Ignore transient worker messaging errors.
+    }
+  };
+
+  const syncEffectsTierState = () => {
+    const activePerfLite = perfLite || effectsTier !== 'full';
+    root.classList.toggle('perf-lite', activePerfLite);
+    root.classList.toggle('effects-tier-full', effectsTier === 'full');
+    root.classList.toggle('effects-tier-lite', effectsTier === 'lite');
+    root.classList.toggle('effects-tier-off', effectsTier === 'off');
+    if (effectsTier !== 'full') {
+      root.classList.remove('has-pointer-effects', 'cursor-visible', 'cursor-hovering', 'cursor-pressed', 'cursor-text-target');
+    }
+  };
+
+  const setEffectsTier = (nextTier, reason = 'manual') => {
+    if (nextTier !== 'full' && nextTier !== 'lite' && nextTier !== 'off') {
+      return false;
+    }
+    if (nextTier === effectsTier) {
+      return false;
+    }
+    effectsTier = nextTier;
+    syncEffectsTierState();
+    window.dispatchEvent(
+      new CustomEvent('site-effects-tierchange', {
+        detail: { tier: effectsTier, reason },
+      })
+    );
+    return true;
+  };
+
   if (!pageTransitionsEnabled) {
     root.classList.add('page-transitions-off');
-  }
-  if (perfLite) {
-    root.classList.add('perf-lite');
   }
   if (ambientMode === 'lite') {
     root.classList.add('ambient-lite');
   } else if (ambientMode === 'full') {
     root.classList.add('ambient-full');
   }
+  syncEffectsTierState();
 
   const ensureAmbientBackground = () => {
     if (!document.body) {
@@ -87,14 +157,133 @@
       ambient.appendChild(canvas);
     }
 
+    ambient.classList.add('has-canvas-particles');
+    root.classList.add('ambient-canvas-ready');
+    const pointerReactive = ambientMode === 'full' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const canUseWorkerCanvas =
+      typeof window.OffscreenCanvas !== 'undefined' &&
+      typeof window.Worker !== 'undefined' &&
+      typeof canvas.transferControlToOffscreen === 'function';
+
+    if (canUseWorkerCanvas) {
+      try {
+        if (ambientParticlesWorker) {
+          ambientParticlesWorker.terminate();
+          ambientParticlesWorker = null;
+        }
+
+        const worker = new Worker(ambientWorkerScriptUrl);
+        const offscreenCanvas = canvas.transferControlToOffscreen();
+        ambientParticlesWorker = worker;
+
+        const syncWorkerSize = () => {
+          const rect = ambient.getBoundingClientRect();
+          const width = Math.max(1, Math.round(rect.width));
+          const height = Math.max(1, Math.round(rect.height));
+          const dpr = Math.min(window.devicePixelRatio || 1, 1.8);
+          canvas.style.width = `${width}px`;
+          canvas.style.height = `${height}px`;
+          postAmbientWorkerMessage({
+            type: 'resize',
+            width,
+            height,
+            dpr,
+          });
+        };
+
+        const currentTheme = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        worker.postMessage(
+          {
+            type: 'init',
+            canvas: offscreenCanvas,
+            mode: ambientMode,
+            pointerReactive,
+            tier: effectsTier,
+            theme: currentTheme,
+            visible: !document.hidden && visualEffectsActive,
+          },
+          [offscreenCanvas]
+        );
+
+        syncWorkerSize();
+        window.addEventListener('resize', syncWorkerSize, { passive: true });
+        window.addEventListener('site-effects-visualstart', () => {
+          postAmbientWorkerMessage({
+            type: 'visibility',
+            hidden: document.hidden ? true : !visualEffectsActive,
+          });
+        });
+        window.addEventListener('site-effects-tierchange', (event) => {
+          postAmbientWorkerMessage({
+            type: 'tier',
+            tier: event && event.detail && event.detail.tier ? event.detail.tier : effectsTier,
+          });
+        });
+        document.addEventListener('visibilitychange', () => {
+          postAmbientWorkerMessage({
+            type: 'visibility',
+            hidden: document.hidden || !visualEffectsActive,
+          });
+        });
+
+        if (pointerReactive) {
+          const handleWorkerPointerMove = (event) => {
+            if (!visualEffectsActive || effectsTier !== 'full') {
+              return;
+            }
+            const rect = canvas.getBoundingClientRect();
+            postAmbientWorkerMessage({
+              type: 'pointer',
+              kind: 'move',
+              x: event.clientX - rect.left,
+              y: event.clientY - rect.top,
+            });
+          };
+
+          const stopWorkerPointerEffect = () => {
+            postAmbientWorkerMessage({
+              type: 'pointer',
+              kind: 'leave',
+            });
+          };
+
+          window.addEventListener('pointermove', handleWorkerPointerMove, { passive: true });
+          window.addEventListener('pointerdown', handleWorkerPointerMove, { passive: true });
+          window.addEventListener('pointerleave', stopWorkerPointerEffect, { passive: true });
+          window.addEventListener('blur', stopWorkerPointerEffect);
+        }
+
+        window.addEventListener(
+          'beforeunload',
+          () => {
+            postAmbientWorkerMessage({ type: 'shutdown' });
+            if (ambientParticlesWorker) {
+              ambientParticlesWorker.terminate();
+              ambientParticlesWorker = null;
+            }
+          },
+          { once: true }
+        );
+
+        worker.addEventListener('error', () => {
+          if (ambientParticlesWorker === worker) {
+            ambientParticlesWorker = null;
+          }
+        });
+
+        return;
+      } catch (error) {
+        if (ambientParticlesWorker) {
+          ambientParticlesWorker.terminate();
+          ambientParticlesWorker = null;
+        }
+      }
+    }
+
     const context = canvas.getContext('2d', { alpha: true, desynchronized: true });
     if (!context) {
       return;
     }
-
-    ambient.classList.add('has-canvas-particles');
-    root.classList.add('ambient-canvas-ready');
-    const pointerReactive = ambientMode === 'full' && window.matchMedia('(hover: hover) and (pointer: fine)').matches && !perfLite;
 
     const config =
       ambientMode === 'lite'
@@ -136,7 +325,7 @@
     let rafId = 0;
     let lastTick = 0;
     let themeKey = '';
-    let themeColor = { dot: '31, 86, 181', line: '31, 86, 181' };
+    let themeColor = { dot: '28, 138, 164', line: '28, 138, 164' };
     const smooth = (from, to, amount) => from + (to - from) * amount;
     const pointer = {
       x: 0,
@@ -158,8 +347,8 @@
       themeKey = nextTheme;
       themeColor =
         nextTheme === 'dark'
-          ? { dot: '139, 169, 223', line: '139, 169, 223' }
-          : { dot: '31, 86, 181', line: '31, 86, 181' };
+          ? { dot: '126, 203, 207', line: '126, 203, 207' }
+          : { dot: '28, 138, 164', line: '28, 138, 164' };
     };
 
     const randomBetween = (min, max) => min + Math.random() * (max - min);
@@ -304,7 +493,12 @@
     const frameInterval = 1000 / config.fps;
     const animate = (now) => {
       rafId = window.requestAnimationFrame(animate);
-      if (document.hidden) {
+      if (document.hidden || !visualEffectsActive) {
+        lastTick = now;
+        return;
+      }
+
+      if (effectsTier === 'off') {
         lastTick = now;
         return;
       }
@@ -314,7 +508,8 @@
       }
 
       const elapsed = now - lastTick;
-      if (elapsed < frameInterval) {
+      const activeFrameInterval = effectsTier === 'lite' ? Math.max(frameInterval, 1000 / 14) : frameInterval;
+      if (elapsed < activeFrameInterval) {
         return;
       }
 
@@ -335,7 +530,7 @@
     };
 
     const handlePointerMove = (event) => {
-      if (!pointerReactive) {
+      if (!pointerReactive || !visualEffectsActive || effectsTier !== 'full') {
         return;
       }
 
@@ -399,7 +594,6 @@
       ['telegram', 'telegramHref'],
       ['github', 'githubHref'],
       ['linkedin', 'linkedinHref'],
-      ['resumeLabel', 'resumeHref'],
     ];
 
     map.forEach(([textKey, hrefKey]) => {
@@ -415,7 +609,7 @@
 
   const updateThemeChrome = () => {
     const isDark = root.getAttribute('data-theme') === 'dark';
-    const themeColor = isDark ? '#010204' : '#f3f5f8';
+    const themeColor = isDark ? '#03070a' : '#f4f8f9';
 
     root.style.colorScheme = isDark ? 'dark' : 'light';
     document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
@@ -438,9 +632,13 @@
 
   const setTheme = (next) => {
     root.setAttribute('data-theme', next);
-    localStorage.setItem('site-theme', next);
+    storage.set('site-theme', next);
     updateThemeChrome();
     updateThemeLabel();
+    postAmbientWorkerMessage({
+      type: 'theme',
+      theme: next === 'dark' ? 'dark' : 'light',
+    });
   };
 
   updateThemeChrome();
@@ -472,6 +670,107 @@
   document.querySelectorAll('.theme-toggle').forEach((button) => {
     button.addEventListener('click', toggleTheme);
   });
+
+  const getActiveDeviceProfile = () => (root.dataset.deviceProfile === 'strong' ? 'strong' : 'weak');
+  const getDetectedDeviceProfile = () => (root.dataset.deviceDetected === 'strong' ? 'strong' : 'weak');
+  const getDeviceProfileSource = () => (root.dataset.deviceProfileSource === 'manual' ? 'manual' : 'auto');
+  const describeDeviceProfile = () => {
+    const active = getActiveDeviceProfile();
+    const detected = getDetectedDeviceProfile();
+    const source = getDeviceProfileSource();
+    const line =
+      source === 'manual'
+        ? `Detected as ${detected}. Manual mode: ${active}.`
+        : `Detected as ${active}. Auto mode is active.`;
+    return { active, detected, source, line };
+  };
+
+  const showDeviceProfileToast = () => {
+    if (!document.body) {
+      return;
+    }
+
+    const { active, detected, source } = describeDeviceProfile();
+    const toast = document.createElement('div');
+    toast.className = 'device-profile-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
+    toast.textContent =
+      source === 'manual'
+        ? `Your device is marked as ${detected}. Manual mode is ${active}.`
+        : `Your device is marked as ${detected}.`;
+    document.body.appendChild(toast);
+
+    window.requestAnimationFrame(() => {
+      toast.classList.add('is-visible');
+    });
+
+    window.setTimeout(() => {
+      toast.classList.remove('is-visible');
+      window.setTimeout(() => {
+        toast.remove();
+      }, 320);
+    }, 3200);
+  };
+
+  const setupDeviceProfileControl = () => {
+    const footerShell = document.querySelector('.footer-shell');
+    if (!footerShell) {
+      return;
+    }
+
+    const control = document.createElement('div');
+    control.className = 'device-profile-control';
+    control.setAttribute('data-device-profile-control', '');
+    control.innerHTML = `
+      <p class="device-profile-text" data-device-profile-text></p>
+      <div class="device-profile-actions" role="group" aria-label="Device mode switch">
+        <button type="button" class="device-profile-button" data-device-profile-set="weak">Weak</button>
+        <button type="button" class="device-profile-button" data-device-profile-set="strong">Strong</button>
+      </div>
+    `;
+
+    const divider = footerShell.querySelector('.divider');
+    if (divider && divider.parentElement === footerShell) {
+      divider.insertAdjacentElement('afterend', control);
+    } else {
+      footerShell.appendChild(control);
+    }
+
+    const statusNode = control.querySelector('[data-device-profile-text]');
+    const buttons = Array.from(control.querySelectorAll('[data-device-profile-set]'));
+
+    const syncControl = () => {
+      const { active, line } = describeDeviceProfile();
+      if (statusNode) {
+        statusNode.textContent = line;
+      }
+
+      buttons.forEach((button) => {
+        const value = normalizeDeviceProfile(button.getAttribute('data-device-profile-set'));
+        const isActive = value === active;
+        button.classList.toggle('is-active', isActive);
+        button.setAttribute('aria-pressed', String(isActive));
+      });
+    };
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const next = normalizeDeviceProfile(button.getAttribute('data-device-profile-set'));
+        if (!next || next === getActiveDeviceProfile()) {
+          return;
+        }
+
+        storage.set('site-device-profile', next);
+        window.location.reload();
+      });
+    });
+
+    syncControl();
+  };
+
+  setupDeviceProfileControl();
+  showDeviceProfileToast();
 
   const topbar = document.querySelector('.topbar');
   const menuToggle = document.querySelector('.menu-toggle');
@@ -557,7 +856,6 @@
     }
 
     const config = window.siteConfig || {};
-    const resumeHref = String(config.resumeHref || 'assets/resume/kamilkarimovcv.pdf');
     const emailHref = String(config.emailHref || (config.email ? `mailto:${config.email}` : 'mailto:hello@example.com'));
     const githubHref = String(config.githubHref || '');
     const telegramHref = String(config.telegramHref || '');
@@ -618,13 +916,6 @@
         hint: 'Light / Dark',
         search: 'theme appearance dark light mode',
         run: () => toggleTheme(),
-      },
-      {
-        label: 'Download CV',
-        meta: 'Profile',
-        hint: resumeHref,
-        search: 'resume cv pdf download',
-        run: () => openExternal(resumeHref),
       },
       {
         label: 'Send Email',
@@ -1699,18 +1990,15 @@
 
   setupProjectShowcase();
   setupProjectFocusMode();
-  ensureAmbientBackground();
+
+  let ambientParticlesQueued = false;
   const scheduleAmbientParticles = () => {
-    if (ambientMode === 'off') {
+    if (ambientMode === 'off' || ambientParticlesQueued || effectsTier === 'off') {
       return;
     }
 
-    let started = false;
+    ambientParticlesQueued = true;
     const start = () => {
-      if (started) {
-        return;
-      }
-      started = true;
       setupAmbientParticles();
     };
 
@@ -1722,16 +2010,75 @@
     window.setTimeout(start, 900);
   };
 
-  if (document.readyState === 'complete') {
-    scheduleAmbientParticles();
+  let heroEffectsObserver = null;
+  const activateVisualEffects = () => {
+    if (visualEffectsActive || effectsTier === 'off') {
+      return;
+    }
+
+    if (heroEffectsObserver) {
+      heroEffectsObserver.disconnect();
+      heroEffectsObserver = null;
+    }
+    visualEffectsActive = true;
+    ensureAmbientBackground();
+    if (document.readyState === 'complete') {
+      scheduleAmbientParticles();
+    } else {
+      window.addEventListener('load', scheduleAmbientParticles, { once: true });
+    }
+    window.dispatchEvent(new CustomEvent('site-effects-visualstart'));
+  };
+
+  const observeHeroForVisualEffects = () => {
+    if (visualEffectsActive || effectsTier === 'off') {
+      return;
+    }
+
+    const heroAnchor = document.querySelector('.hero, .page-hero');
+    if (!heroAnchor || !('IntersectionObserver' in window)) {
+      activateVisualEffects();
+      return;
+    }
+
+    if (heroEffectsObserver) {
+      return;
+    }
+
+    heroEffectsObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) {
+          return;
+        }
+        if (heroEffectsObserver) {
+          heroEffectsObserver.disconnect();
+          heroEffectsObserver = null;
+        }
+        activateVisualEffects();
+      },
+      { rootMargin: '220px 0px 220px 0px', threshold: 0.01 }
+    );
+    heroEffectsObserver.observe(heroAnchor);
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeHeroForVisualEffects, { once: true });
   } else {
-    window.addEventListener('load', scheduleAmbientParticles, { once: true });
+    observeHeroForVisualEffects();
   }
+
+  window.addEventListener('site-effects-tierchange', (event) => {
+    if (!event || !event.detail || event.detail.tier === 'off' || visualEffectsActive) {
+      return;
+    }
+    observeHeroForVisualEffects();
+  });
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   const canRunPointerEffects = !reducedMotion && finePointer && pointerEffectsEnabled;
   const customCursorActive = canRunPointerEffects && customCursorEnabled && !perfLite;
+  const isPointerEffectsActive = () => visualEffectsActive && effectsTier === 'full';
   if (canRunPointerEffects) {
     const lerp = (current, target, amount) => current + (target - current) * amount;
     let cursorRing = null;
@@ -1795,7 +2142,21 @@
       }
     };
 
-    root.classList.add('has-pointer-effects');
+    const syncPointerRuntimeState = () => {
+      const pointerActive = isPointerEffectsActive();
+      root.classList.toggle('has-pointer-effects', pointerActive);
+      if (customCursorActive) {
+        root.classList.toggle('custom-cursor-active', pointerActive);
+      }
+      if (!pointerActive) {
+        root.classList.remove('cursor-visible', 'cursor-hovering', 'cursor-pressed', 'cursor-text-target');
+      }
+    };
+
+    syncPointerRuntimeState();
+    window.addEventListener('site-effects-tierchange', syncPointerRuntimeState);
+    window.addEventListener('site-effects-visualstart', syncPointerRuntimeState);
+
     root.style.setProperty('--cursor-x', '50%');
     root.style.setProperty('--cursor-y', '50%');
     root.style.setProperty('--particle-shift-x', '0px');
@@ -1871,7 +2232,7 @@
     window.addEventListener(
       'pointermove',
       (event) => {
-        if (root.classList.contains('theme-transition-running')) {
+        if (!isPointerEffectsActive() || root.classList.contains('theme-transition-running')) {
           return;
         }
 
@@ -1912,7 +2273,7 @@
     window.addEventListener(
       'pointerdown',
       (event) => {
-        if (!customCursorActive || !event.isPrimary) {
+        if (!isPointerEffectsActive() || !customCursorActive || !event.isPrimary) {
           return;
         }
         root.classList.add('cursor-pressed');
@@ -1924,7 +2285,7 @@
     window.addEventListener(
       'pointerup',
       () => {
-        if (!customCursorActive) {
+        if (!isPointerEffectsActive() || !customCursorActive) {
           return;
         }
         root.classList.remove('cursor-pressed');
@@ -1935,7 +2296,7 @@
     window.addEventListener(
       'pointercancel',
       () => {
-        if (!customCursorActive) {
+        if (!isPointerEffectsActive() || !customCursorActive) {
           return;
         }
         root.classList.remove('cursor-pressed');
@@ -2025,7 +2386,7 @@
       card.addEventListener(
         'pointermove',
         (event) => {
-          if (root.classList.contains('theme-transition-running')) {
+          if (!isPointerEffectsActive() || root.classList.contains('theme-transition-running')) {
             return;
           }
 
@@ -2051,6 +2412,322 @@
       card.addEventListener('pointercancel', resetCardTilt);
     });
   }
+
+  const setupAutoEffectsTierMonitor = () => {
+    if (reduceMotionQuery.matches) {
+      return;
+    }
+
+    const maxRecoverTier = autoPerfLiteSignals ? 'lite' : 'full';
+    let started = false;
+    let lastTime = 0;
+    let deltaSum = 0;
+    let frameCount = 0;
+    let lowFpsBursts = 0;
+    let highFpsBursts = 0;
+
+    const promoteTier = () => {
+      if (effectsTier === 'off') {
+        setEffectsTier('lite', 'fps-recover');
+        return;
+      }
+
+      if (effectsTier === 'lite' && maxRecoverTier === 'full') {
+        setEffectsTier('full', 'fps-recover');
+      }
+    };
+
+    const degradeTier = () => {
+      if (effectsTier === 'full') {
+        setEffectsTier('lite', 'fps-drop');
+      }
+    };
+
+    const monitor = (now) => {
+      window.requestAnimationFrame(monitor);
+      if (document.hidden || !visualEffectsActive) {
+        lastTime = now;
+        return;
+      }
+
+      if (!lastTime) {
+        lastTime = now;
+        return;
+      }
+
+      const delta = now - lastTime;
+      lastTime = now;
+      if (delta < 4 || delta > 240) {
+        return;
+      }
+
+      deltaSum += delta;
+      frameCount += 1;
+      if (frameCount < 45) {
+        return;
+      }
+
+      const avgDelta = deltaSum / frameCount;
+      const fps = 1000 / avgDelta;
+      deltaSum = 0;
+      frameCount = 0;
+
+      if (fps < 45) {
+        lowFpsBursts += 1;
+        highFpsBursts = 0;
+      } else if (fps > 56) {
+        highFpsBursts += 1;
+        lowFpsBursts = 0;
+      } else {
+        lowFpsBursts = 0;
+        highFpsBursts = 0;
+      }
+
+      if (lowFpsBursts >= 2) {
+        lowFpsBursts = 0;
+        highFpsBursts = 0;
+        degradeTier();
+        return;
+      }
+
+      if (highFpsBursts >= 3) {
+        highFpsBursts = 0;
+        lowFpsBursts = 0;
+        promoteTier();
+      }
+    };
+
+    const start = () => {
+      if (started) {
+        return;
+      }
+      started = true;
+      window.requestAnimationFrame(monitor);
+    };
+
+    if (visualEffectsActive) {
+      start();
+      return;
+    }
+
+    window.addEventListener('site-effects-visualstart', start, { once: true });
+  };
+
+  const setupWebVitalsPanel = () => {
+    if (!document.body || typeof window.PerformanceObserver === 'undefined') {
+      return;
+    }
+
+    const panel = document.createElement('aside');
+    panel.className = 'vitals-panel';
+    panel.innerHTML = `
+      <button type="button" class="vitals-panel-toggle" aria-expanded="false">Vitals</button>
+      <section class="vitals-panel-body" data-vitals-body hidden>
+        <p class="vitals-panel-title">Web Vitals</p>
+        <div class="vitals-grid">
+          <div class="vitals-row" data-vital-id="TTFB"><span>TTFB</span><strong>--</strong></div>
+          <div class="vitals-row" data-vital-id="FCP"><span>FCP</span><strong>--</strong></div>
+          <div class="vitals-row" data-vital-id="LCP"><span>LCP</span><strong>--</strong></div>
+          <div class="vitals-row" data-vital-id="INP"><span>INP</span><strong>--</strong></div>
+          <div class="vitals-row" data-vital-id="CLS"><span>CLS</span><strong>--</strong></div>
+        </div>
+      </section>
+    `;
+    document.body.appendChild(panel);
+
+    const toggle = panel.querySelector('.vitals-panel-toggle');
+    const body = panel.querySelector('[data-vitals-body]');
+    if (!toggle || !body) {
+      panel.remove();
+      return;
+    }
+
+    const rowMap = {};
+    panel.querySelectorAll('.vitals-row').forEach((row) => {
+      const metricId = String(row.getAttribute('data-vital-id') || '').toUpperCase();
+      const valueNode = row.querySelector('strong');
+      if (metricId && valueNode) {
+        rowMap[metricId] = { row, valueNode };
+      }
+    });
+
+    const thresholds = {
+      TTFB: { good: 800, needs: 1800, unit: 'ms' },
+      FCP: { good: 1800, needs: 3000, unit: 'ms' },
+      LCP: { good: 2500, needs: 4000, unit: 'ms' },
+      INP: { good: 200, needs: 500, unit: 'ms' },
+      CLS: { good: 0.1, needs: 0.25, unit: 'score' },
+    };
+
+    const formatMetric = (metricId, value) => {
+      if (!Number.isFinite(value)) {
+        return '--';
+      }
+      if (metricId === 'CLS') {
+        return value.toFixed(3);
+      }
+      if (value >= 10000) {
+        return `${(value / 1000).toFixed(1)}s`;
+      }
+      return `${Math.round(value)}ms`;
+    };
+
+    const resolveMetricState = (metricId, value) => {
+      const rule = thresholds[metricId];
+      if (!rule || !Number.isFinite(value)) {
+        return 'is-unknown';
+      }
+      if (value <= rule.good) {
+        return 'is-good';
+      }
+      if (value <= rule.needs) {
+        return 'is-needs';
+      }
+      return 'is-poor';
+    };
+
+    const updateMetric = (metricId, value) => {
+      const key = String(metricId || '').toUpperCase();
+      const target = rowMap[key];
+      if (!target) {
+        return;
+      }
+      target.valueNode.textContent = formatMetric(key, value);
+      target.row.classList.remove('is-good', 'is-needs', 'is-poor', 'is-unknown');
+      target.row.classList.add(resolveMetricState(key, value));
+    };
+
+    let panelOpen = storage.get('site-vitals-open') === '1';
+    const syncPanelState = () => {
+      body.hidden = !panelOpen;
+      toggle.setAttribute('aria-expanded', String(panelOpen));
+      panel.classList.toggle('is-open', panelOpen);
+    };
+    syncPanelState();
+
+    toggle.addEventListener('click', () => {
+      panelOpen = !panelOpen;
+      storage.set('site-vitals-open', panelOpen ? '1' : '0');
+      syncPanelState();
+    });
+
+    const readNavigationTiming = () => {
+      const [navigation] = performance.getEntriesByType('navigation');
+      if (!navigation) {
+        return;
+      }
+      updateMetric('TTFB', navigation.responseStart);
+    };
+    readNavigationTiming();
+
+    if (PerformanceObserver.supportedEntryTypes && PerformanceObserver.supportedEntryTypes.includes('paint')) {
+      const paintObserver = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (entry.name === 'first-contentful-paint') {
+            updateMetric('FCP', entry.startTime);
+          }
+        });
+      });
+      paintObserver.observe({ type: 'paint', buffered: true });
+    }
+
+    let lcpObserver = null;
+    if (
+      PerformanceObserver.supportedEntryTypes &&
+      PerformanceObserver.supportedEntryTypes.includes('largest-contentful-paint')
+    ) {
+      lcpObserver = new PerformanceObserver((list) => {
+        const entries = list.getEntries();
+        const last = entries[entries.length - 1];
+        if (last) {
+          updateMetric('LCP', last.startTime);
+        }
+      });
+      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+    }
+
+    if (PerformanceObserver.supportedEntryTypes && PerformanceObserver.supportedEntryTypes.includes('layout-shift')) {
+      let clsValue = 0;
+      const clsObserver = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (!entry.hadRecentInput) {
+            clsValue += entry.value;
+          }
+        });
+        updateMetric('CLS', clsValue);
+      });
+      clsObserver.observe({ type: 'layout-shift', buffered: true });
+    }
+
+    if (PerformanceObserver.supportedEntryTypes && PerformanceObserver.supportedEntryTypes.includes('event')) {
+      let inpValue = 0;
+      const inpObserver = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (entry.interactionId && entry.duration > inpValue) {
+            inpValue = entry.duration;
+          }
+        });
+        if (inpValue > 0) {
+          updateMetric('INP', inpValue);
+        }
+      });
+      inpObserver.observe({ type: 'event', buffered: true, durationThreshold: 40 });
+    } else if (
+      PerformanceObserver.supportedEntryTypes &&
+      PerformanceObserver.supportedEntryTypes.includes('first-input')
+    ) {
+      const fiObserver = new PerformanceObserver((list) => {
+        const [entry] = list.getEntries();
+        if (!entry) {
+          return;
+        }
+        updateMetric('INP', entry.processingStart - entry.startTime);
+      });
+      fiObserver.observe({ type: 'first-input', buffered: true });
+    }
+
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        if (!document.hidden || !lcpObserver) {
+          return;
+        }
+        const entries = lcpObserver.takeRecords();
+        const last = entries[entries.length - 1];
+        if (last) {
+          updateMetric('LCP', last.startTime);
+        }
+        lcpObserver.disconnect();
+        lcpObserver = null;
+      },
+      { once: true }
+    );
+  };
+
+  const setupServiceWorkerRegistration = () => {
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+    const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (window.location.protocol !== 'https:' && !isLocalHost) {
+      return;
+    }
+
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('./sw.js', { scope: './' })
+        .then((registration) => {
+          if (registration && typeof registration.update === 'function') {
+            registration.update().catch(() => {});
+          }
+        })
+        .catch(() => {});
+    });
+  };
+
+  setupAutoEffectsTierMonitor();
+  setupWebVitalsPanel();
+  setupServiceWorkerRegistration();
 
   const form = document.querySelector('[data-demo-form]');
   const formNote = document.querySelector('[data-form-response]');
@@ -2079,6 +2756,9 @@
   applyConfig();
   updateThemeLabel();
 })();
+
+
+
 
 
 

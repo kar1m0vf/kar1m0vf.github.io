@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f3f5f8" />
+    <meta name="theme-color" content="#f4f8f9" />
     <meta name="color-scheme" content="light dark" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -12,6 +12,114 @@
       name="description"
       content="Selected projects by Kamil Kerimov: web development, Python systems, and Telegram bots."
     />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://kar1m0vf.github.io/projects.html" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kamil Kerimov Portfolio" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:title" content="Projects - Kamil Kerimov" />
+    <meta
+      property="og:description"
+      content="Selected projects by Kamil Kerimov: web development, Python systems, and Telegram bots."
+    />
+    <meta property="og:url" content="https://kar1m0vf.github.io/projects.html" />
+    <meta property="og:image" content="https://kar1m0vf.github.io/assets/icons/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Kamil Kerimov portfolio preview" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Projects - Kamil Kerimov" />
+    <meta
+      name="twitter:description"
+      content="Selected projects by Kamil Kerimov: web development, Python systems, and Telegram bots."
+    />
+    <meta name="twitter:image" content="https://kar1m0vf.github.io/assets/icons/og-image.png" />
+    <meta name="twitter:image:alt" content="Kamil Kerimov portfolio preview" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://kar1m0vf.github.io/#person",
+            "name": "Kamil Kerimov",
+            "url": "https://kar1m0vf.github.io/",
+            "jobTitle": "Full-Stack Web Developer",
+            "email": "mailto:kamil16092006@gmail.com",
+            "sameAs": [
+              "https://github.com/kar1m0vf",
+              "https://linkedin.com/in/kamil-kerimov",
+              "https://t.me/kar1m0vf"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://kar1m0vf.github.io/#website",
+            "url": "https://kar1m0vf.github.io/",
+            "name": "Kamil Kerimov Portfolio",
+            "inLanguage": "en-US",
+            "publisher": {
+              "@id": "https://kar1m0vf.github.io/#person"
+            }
+          },
+          {
+            "@type": ["CollectionPage", "WebPage"],
+            "@id": "https://kar1m0vf.github.io/projects.html#webpage",
+            "url": "https://kar1m0vf.github.io/projects.html",
+            "name": "Projects - Kamil Kerimov",
+            "description": "Selected projects by Kamil Kerimov: web development, Python systems, and Telegram bots.",
+            "isPartOf": {
+              "@id": "https://kar1m0vf.github.io/#website"
+            },
+            "about": {
+              "@id": "https://kar1m0vf.github.io/#person"
+            },
+            "inLanguage": "en-US",
+            "mainEntity": {
+              "@type": "ItemList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "item": {
+                    "@type": "SoftwareSourceCode",
+                    "name": "Trendyol Price Tracker",
+                    "description": "Telegram bot for tracking Trendyol prices and sending discount alerts.",
+                    "codeRepository": "https://github.com/kar1m0vf/trendyol-price-tracker",
+                    "programmingLanguage": "Python"
+                  }
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "item": {
+                    "@type": "SoftwareSourceCode",
+                    "name": "Blaster Game",
+                    "description": "Arcade shooter game with level progression, score tracking, and responsive controls.",
+                    "codeRepository": "https://github.com/kar1m0vf/blaster-game",
+                    "programmingLanguage": "Python"
+                  }
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "item": {
+                    "@type": "CollectionPage",
+                    "name": "More Projects",
+                    "url": "https://github.com/kar1m0vf"
+                  }
+                }
+              ]
+            },
+            "primaryImageOfPage": {
+              "@type": "ImageObject",
+              "url": "https://kar1m0vf.github.io/assets/icons/og-image.png"
+            }
+          }
+        ]
+      }
+    </script>
     <script>
       (function () {
         var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -28,7 +136,7 @@
 
         var themeColorMeta = document.querySelector('meta[name="theme-color"]');
         if (themeColorMeta) {
-          themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#010204' : '#f3f5f8');
+          themeColorMeta.setAttribute('content', resolvedTheme === 'dark' ? '#03070a' : '#f4f8f9');
         }
       })();
     </script>
@@ -39,6 +147,13 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="icon" href="assets/icons/favicon.ico" sizes="any" />
+    <link rel="shortcut icon" href="assets/icons/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16x16.png" />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
   </head>
   <body>
     <div class="topbar-wrap container">
@@ -307,10 +422,12 @@
       </div>
     </footer>
 
-    <script src="assets/js/site-config.js"></script>
-    <script src="assets/js/main.js"></script>
+    <script defer src="assets/js/site-config.js"></script>
+    <script defer src="assets/js/main.js"></script>
   </body>
 </html>
+
+
 
 
 
