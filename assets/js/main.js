@@ -854,6 +854,9 @@
     if (hotkeyNode) {
       hotkeyNode.textContent = isMac ? 'Cmd K' : 'Ctrl K';
     }
+    document.querySelectorAll('[data-command-shortcut]').forEach((node) => {
+      node.textContent = isMac ? 'Cmd+K' : 'Ctrl+K';
+    });
 
     const config = window.siteConfig || {};
     const emailHref = String(config.emailHref || (config.email ? `mailto:${config.email}` : 'mailto:hello@example.com'));
@@ -947,6 +950,63 @@
         run: () => openExternal(telegramHref),
       });
     }
+
+    const scrollToId = (id) => {
+      const target = document.getElementById(id);
+      if (!target) {
+        return false;
+      }
+
+      target.scrollIntoView({
+        behavior: reduceMotionQuery.matches ? 'auto' : 'smooth',
+        block: 'start',
+      });
+      return true;
+    };
+
+    const homepageAnchors = [
+      { id: 'home', label: 'Jump to Hero', search: 'hero homepage intro landing' },
+      { id: 'flagship', label: 'Jump to Flagship', search: 'flagship case study trendyol tracker' },
+      { id: 'selected-projects', label: 'Jump to Selected Projects', search: 'selected projects showcases modules' },
+      { id: 'capabilities', label: 'Jump to Capabilities', search: 'capabilities strip stack skills' },
+      { id: 'contact-cta', label: 'Jump to Contact CTA', search: 'contact cta hire collaboration' },
+    ];
+
+    homepageAnchors.forEach((entry) => {
+      if (!document.getElementById(entry.id)) {
+        return;
+      }
+
+      commands.push({
+        label: entry.label,
+        meta: 'Homepage',
+        hint: `#${entry.id}`,
+        search: entry.search,
+        run: () => {
+          scrollToId(entry.id);
+        },
+      });
+    });
+
+    const flagshipTabs = Array.from(document.querySelectorAll('[data-flagship-tab]'));
+    flagshipTabs.forEach((tab) => {
+      const tabKey = String(tab.getAttribute('data-flagship-tab') || '').trim();
+      const tabLabel = String(tab.textContent || '').trim();
+      if (!tabKey || !tabLabel) {
+        return;
+      }
+
+      commands.push({
+        label: `Flagship: ${tabLabel}`,
+        meta: 'Homepage',
+        hint: tabLabel,
+        search: `flagship ${tabKey} ${tabLabel.toLowerCase()} trendyol`,
+        run: () => {
+          scrollToId('flagship');
+          tab.click();
+        },
+      });
+    });
 
     let open = false;
     let closeTimer = 0;
@@ -1181,6 +1241,16 @@
         event.preventDefault();
         closePalette();
       }
+    });
+
+    document.querySelectorAll('[data-command-open]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        if (open) {
+          closePalette({ restoreFocus: false });
+          return;
+        }
+        openPalette();
+      });
     });
   };
 
@@ -1988,8 +2058,364 @@
     });
   };
 
+  const setupHomepageSurfaces = () => {
+    if (!document.body || !document.body.classList.contains('homepage')) {
+      return;
+    }
+
+    const setupOpsSurface = () => {
+      const surface = document.querySelector('[data-ops-surface]');
+      if (!surface) {
+        return;
+      }
+
+      const syncNode = surface.querySelector('[data-ops-sync]');
+      const latencyNode = surface.querySelector('[data-ops-latency]');
+      const queueNode = surface.querySelector('[data-ops-queue]');
+      const deliveredNode = surface.querySelector('[data-ops-delivered]');
+      const eventList = surface.querySelector('[data-ops-events]');
+      const stepNodes = Array.from(surface.querySelectorAll('[data-ops-step]'));
+      if (!syncNode || !latencyNode || !queueNode || !deliveredNode || !eventList || !stepNodes.length) {
+        return;
+      }
+
+      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      const stepEventTemplates = [
+        [
+          {
+            message: 'Catalog ingest cycle finished with hourly fetch cadence.',
+            stateClass: 'state-good',
+            stateLabel: 'ingest',
+          },
+          {
+            message: 'Fallback source path engaged for resilient product collection.',
+            stateClass: 'state-live',
+            stateLabel: 'fallback',
+          },
+          {
+            message: 'Source snapshot queued for parse pipeline.',
+            stateClass: 'state-good',
+            stateLabel: 'queued',
+          },
+          {
+            message: 'Marketplace timeout handled without pipeline interruption.',
+            stateClass: 'state-warn',
+            stateLabel: 'retry',
+          },
+        ],
+        [
+          {
+            message: 'Parser normalized product payload and extracted fresh price fields.',
+            stateClass: 'state-good',
+            stateLabel: 'parsed',
+          },
+          {
+            message: 'Diff engine compared previous snapshot and marked candidate delta.',
+            stateClass: 'state-live',
+            stateLabel: 'diff',
+          },
+          {
+            message: 'Threshold rules evaluated for trigger eligibility.',
+            stateClass: 'state-good',
+            stateLabel: 'rules',
+          },
+          {
+            message: 'Localization layer verified message templates across 4 locales.',
+            stateClass: 'state-warn',
+            stateLabel: 'locale',
+          },
+        ],
+        [
+          {
+            message: 'Discount trigger matched and alert payload assembled.',
+            stateClass: 'state-live',
+            stateLabel: 'live',
+          },
+          {
+            message: 'Telegram dispatch completed in millisecond response window.',
+            stateClass: 'state-good',
+            stateLabel: 'sent',
+          },
+          {
+            message: 'Dedup guard prevented duplicate alert emission.',
+            stateClass: 'state-good',
+            stateLabel: 'dedupe',
+          },
+          {
+            message: 'Retry branch confirmed delivery after transient transport delay.',
+            stateClass: 'state-warn',
+            stateLabel: 'retry',
+          },
+        ],
+        [
+          {
+            message: 'Readiness and deploy smoke checks completed successfully.',
+            stateClass: 'state-good',
+            stateLabel: 'ready',
+          },
+          {
+            message: 'SQLite backup routine finished with integrity validation.',
+            stateClass: 'state-good',
+            stateLabel: 'backup',
+          },
+          {
+            message: 'Health telemetry confirms stable scheduler and queue behavior.',
+            stateClass: 'state-live',
+            stateLabel: 'health',
+          },
+          {
+            message: 'Test contour confirms 115 functions across 40 files in CI flow.',
+            stateClass: 'state-warn',
+            stateLabel: 'tests',
+          },
+        ],
+      ];
+
+      let syncValue = Number.parseFloat(String(syncNode.textContent).replace('%', ''));
+      if (!Number.isFinite(syncValue)) {
+        syncValue = 99.9;
+      }
+      let latencyValue = Number.parseInt(String(latencyNode.textContent), 10);
+      if (!Number.isFinite(latencyValue)) {
+        latencyValue = 140;
+      }
+      let stepIndex = Math.max(
+        0,
+        stepNodes.findIndex((node) => node.classList.contains('is-active'))
+      );
+      if (stepIndex < 0) {
+        stepIndex = 0;
+      }
+      let surfaceHovering = false;
+      let manualStepFreezeOnHover = false;
+      const stepTemplateCursor = new Array(stepNodes.length).fill(0);
+
+      const setActiveStep = (nextIndex) => {
+        if (!stepNodes.length) {
+          return;
+        }
+        stepIndex = (nextIndex + stepNodes.length) % stepNodes.length;
+        stepNodes.forEach((node, index) => {
+          const isActive = index === stepIndex;
+          node.classList.toggle('is-active', isActive);
+          node.setAttribute('aria-current', isActive ? 'step' : 'false');
+        });
+      };
+
+      const getTemplatesForStep = (targetStepIndex) => stepEventTemplates[targetStepIndex] || stepEventTemplates[0] || [];
+
+      const pickTemplateForStep = (targetStepIndex) => {
+        const templates = getTemplatesForStep(targetStepIndex);
+        if (!templates.length) {
+          return null;
+        }
+        const cursor = stepTemplateCursor[targetStepIndex] % templates.length;
+        stepTemplateCursor[targetStepIndex] = (stepTemplateCursor[targetStepIndex] + 1) % templates.length;
+        return templates[cursor];
+      };
+
+      stepNodes.forEach((node, index) => {
+        node.addEventListener('click', () => {
+          setActiveStep(index);
+          if (surfaceHovering) {
+            manualStepFreezeOnHover = true;
+          }
+          renderStepFeed(index);
+        });
+      });
+
+      surface.addEventListener(
+        'pointerenter',
+        () => {
+          surfaceHovering = true;
+        },
+        { passive: true }
+      );
+      surface.addEventListener(
+        'pointerleave',
+        () => {
+          surfaceHovering = false;
+          manualStepFreezeOnHover = false;
+        },
+        { passive: true }
+      );
+
+      const createEventRow = (message, stateClass, stateLabel, timestamp = new Date()) => {
+        const row = document.createElement('li');
+        row.className = 'ops-event';
+
+        const timeNode = document.createElement('span');
+        timeNode.className = 'ops-event-time';
+        timeNode.textContent = timestamp.toLocaleTimeString([], {
+          hour12: false,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        });
+
+        const copyNode = document.createElement('span');
+        copyNode.className = 'ops-event-copy';
+        copyNode.textContent = message;
+
+        const stateNode = document.createElement('span');
+        stateNode.className = `ops-event-state ${stateClass}`;
+        stateNode.textContent = stateLabel;
+
+        row.append(timeNode, copyNode, stateNode);
+        return row;
+      };
+
+      const renderStepFeed = (targetStepIndex) => {
+        const templates = getTemplatesForStep(targetStepIndex);
+        if (!templates.length) {
+          return;
+        }
+
+        eventList.innerHTML = '';
+        const seedCount = Math.min(4, templates.length);
+        const baseTime = Date.now();
+        for (let i = 0; i < seedCount; i += 1) {
+          const template = templates[i % templates.length];
+          const rowTime = new Date(baseTime - (seedCount - 1 - i) * 17000);
+          const row = createEventRow(template.message, template.stateClass, template.stateLabel, rowTime);
+          eventList.append(row);
+        }
+        stepTemplateCursor[targetStepIndex] = seedCount % templates.length;
+      };
+
+      const updateSurface = () => {
+        if (document.hidden) {
+          return;
+        }
+
+        syncValue = clamp(syncValue + (Math.random() - 0.5) * 0.045, 99.72, 99.99);
+        latencyValue = Math.round(clamp(latencyValue + (Math.random() - 0.5) * 20, 82, 248));
+
+        syncNode.textContent = `${syncValue.toFixed(2)}%`;
+        queueNode.textContent = 'Hourly checks';
+        deliveredNode.textContent = '~140ms';
+        latencyNode.textContent = `${latencyValue}ms`;
+
+        const shouldFreezeStepAutoRotate = manualStepFreezeOnHover && surfaceHovering;
+        if (shouldFreezeStepAutoRotate) {
+          return;
+        }
+
+        setActiveStep(stepIndex + 1);
+
+        const template = pickTemplateForStep(stepIndex);
+        if (!template) {
+          return;
+        }
+
+        const nextRow = createEventRow(template.message, template.stateClass, template.stateLabel);
+        eventList.prepend(nextRow);
+        while (eventList.children.length > 5) {
+          const last = eventList.lastElementChild;
+          if (!last) {
+            break;
+          }
+          last.remove();
+        }
+      };
+
+      const intervalId = window.setInterval(updateSurface, reduceMotionQuery.matches ? 4800 : 2600);
+      window.addEventListener(
+        'pagehide',
+        () => {
+          window.clearInterval(intervalId);
+        },
+        { once: true }
+      );
+
+      setActiveStep(stepIndex);
+      renderStepFeed(stepIndex);
+    };
+
+    const setupFlagshipTabs = () => {
+      const rootNode = document.querySelector('[data-flagship]');
+      if (!rootNode) {
+        return;
+      }
+
+      const tabs = Array.from(rootNode.querySelectorAll('[data-flagship-tab]'));
+      const panels = Array.from(rootNode.querySelectorAll('[data-flagship-panel]'));
+      const copyRows = Array.from(rootNode.querySelectorAll('[data-flagship-copy]'));
+      if (!tabs.length || !panels.length) {
+        return;
+      }
+
+      const getKey = (node) => String(node.getAttribute('data-flagship-tab') || '').trim();
+      const getPanelKey = (node) => String(node.getAttribute('data-flagship-panel') || '').trim();
+      const getCopyKey = (node) => String(node.getAttribute('data-flagship-copy') || '').trim();
+
+      let activeKey = getKey(tabs.find((tab) => tab.classList.contains('is-active')) || tabs[0]);
+
+      const setActiveTab = (nextKey, { focus = false } = {}) => {
+        if (!nextKey) {
+          return;
+        }
+
+        activeKey = nextKey;
+        tabs.forEach((tab) => {
+          const isActive = getKey(tab) === activeKey;
+          tab.classList.toggle('is-active', isActive);
+          tab.setAttribute('aria-selected', String(isActive));
+          tab.setAttribute('tabindex', isActive ? '0' : '-1');
+          if (focus && isActive) {
+            tab.focus();
+          }
+        });
+
+        panels.forEach((panel) => {
+          const isActive = getPanelKey(panel) === activeKey;
+          panel.classList.toggle('is-active', isActive);
+          panel.hidden = !isActive;
+        });
+
+        copyRows.forEach((row) => {
+          const isActive = getCopyKey(row) === activeKey;
+          row.classList.toggle('is-active', isActive);
+          row.hidden = !isActive;
+        });
+      };
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+          setActiveTab(getKey(tab));
+        });
+
+        tab.addEventListener('keydown', (event) => {
+          if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft' && event.key !== 'Home' && event.key !== 'End') {
+            return;
+          }
+
+          event.preventDefault();
+          if (event.key === 'Home') {
+            setActiveTab(getKey(tabs[0]), { focus: true });
+            return;
+          }
+          if (event.key === 'End') {
+            setActiveTab(getKey(tabs[tabs.length - 1]), { focus: true });
+            return;
+          }
+
+          const direction = event.key === 'ArrowRight' ? 1 : -1;
+          const nextIndex = (index + direction + tabs.length) % tabs.length;
+          setActiveTab(getKey(tabs[nextIndex]), { focus: true });
+        });
+      });
+
+      setActiveTab(activeKey);
+    };
+
+    setupOpsSurface();
+    setupFlagshipTabs();
+  };
+
   setupProjectShowcase();
   setupProjectFocusMode();
+  setupHomepageSurfaces();
 
   let ambientParticlesQueued = false;
   const scheduleAmbientParticles = () => {
@@ -2325,8 +2751,10 @@
       }
     });
 
-    const interactiveCards = document.querySelectorAll(
-      '.hero-copy, .page-hero-card, .surface-card, .project-card:not([data-project-modal-card]), .contact-card, .process-card, .info-card, .timeline-card, .quote-card, .form-shell'
+    const interactiveCards = Array.from(
+      document.querySelectorAll(
+        '.hero-copy, .page-hero-card, .surface-card, .project-card:not([data-project-modal-card]), .contact-card, .process-card, .info-card, .timeline-card, .quote-card, .form-shell'
+      )
     );
 
     interactiveCards.forEach((card) => {
@@ -2386,7 +2814,7 @@
       card.addEventListener(
         'pointermove',
         (event) => {
-          if (!isPointerEffectsActive() || root.classList.contains('theme-transition-running')) {
+          if (effectsTier === 'off' || root.classList.contains('theme-transition-running')) {
             return;
           }
 
@@ -2399,8 +2827,9 @@
           const py = (event.clientY - rect.top) / rect.height;
           const clampedX = Math.min(Math.max(px, 0), 1);
           const clampedY = Math.min(Math.max(py, 0), 1);
-          state.targetTiltX = (0.5 - clampedY) * 5.4;
-          state.targetTiltY = (clampedX - 0.5) * 6.3;
+          const tiltMultiplier = card.classList.contains('product-project-card') ? 0.72 : 1;
+          state.targetTiltX = (0.5 - clampedY) * 5.4 * tiltMultiplier;
+          state.targetTiltY = (clampedX - 0.5) * 6.3 * tiltMultiplier;
           state.targetPointerX = clampedX * 100;
           state.targetPointerY = clampedY * 100;
           queueCardRender();

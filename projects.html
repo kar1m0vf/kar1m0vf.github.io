@@ -85,7 +85,7 @@
                   "item": {
                     "@type": "SoftwareSourceCode",
                     "name": "Trendyol Price Tracker",
-                    "description": "Telegram bot for tracking Trendyol prices and sending discount alerts.",
+                    "description": "End-to-end Telegram tracker on Python, Aiogram, and SQLite with subscriptions, history analytics, recommendations, multilingual UI, backup, and deploy/readiness checks.",
                     "codeRepository": "https://github.com/kar1m0vf/trendyol-price-tracker",
                     "programmingLanguage": "Python"
                   }
@@ -96,7 +96,7 @@
                   "item": {
                     "@type": "SoftwareSourceCode",
                     "name": "Blaster Game",
-                    "description": "Arcade shooter game with level progression, score tracking, and responsive controls.",
+                    "description": "Python 3.11 and Pygame 2D shooter with procedural audio synthesis, multi-phase boss logic, replay buffer, tests, and CI.",
                     "codeRepository": "https://github.com/kar1m0vf/blaster-game",
                     "programmingLanguage": "Python"
                   }
@@ -215,7 +215,7 @@
                   <div class="project-index">01</div>
                   <h3>Trendyol Price Tracker</h3>
                 </div>
-                <span class="project-metric">Python | Aiogram | Scraping</span>
+                <span class="project-metric">Python | Aiogram | SQLite</span>
               </div>
               <div class="project-preview preview-tracker" aria-hidden="true">
                 <span class="preview-glare"></span>
@@ -245,18 +245,18 @@
               <div class="gold-line"></div>
               <div class="project-copy">
                 <p>
-                  Telegram bot for tracking Trendyol prices and notifying users when subscribed products
-                  get discounted.
+                  End-to-end Telegram tracker built with Python, Aiogram, and SQLite: subscriptions,
+                  price history, product comparison, recommendations, multilingual UX, and admin tooling.
                 </p>
                 <div class="metrics">
-                  <span class="tag">Price Tracker</span>
-                  <span class="tag">Telegram Alerts</span>
-                  <span class="tag">Web Scraping</span>
+                  <span class="tag">SQLite + WAL + PRAGMA</span>
+                  <span class="tag">4 Locales (229 Keys Each)</span>
+                  <span class="tag">Readiness + Smoke Checks</span>
                 </div>
                 <ul class="list-clean">
-                  <li>Product subscriptions with user-specific tracking</li>
-                  <li>Periodic parsing of current prices on Trendyol</li>
-                  <li>Instant Telegram alerts when discounts appear</li>
+                  <li>Hourly price scan jobs with fallback fetch paths and discount-triggered Telegram alerts</li>
+                  <li>Data layer with migrations, indexes, backup pipeline, and runtime optimization</li>
+                  <li>Operational diagnostics and quality checks: readiness checks, deploy smoke checks, and a green CI test contour across 115 test functions in 40 files</li>
                 </ul>
               </div>
               <div class="project-links">
@@ -277,14 +277,14 @@
               data-project-card
               data-order="2"
               data-title="Blaster Game"
-              data-tags="game,python,desktop,arcade"
+              data-tags="game,python,pygame,desktop,arcade,ci"
             >
               <div class="project-top">
                 <div>
                   <div class="project-index">02</div>
                   <h3>Blaster Game</h3>
                 </div>
-                <span class="project-metric">Python | Arcade</span>
+                <span class="project-metric">Python 3.11 | Pygame</span>
               </div>
               <div class="project-preview preview-blaster" aria-hidden="true">
                 <span class="preview-glare"></span>
@@ -298,18 +298,20 @@
               <div class="gold-line"></div>
               <div class="project-copy">
                 <p>
-                  Arcade shooter game with level progression, score tracking, and responsive controls
-                  designed for fast gameplay.
+                  Python 3.11 + Pygame project built as a full 2D engineering stack with custom render
+                  pipeline, procedural audio, advanced boss phases, and production-oriented tooling.
                 </p>
                 <div class="metrics">
-                  <span class="tag">Game Loop</span>
-                  <span class="tag">Rendering</span>
-                  <span class="tag">Input Logic</span>
+                  <span class="tag">Real-Time FX Pipeline</span>
+                  <span class="tag">Procedural WAV Audio</span>
+                  <span class="tag">Boss + Replay Systems</span>
                 </div>
                 <ul class="list-clean">
-                  <li>Enemy wave behavior with increasing difficulty</li>
-                  <li>Collision and scoring systems</li>
-                  <li>Simple architecture for adding new mechanics</li>
+                  <li>Visual pipeline with quality presets, scanlines, vignette, trails, and screen shake</li>
+                  <li>Procedural sound generation using <code>wave</code>, <code>struct</code>, and <code>math</code></li>
+                  <li>Multi-phase telegraph boss attacks, power-up system, and death replay buffer</li>
+                  <li>Validated/sanitized JSON storage for highscores and settings</li>
+                  <li><code>pytest</code> coverage, GitHub Actions CI, and automated Windows <code>.exe</code> build via PyInstaller</li>
                 </ul>
               </div>
               <div class="project-links">
