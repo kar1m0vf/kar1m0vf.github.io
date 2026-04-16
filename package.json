@@ -1,0 +1,30 @@
+{
+  "name": "kar1m0vf-portfolio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static portfolio with professional quality tooling.",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build:ts": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "playwright:install": "node ./scripts/install-playwright.mjs",
+    "test:unit": "vitest run",
+    "test:unit:ci": "node -e \"require('fs').mkdirSync('test-results',{recursive:true})\" && vitest run --reporter=json --outputFile=test-results/vitest-report.json",
+    "test:e2e": "node ./scripts/run-playwright-tests.mjs",
+    "test:e2e:ci": "node ./scripts/run-playwright-tests.mjs --ci",
+    "test": "npm run test:unit && npm run test:e2e",
+    "lhci": "lhci autorun --config=./lighthouserc.cjs",
+    "quality:evidence": "node ./scripts/generate-quality-evidence.mjs",
+    "quality": "npm run build:ts && npm run typecheck && npm run test:unit:ci && npm run test:e2e:ci && npm run lhci && npm run quality:evidence"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "^1.54.1",
+    "@types/node": "^22.15.3",
+    "http-server": "^14.1.1",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.9"
+  }
+}

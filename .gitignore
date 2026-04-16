@@ -1,1 +1,21 @@
 .vscode/
+
+# Node/tooling
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Test artifacts
+coverage/
+test-results/
+playwright-report/
+.lighthouseci/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db

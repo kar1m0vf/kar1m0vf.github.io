@@ -1,0 +1,79 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: write
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build TypeScript output
+        run: npm run build:ts
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Run unit tests
+        run: npm run test:unit:ci
+
+      - name: Install Playwright Chromium
+        run: npm run playwright:install
+
+      - name: Run end-to-end tests
+        run: npm run test:e2e:ci
+
+      - name: Setup Chrome for Lighthouse
+        id: chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Run Lighthouse CI
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run lhci
+
+      - name: Generate quality evidence snapshot
+        env:
+          QUALITY_BUILD_OK: "true"
+          QUALITY_TYPECHECK_OK: "true"
+        run: npm run quality:evidence
+
+      - name: Commit quality evidence snapshot
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: assets/data/quality-evidence.json
+          message: "chore(ci): refresh quality evidence snapshot [skip ci]"
+          default_author: github_actions
+
+      - name: Upload quality artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-artifacts
+          if-no-files-found: ignore
+          path: |
+            assets/data/quality-evidence.json
+            playwright-report
+            test-results
+            .lighthouseci

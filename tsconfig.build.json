@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "none",
+    "moduleResolution": "Classic",
+    "outDir": "./assets/js",
+    "types": [],
+    "sourceMap": false,
+    "declaration": false
+  },
+  "include": ["src/ts/site-config.ts"]
+}

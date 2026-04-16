@@ -453,6 +453,123 @@
         </div>
       </section>
 
+      <section class="section compact section-quality" id="quality-evidence">
+        <div class="container">
+          <article
+            class="quality-shell page-hero-card reveal"
+            data-quality-evidence
+            data-quality-source="assets/data/quality-evidence.json"
+          >
+            <div class="quality-header">
+              <div class="quality-header-copy">
+                <span class="eyebrow">CI Evidence</span>
+                <h2>Quality gate signals from real checks, not claims.</h2>
+                <p>
+                  Build, type-check, unit tests, end-to-end flows, and Lighthouse are summarized from the latest
+                  snapshot generated in this repository.
+                </p>
+              </div>
+              <div class="quality-run-meta">
+                <span class="quality-chip">
+                  Branch:
+                  <strong data-quality-branch>pending</strong>
+                </span>
+                <span class="quality-chip">
+                  Commit:
+                  <strong data-quality-commit>pending</strong>
+                </span>
+                <span class="quality-chip">
+                  Coverage:
+                  <strong data-quality-scope>pending</strong>
+                </span>
+              </div>
+            </div>
+
+            <div class="quality-grid">
+              <article class="quality-card">
+                <p class="quality-card-title">Unit Tests</p>
+                <div class="quality-card-metric">
+                  <strong data-quality-unit-summary>pending</strong>
+                  <span data-quality-unit-duration>--</span>
+                </div>
+                <ul class="quality-card-list">
+                  <li>
+                    Passed:
+                    <strong data-quality-unit-passed>--</strong>
+                  </li>
+                  <li>
+                    Failed:
+                    <strong data-quality-unit-failed>--</strong>
+                  </li>
+                </ul>
+              </article>
+
+              <article class="quality-card">
+                <p class="quality-card-title">E2E Flows</p>
+                <div class="quality-card-metric">
+                  <strong data-quality-e2e-summary>pending</strong>
+                  <span data-quality-e2e-duration>--</span>
+                </div>
+                <ul class="quality-card-list">
+                  <li>
+                    Desktop:
+                    <strong data-quality-e2e-desktop>--</strong>
+                  </li>
+                  <li>
+                    Mobile:
+                    <strong data-quality-e2e-mobile>--</strong>
+                  </li>
+                </ul>
+              </article>
+
+              <article class="quality-card quality-card-scores">
+                <p class="quality-card-title">Lighthouse</p>
+                <div class="quality-score-grid">
+                  <div class="quality-score-item">
+                    <span>Perf</span>
+                    <strong data-quality-lh-performance>--</strong>
+                  </div>
+                  <div class="quality-score-item">
+                    <span>A11y</span>
+                    <strong data-quality-lh-accessibility>--</strong>
+                  </div>
+                  <div class="quality-score-item">
+                    <span>Best</span>
+                    <strong data-quality-lh-best>--</strong>
+                  </div>
+                  <div class="quality-score-item">
+                    <span>SEO</span>
+                    <strong data-quality-lh-seo>--</strong>
+                  </div>
+                </div>
+              </article>
+
+              <article class="quality-card">
+                <p class="quality-card-title">Release Gates</p>
+                <div class="quality-gates">
+                  <span data-quality-build>Build: pending</span>
+                  <span data-quality-typecheck>Typecheck: pending</span>
+                  <span data-quality-overall>Overall: pending</span>
+                </div>
+                <a
+                  class="subtle-link quality-run-link"
+                  data-quality-run-link
+                  href="https://github.com/kar1m0vf/kar1m0vf.github.io/actions"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Open Full CI Run
+                </a>
+              </article>
+            </div>
+
+            <p class="quality-status-note" data-quality-status>
+              Waiting for the latest quality snapshot.
+            </p>
+          </article>
+        </div>
+      </section>
+
       <section class="section compact section-selected" id="selected-projects">
         <div class="container">
           <div class="section-heading reveal">
@@ -667,9 +784,6 @@
     <script defer src="assets/js/main.js"></script>
   </body>
 </html>
-
-
-
 
 
 

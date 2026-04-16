@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'portfolio-v7';
+const CACHE_VERSION = 'portfolio-v8';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -15,6 +15,7 @@ const STATIC_ASSETS = [
   './assets/js/main.js',
   './assets/js/site-config.js',
   './assets/js/ambient-particles-worker.js',
+  './assets/data/quality-evidence.json',
   './assets/icons/favicon.ico',
   './assets/icons/favicon-16x16.png',
   './assets/icons/favicon-32x32.png',
