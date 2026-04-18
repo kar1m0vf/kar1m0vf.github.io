@@ -8,5 +8,5 @@
   <rect width="64" height="64" rx="14" fill="url(#bg)" />
   <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#22353b" />
   <path d="M18 12h7v18l14-18h10L33 33l17 19H40L25 36v16h-7z" fill="#e9f2f4" />
-  <circle cx="50" cy="14" r="2.5" fill="#62b8c7" />
+  <circle cx="50" cy="14" r="2.5" fill="#9bbcff" />
 </svg>

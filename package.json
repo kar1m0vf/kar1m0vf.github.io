@@ -9,7 +9,9 @@
   "scripts": {
     "build:ts": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "icons:generate": "node ./scripts/generate-icons.mjs",
     "playwright:install": "node ./scripts/install-playwright.mjs",
+    "repo:ready": "npm run build:ts && npm run typecheck && npm run test:unit",
     "test:unit": "vitest run",
     "test:unit:ci": "node -e \"require('fs').mkdirSync('test-results',{recursive:true})\" && vitest run --reporter=json --outputFile=test-results/vitest-report.json",
     "test:e2e": "node ./scripts/run-playwright-tests.mjs",

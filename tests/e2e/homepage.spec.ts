@@ -12,6 +12,12 @@ test.describe('Homepage core UX', () => {
     await expect(alertsTab).toHaveAttribute('aria-selected', 'true');
     await expect(page.locator('#flagship-panel-alerts')).toBeVisible();
     await expect(page.locator('[data-flagship-copy="alerts"]')).toBeVisible();
+
+    const historySequenceButton = page.locator('[data-flagship-sequence-control="history"]');
+    await historySequenceButton.click();
+    await expect(historySequenceButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#flagship-panel-history')).toBeVisible();
+    await expect(page.locator('[data-flagship-copy="history"]')).toBeVisible();
   });
 
   test('ops surface allows manual step selection and feed sync', async ({ page }) => {

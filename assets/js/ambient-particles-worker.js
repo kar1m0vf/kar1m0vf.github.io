@@ -13,7 +13,7 @@ const workerState = {
   destroyed: false,
   particles: [],
   theme: 'light',
-  themeColor: { dot: '28, 138, 164', line: '28, 138, 164' },
+  themeColor: { dot: '79, 125, 255', line: '79, 125, 255' },
 };
 
 const pointerState = {
@@ -74,8 +74,8 @@ const getConfig = () =>
 const updateThemeColor = () => {
   workerState.themeColor =
     workerState.theme === 'dark'
-      ? { dot: '126, 203, 207', line: '126, 203, 207' }
-      : { dot: '28, 138, 164', line: '28, 138, 164' };
+      ? { dot: '155, 188, 255', line: '155, 188, 255' }
+      : { dot: '79, 125, 255', line: '79, 125, 255' };
 };
 
 const createParticle = () => {

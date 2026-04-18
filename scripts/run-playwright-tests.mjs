@@ -7,7 +7,7 @@ const result = spawnSync('npx', ['playwright', 'test'], {
   shell: true,
   env: {
     ...process.env,
-    PLAYWRIGHT_BROWSERS_PATH: '0',
+    PLAYWRIGHT_BROWSERS_PATH: '.playwright-browsers',
     ...(ciLikeMode ? { PW_JSON_REPORT: '1' } : {}),
   },
 });

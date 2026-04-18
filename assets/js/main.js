@@ -25,12 +25,25 @@
   const theme = storedTheme || (preferredDark ? 'dark' : 'light');
   root.setAttribute('data-theme', theme);
   const normalizeDeviceProfile = (value) => (value === 'strong' || value === 'weak' ? value : null);
+  const normalizeCapabilitySignal = (value) =>
+    typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : null;
+  const detectDeviceProfile = ({ saveData, deviceMemory, hardwareConcurrency }) => {
+    const normalizedMemory = normalizeCapabilitySignal(deviceMemory);
+    const normalizedCpu = normalizeCapabilitySignal(hardwareConcurrency);
+    const criticalMemory = normalizedMemory !== null && normalizedMemory <= 2;
+    const criticalCpu = normalizedCpu !== null && normalizedCpu <= 2;
+    const constrainedCombo =
+      normalizedMemory !== null && normalizedCpu !== null && normalizedMemory <= 4 && normalizedCpu <= 4;
+    return saveData || criticalMemory || criticalCpu || constrainedCombo ? 'weak' : 'strong';
+  };
   const nav = window.navigator || {};
   const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
   const saveData = Boolean(connection && connection.saveData);
-  const lowMemory = typeof nav.deviceMemory === 'number' && nav.deviceMemory <= 4;
-  const lowCpu = typeof nav.hardwareConcurrency === 'number' && nav.hardwareConcurrency <= 4;
-  const detectedDeviceProfile = saveData || lowMemory || lowCpu ? 'weak' : 'strong';
+  const detectedDeviceProfile = detectDeviceProfile({
+    saveData,
+    deviceMemory: nav.deviceMemory,
+    hardwareConcurrency: nav.hardwareConcurrency,
+  });
   const storedDeviceProfile = normalizeDeviceProfile(storage.get('site-device-profile'));
   const deviceProfileSource = storedDeviceProfile ? 'manual' : 'auto';
   const deviceProfile = storedDeviceProfile || detectedDeviceProfile;
@@ -325,7 +338,7 @@
     let rafId = 0;
     let lastTick = 0;
     let themeKey = '';
-    let themeColor = { dot: '28, 138, 164', line: '28, 138, 164' };
+    let themeColor = { dot: '79, 125, 255', line: '79, 125, 255' };
     const smooth = (from, to, amount) => from + (to - from) * amount;
     const pointer = {
       x: 0,
@@ -347,8 +360,8 @@
       themeKey = nextTheme;
       themeColor =
         nextTheme === 'dark'
-          ? { dot: '126, 203, 207', line: '126, 203, 207' }
-          : { dot: '28, 138, 164', line: '28, 138, 164' };
+          ? { dot: '155, 188, 255', line: '155, 188, 255' }
+          : { dot: '79, 125, 255', line: '79, 125, 255' };
     };
 
     const randomBetween = (min, max) => min + Math.random() * (max - min);
@@ -2102,12 +2115,21 @@
       const queueNode = surface.querySelector('[data-ops-queue]');
       const deliveredNode = surface.querySelector('[data-ops-delivered]');
       const eventList = surface.querySelector('[data-ops-events]');
+      const chartNode = surface.querySelector('.ops-chart');
+      const chartBars = chartNode ? Array.from(chartNode.querySelectorAll('span')) : [];
       const stepNodes = Array.from(surface.querySelectorAll('[data-ops-step]'));
       if (!syncNode || !latencyNode || !queueNode || !deliveredNode || !eventList || !stepNodes.length) {
         return;
       }
 
       const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      const stepChartPatterns = [
+        [34, 40, 48, 58, 68, 76, 72, 63, 54, 46, 39, 33],
+        [44, 56, 50, 64, 58, 70, 63, 68, 61, 66, 57, 52],
+        [28, 38, 34, 70, 44, 84, 42, 78, 40, 67, 36, 58],
+        [56, 62, 67, 65, 72, 74, 71, 68, 64, 60, 57, 54],
+      ];
+      const stepChartPhases = ['ingest', 'parse', 'notify', 'audit'];
       const stepEventTemplates = [
         [
           {
@@ -2217,9 +2239,47 @@
       let surfaceHovering = false;
       let manualStepFreezeOnHover = false;
       let manualStepLockUntil = 0;
+      let chartTick = 0;
       const coarsePointerQuery = window.matchMedia('(hover: none), (pointer: coarse)');
       const compactViewportQuery = window.matchMedia('(max-width: 640px)');
       const stepTemplateCursor = new Array(stepNodes.length).fill(0);
+
+      const renderChart = (targetStepIndex) => {
+        if (!chartBars.length) {
+          return;
+        }
+
+        const pattern = stepChartPatterns[targetStepIndex] || stepChartPatterns[0];
+        const phaseLabel = stepChartPhases[targetStepIndex] || stepChartPhases[0];
+        const syncProgress = clamp((syncValue - 99.72) / 0.27, 0, 1);
+        const latencyPenalty = clamp((latencyValue - 82) / 166, 0, 1);
+
+        if (chartNode) {
+          chartNode.dataset.opsPhase = phaseLabel;
+        }
+
+        chartBars.forEach((bar, index) => {
+          const base = pattern[index % pattern.length];
+          const waveSeed = chartTick * 0.72 + index * 0.76 + targetStepIndex * 0.9;
+          const wave = Math.sin(waveSeed) * 3.2 + Math.cos(waveSeed * 0.58) * 1.6;
+          const syncLift = (syncProgress - 0.5) * 5.6;
+          const latencyDrag = latencyPenalty * (targetStepIndex === 2 ? 3.2 : 4.2);
+          let phaseAccent = 0;
+
+          if (targetStepIndex === 0 && index >= 3 && index <= 6) {
+            phaseAccent = 2.8;
+          } else if (targetStepIndex === 1 && index % 3 === 1) {
+            phaseAccent = 2.2;
+          } else if (targetStepIndex === 2 && index % 2 === 1) {
+            phaseAccent = 4.6;
+          } else if (targetStepIndex === 3 && index >= 4 && index <= 8) {
+            phaseAccent = 1.8;
+          }
+
+          const nextBar = clamp(base + wave + syncLift + phaseAccent - latencyDrag, 18, 88);
+          bar.style.setProperty('--bar', `${nextBar.toFixed(1)}%`);
+        });
+      };
 
       const setActiveStep = (nextIndex) => {
         if (!stepNodes.length) {
@@ -2231,6 +2291,7 @@
           node.classList.toggle('is-active', isActive);
           node.setAttribute('aria-current', isActive ? 'step' : 'false');
         });
+        renderChart(stepIndex);
       };
 
       const getTemplatesForStep = (targetStepIndex) => stepEventTemplates[targetStepIndex] || stepEventTemplates[0] || [];
@@ -2323,6 +2384,7 @@
           return;
         }
 
+        chartTick += 1;
         syncValue = clamp(syncValue + (Math.random() - 0.5) * 0.045, 99.72, 99.99);
         latencyValue = Math.round(clamp(latencyValue + (Math.random() - 0.5) * 20, 82, 248));
 
@@ -2334,6 +2396,7 @@
         const touchLockActive = manualStepLockUntil > Date.now();
         const shouldFreezeStepAutoRotate = (manualStepFreezeOnHover && surfaceHovering) || touchLockActive;
         if (shouldFreezeStepAutoRotate) {
+          renderChart(stepIndex);
           return;
         }
 
@@ -2377,6 +2440,7 @@
       }
 
       const tabs = Array.from(rootNode.querySelectorAll('[data-flagship-tab]'));
+      const sequenceButtons = Array.from(rootNode.querySelectorAll('[data-flagship-sequence-control]'));
       const panels = Array.from(rootNode.querySelectorAll('[data-flagship-panel]'));
       const copyRows = Array.from(rootNode.querySelectorAll('[data-flagship-copy]'));
       if (!tabs.length || !panels.length) {
@@ -2395,6 +2459,7 @@
         }
 
         activeKey = nextKey;
+        rootNode.dataset.flagshipActive = activeKey;
         tabs.forEach((tab) => {
           const isActive = getKey(tab) === activeKey;
           tab.classList.toggle('is-active', isActive);
@@ -2403,6 +2468,12 @@
           if (focus && isActive) {
             tab.focus();
           }
+        });
+
+        sequenceButtons.forEach((button) => {
+          const isActive = String(button.getAttribute('data-flagship-sequence-control') || '').trim() === activeKey;
+          button.classList.toggle('is-active', isActive);
+          button.setAttribute('aria-pressed', String(isActive));
         });
 
         panels.forEach((panel) => {
@@ -2441,6 +2512,13 @@
           const direction = event.key === 'ArrowRight' ? 1 : -1;
           const nextIndex = (index + direction + tabs.length) % tabs.length;
           setActiveTab(getKey(tabs[nextIndex]), { focus: true });
+        });
+      });
+
+      sequenceButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const nextKey = String(button.getAttribute('data-flagship-sequence-control') || '').trim();
+          setActiveTab(nextKey);
         });
       });
 

@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
-  process.env.PLAYWRIGHT_BROWSERS_PATH = '0';
+  process.env.PLAYWRIGHT_BROWSERS_PATH = '.playwright-browsers';
 }
 
 const PORT = 4173;

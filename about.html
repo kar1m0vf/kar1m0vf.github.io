@@ -127,7 +127,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
   </head>
-  <body>
+  <body class="about-page">
     <div class="topbar-wrap container">
       <header class="topbar">
         <a class="brand" href="index.html" aria-label="Homepage">
@@ -161,13 +161,53 @@
     <main>
       <section class="page-hero">
         <div class="container">
-          <article class="page-hero-card reveal">
-            <span class="eyebrow">About</span>
-            <h1 class="page-title">I build web products that are fast, stable, and easy to scale.</h1>
-            <p class="page-intro">
-              Full-Stack Developer with a strong Python focus. I deliver product features, internal tools,
-              and Telegram bots used in real operations.
-            </p>
+          <article class="page-hero-card reveal about-hero-shell">
+            <div class="about-hero-grid">
+              <div class="about-hero-copy">
+                <span class="eyebrow">About</span>
+                <h1 class="page-title">I build product systems that stay useful in real work, not just in demos.</h1>
+                <p class="page-intro">
+                  My work sits between Python systems, product UI, automation, and operational reliability. I like
+                  shipping things that solve a real workflow and still feel clean on the surface.
+                </p>
+                <div class="about-hero-tags" aria-label="Core focus areas">
+                  <span class="tag">Python Systems</span>
+                  <span class="tag">Telegram Bots</span>
+                  <span class="tag">Product UI</span>
+                  <span class="tag">Automation Logic</span>
+                </div>
+                <div class="hero-actions">
+                  <a class="link-button secondary" href="projects.html">View Projects</a>
+                  <a class="link-button secondary" href="contact.html">Start a Conversation</a>
+                </div>
+              </div>
+
+              <div class="about-hero-panel">
+                <div class="about-hero-panel-head">
+                  <span>Profile Snapshot</span>
+                  <strong>How I usually add value</strong>
+                </div>
+
+                <div class="about-hero-metrics">
+                  <article class="about-metric">
+                    <span>Primary stack</span>
+                    <strong>Python, JavaScript, SQLite</strong>
+                  </article>
+                  <article class="about-metric">
+                    <span>Best fit</span>
+                    <strong>Bots, tools, dashboards, automation</strong>
+                  </article>
+                  <article class="about-metric">
+                    <span>Engineering bias</span>
+                    <strong>Stable releases over clever complexity</strong>
+                  </article>
+                  <article class="about-metric">
+                    <span>Delivery style</span>
+                    <strong>Direct communication and clear tradeoffs</strong>
+                  </article>
+                </div>
+              </div>
+            </div>
           </article>
         </div>
       </section>
@@ -175,40 +215,73 @@
       <section class="section compact">
         <div class="container split-grid">
           <div class="section-heading reveal">
-            <span class="eyebrow">Profile</span>
-            <h2>Engineer focused on outcomes, not vanity complexity.</h2>
+            <span class="eyebrow">Working Profile</span>
+            <h2>I care about operator clarity as much as user-facing polish.</h2>
             <p>
-              I work with founders, teams, and clients to ship features that solve real problems and stay
-              maintainable after release.
+              I do my best work on products that need both a good surface and a dependable internal system behind
+              it. That usually means balancing UX, business logic, reliability, and delivery speed at the same time.
             </p>
             <div class="highlight-box spacer-top">
-              <strong class="text-gold">What you can expect:</strong>
+              <strong class="text-gold">What collaboration feels like:</strong>
               <p class="muted-note">
-                Clear communication, clean architecture, and ownership from kickoff to release.
+                Clear tradeoffs, honest risk calls, and steady end-to-end ownership from scope to post-release cleanup.
               </p>
             </div>
           </div>
 
-          <div class="grid-2">
-            <article class="timeline-card reveal delay-1">
-              <span class="badge">Communication</span>
-              <h3>Direct and Clear</h3>
-              <p>Scope, milestones, and risks are aligned early to avoid late surprises.</p>
+          <div class="about-snapshot-grid">
+            <article class="timeline-card reveal delay-1 about-snapshot-card">
+              <span class="badge">Python Systems</span>
+              <h3>Bots, automation, backend logic</h3>
+              <p>I like systems where business rules, data flow, and runtime behavior stay explicit and maintainable.</p>
             </article>
-            <article class="timeline-card reveal delay-2">
-              <span class="badge">Architecture</span>
-              <h3>Scalable Structure</h3>
-              <p>Code structure supports long-term maintenance, team work, and confident scaling.</p>
+            <article class="timeline-card reveal delay-2 about-snapshot-card">
+              <span class="badge">Frontend Execution</span>
+              <h3>Interfaces that feel intentional</h3>
+              <p>I care about stateful UI, responsive layouts, and product surfaces that do not feel generic.</p>
             </article>
-            <article class="timeline-card reveal delay-1">
-              <span class="badge">Reliability</span>
-              <h3>Stable Delivery</h3>
-              <p>Critical user flows are tested before release to reduce production regressions.</p>
+            <article class="timeline-card reveal delay-1 about-snapshot-card">
+              <span class="badge">Reliability Mindset</span>
+              <h3>Checks, tests, and safer releases</h3>
+              <p>I prefer shipping with readiness checks, smoke flows, and real confidence in critical behavior.</p>
             </article>
-            <article class="timeline-card reveal delay-2">
-              <span class="badge">Ownership</span>
-              <h3>From Brief to Release</h3>
-              <p>I own delivery end-to-end and stay involved until the feature is stable in production.</p>
+            <article class="timeline-card reveal delay-2 about-snapshot-card">
+              <span class="badge">Localization-ready</span>
+              <h3>Products built for multilingual contexts</h3>
+              <p>I already think about interfaces and systems that have to scale across multiple language scenarios.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section compact">
+        <div class="container">
+          <div class="section-heading reveal">
+            <span class="eyebrow">Build Focus</span>
+            <h2>What I usually build and where I am strongest.</h2>
+            <p>I do best on work that needs product thinking, engineering discipline, and a pragmatic shipping mindset.</p>
+          </div>
+
+          <div class="about-build-grid">
+            <article class="info-card reveal about-build-card">
+              <span class="badge">Telegram Bots</span>
+              <h3>Stateful flows with real operational behavior</h3>
+              <p>Subscriptions, alerts, admin actions, quiet hours, export paths, and interfaces people actually return to.</p>
+            </article>
+            <article class="info-card reveal delay-1 about-build-card">
+              <span class="badge">Automation</span>
+              <h3>Data workflows that remove repetitive manual work</h3>
+              <p>Scraping, parsing, scheduled jobs, diff logic, and backend flows that turn raw data into usable actions.</p>
+            </article>
+            <article class="info-card reveal delay-2 about-build-card">
+              <span class="badge">Product UI</span>
+              <h3>Clean frontend surfaces for real product stories</h3>
+              <p>I build landing pages, dashboards, and interaction layers that feel structured instead of template-made.</p>
+            </article>
+            <article class="info-card reveal delay-1 about-build-card">
+              <span class="badge">Quality</span>
+              <h3>Release confidence through checks and discipline</h3>
+              <p>Type safety, test contours, deployment checks, and project hygiene matter to me as part of delivery.</p>
             </article>
           </div>
         </div>
@@ -218,41 +291,41 @@
         <div class="container">
           <div class="section-heading reveal">
             <span class="eyebrow">Process</span>
-            <h2>How I run projects from idea to release.</h2>
-            <p>A lightweight process keeps speed high and engineering risk low.</p>
+            <h2>How I move from rough idea to stable release.</h2>
+            <p>I keep the process lightweight, but I do not skip the steps that prevent expensive confusion later.</p>
           </div>
 
           <div class="process-grid">
             <article class="process-card reveal">
-              <div class="card-icon">A</div>
-              <h3>Discovery</h3>
-              <p>Define goals, user flows, constraints, and clear success criteria.</p>
+              <div class="card-icon">01</div>
+              <h3>Frame the problem</h3>
+              <p>Clarify what needs to change for the user or the team before writing implementation details.</p>
               <ul class="list-clean">
-                <li>Project scope and priorities</li>
-                <li>User flow and feature mapping</li>
-                <li>Delivery plan and milestones</li>
+                <li>Define the core outcome and constraints</li>
+                <li>Map user flow, edge cases, and system boundaries</li>
+                <li>Decide what matters now vs later</li>
               </ul>
             </article>
 
             <article class="process-card reveal delay-1">
-              <div class="card-icon">B</div>
-              <h3>Build</h3>
-              <p>Implement features in short iterations with transparent technical decisions.</p>
+              <div class="card-icon">02</div>
+              <h3>Build the core path</h3>
+              <p>Get the main value working first, then shape the surrounding system so it stays maintainable.</p>
               <ul class="list-clean">
-                <li>Frontend and backend implementation</li>
-                <li>API integrations and automation logic</li>
-                <li>Quality checks for critical flows</li>
+                <li>Implement the main product flow</li>
+                <li>Add the right abstractions, not decorative ones</li>
+                <li>Keep technical tradeoffs visible and explicit</li>
               </ul>
             </article>
 
             <article class="process-card reveal delay-2">
-              <div class="card-icon">C</div>
-              <h3>Launch and Improve</h3>
-              <p>Release, monitor behavior, and prioritize improvements based on real usage data.</p>
+              <div class="card-icon">03</div>
+              <h3>Stabilize and improve</h3>
+              <p>Before calling it done, I want the release path, checks, and follow-up plan to make sense.</p>
               <ul class="list-clean">
-                <li>Deployment and release notes</li>
-                <li>Issue fixes and performance updates</li>
-                <li>Roadmap for follow-up features</li>
+                <li>Validate critical flows and release confidence</li>
+                <li>Fix rough edges that hurt real usage</li>
+                <li>Leave the project easier to extend next time</li>
               </ul>
             </article>
           </div>
@@ -263,8 +336,8 @@
         <div class="container">
           <article class="quote-card reveal">
             <span class="eyebrow">Personal Principle</span>
-            <blockquote>Build less, but build the right thing well.</blockquote>
-            <p>That principle guides both my technical decisions and product priorities.</p>
+            <blockquote>Useful software should survive ordinary weekdays, not only polished demos.</blockquote>
+            <p>That is why I care about product surface, system behavior, and release quality at the same time.</p>
           </article>
         </div>
       </section>

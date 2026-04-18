@@ -213,18 +213,18 @@
               </div>
 
               <div class="ops-chart" aria-hidden="true">
-                <span style="--bar: 42%"></span>
-                <span style="--bar: 56%"></span>
-                <span style="--bar: 49%"></span>
-                <span style="--bar: 64%"></span>
-                <span style="--bar: 71%"></span>
+                <span style="--bar: 34%"></span>
+                <span style="--bar: 40%"></span>
+                <span style="--bar: 48%"></span>
                 <span style="--bar: 58%"></span>
-                <span style="--bar: 66%"></span>
-                <span style="--bar: 72%"></span>
                 <span style="--bar: 68%"></span>
-                <span style="--bar: 75%"></span>
-                <span style="--bar: 61%"></span>
-                <span style="--bar: 78%"></span>
+                <span style="--bar: 76%"></span>
+                <span style="--bar: 72%"></span>
+                <span style="--bar: 63%"></span>
+                <span style="--bar: 54%"></span>
+                <span style="--bar: 46%"></span>
+                <span style="--bar: 39%"></span>
+                <span style="--bar: 33%"></span>
               </div>
 
               <div class="ops-pipeline" aria-label="Automation pipeline">
@@ -263,7 +263,7 @@
 
       <section class="section compact section-flagship" id="flagship">
         <div class="container">
-          <article class="flagship-shell page-hero-card reveal" data-flagship>
+          <article class="flagship-shell page-hero-card reveal" data-flagship data-flagship-active="flow">
             <div class="flagship-header">
               <span class="eyebrow">Flagship Product</span>
               <h2>Trendyol Price Tracker</h2>
@@ -282,92 +282,180 @@
                 </a>
                 <a class="link-button secondary" href="projects.html">Open Project Page</a>
               </div>
+
+              <div class="flagship-highlights" aria-label="Project highlights">
+                <article class="flagship-highlight">
+                  <span>Product Scope</span>
+                  <strong>14 user-facing bot commands</strong>
+                </article>
+                <article class="flagship-highlight">
+                  <span>Localization</span>
+                  <strong>4 locales, 229 keys each</strong>
+                </article>
+                <article class="flagship-highlight">
+                  <span>Data Layer</span>
+                  <strong>SQLite WAL, PRAGMA, backup</strong>
+                </article>
+                <article class="flagship-highlight">
+                  <span>Operational Checks</span>
+                  <strong>Readiness and deploy smoke</strong>
+                </article>
+              </div>
             </div>
 
             <div class="flagship-body">
               <div class="flagship-visual" aria-label="Trendyol tracker product panels">
-                <section class="flagship-panel is-active" id="flagship-panel-flow" data-flagship-panel="flow">
-                  <div class="flow-steps">
-                    <div class="flow-step">
-                      <span class="flow-step-label">Product URL Added</span>
-                      <strong>1.2s</strong>
-                    </div>
-                    <div class="flow-step">
-                      <span class="flow-step-label">Price Snapshot</span>
-                      <strong>92ms</strong>
-                    </div>
-                    <div class="flow-step">
-                      <span class="flow-step-label">Rule Evaluation</span>
-                      <strong>32ms</strong>
-                    </div>
-                    <div class="flow-step">
-                      <span class="flow-step-label">Telegram Dispatch</span>
-                      <strong>158ms</strong>
-                    </div>
+                <div class="flagship-visual-head">
+                  <div class="flagship-visual-summary">
+                    <span class="flagship-visual-eyebrow">Production Bot Surface</span>
+                    <strong>Telegram tracker with subscriptions, price history, recommendations, and admin tooling.</strong>
                   </div>
-                </section>
+                  <div class="flagship-visual-pills" aria-hidden="true">
+                    <span>14 commands</span>
+                    <span>SQLite WAL</span>
+                    <span>4 locales</span>
+                  </div>
+                </div>
 
-                <section class="flagship-panel" id="flagship-panel-alerts" data-flagship-panel="alerts" hidden>
-                  <ul class="alert-list">
-                    <li class="alert-item">
-                      <span class="alert-tag">-18%</span>
-                      <span class="alert-text">Nike Air Zoom 42.5</span>
-                      <span class="alert-state">Delivered</span>
-                    </li>
-                    <li class="alert-item">
-                      <span class="alert-tag">-24%</span>
-                      <span class="alert-text">Adidas Daily 3.0</span>
-                      <span class="alert-state">Queued</span>
-                    </li>
-                    <li class="alert-item">
-                      <span class="alert-tag">-11%</span>
-                      <span class="alert-text">Mavi Denim Jacket</span>
-                      <span class="alert-state">Delivered</span>
-                    </li>
-                    <li class="alert-item">
-                      <span class="alert-tag">-27%</span>
-                      <span class="alert-text">Skechers Max Cushion</span>
-                      <span class="alert-state">Retrying</span>
-                    </li>
-                  </ul>
-                </section>
+                <div class="flagship-sequence" aria-label="Production bot stages">
+                  <button
+                    type="button"
+                    class="is-active"
+                    data-flagship-sequence="flow"
+                    data-flagship-sequence-control="flow"
+                    aria-controls="flagship-panel-flow"
+                    aria-pressed="true"
+                  >
+                    Capture
+                  </button>
+                  <button
+                    type="button"
+                    data-flagship-sequence="alerts"
+                    data-flagship-sequence-control="alerts"
+                    aria-controls="flagship-panel-alerts"
+                    aria-pressed="false"
+                  >
+                    Alert
+                  </button>
+                  <button
+                    type="button"
+                    data-flagship-sequence="history"
+                    data-flagship-sequence-control="history"
+                    aria-controls="flagship-panel-history"
+                    aria-pressed="false"
+                  >
+                    History
+                  </button>
+                  <button
+                    type="button"
+                    data-flagship-sequence="admin"
+                    data-flagship-sequence-control="admin"
+                    aria-controls="flagship-panel-admin"
+                    aria-pressed="false"
+                  >
+                    Ops
+                  </button>
+                </div>
 
-                <section class="flagship-panel" id="flagship-panel-history" data-flagship-panel="history" hidden>
-                  <div class="history-chart" aria-hidden="true">
-                    <span style="--level: 68%"></span>
-                    <span style="--level: 60%"></span>
-                    <span style="--level: 54%"></span>
-                    <span style="--level: 47%"></span>
-                    <span style="--level: 58%"></span>
-                    <span style="--level: 42%"></span>
-                    <span style="--level: 36%"></span>
-                    <span style="--level: 40%"></span>
-                  </div>
-                  <div class="history-caption">
-                    <p>Price history keeps each delta, timestamp, and source link for verification.</p>
-                  </div>
-                </section>
+                <div class="flagship-stage">
+                  <section class="flagship-panel is-active" id="flagship-panel-flow" data-flagship-panel="flow">
+                    <div class="flow-steps">
+                      <div class="flow-step">
+                        <span class="flow-step-label">Source ingest and fetch</span>
+                        <strong>1.2s</strong>
+                      </div>
+                      <div class="flow-step">
+                        <span class="flow-step-label">Snapshot write + fallback</span>
+                        <strong>92ms</strong>
+                      </div>
+                      <div class="flow-step">
+                        <span class="flow-step-label">Rules + quiet hours</span>
+                        <strong>32ms</strong>
+                      </div>
+                      <div class="flow-step">
+                        <span class="flow-step-label">Telegram Dispatch</span>
+                        <strong>158ms</strong>
+                      </div>
+                    </div>
+                  </section>
 
-                <section class="flagship-panel" id="flagship-panel-admin" data-flagship-panel="admin" hidden>
-                  <div class="admin-grid">
-                    <div class="admin-card">
-                      <span>Scheduler</span>
-                      <strong>Running</strong>
+                  <section class="flagship-panel" id="flagship-panel-alerts" data-flagship-panel="alerts" hidden>
+                    <ul class="alert-list">
+                      <li class="alert-item">
+                        <span class="alert-tag">-18%</span>
+                        <span class="alert-text">Nike Air Zoom 42.5</span>
+                        <span class="alert-state">Delivered</span>
+                      </li>
+                      <li class="alert-item">
+                        <span class="alert-tag">-24%</span>
+                        <span class="alert-text">Adidas Daily 3.0</span>
+                        <span class="alert-state">Queued</span>
+                      </li>
+                      <li class="alert-item">
+                        <span class="alert-tag">-11%</span>
+                        <span class="alert-text">Mavi Denim Jacket</span>
+                        <span class="alert-state">Delivered</span>
+                      </li>
+                      <li class="alert-item">
+                        <span class="alert-tag">-27%</span>
+                        <span class="alert-text">Skechers Max Cushion</span>
+                        <span class="alert-state">Retrying</span>
+                      </li>
+                    </ul>
+                  </section>
+
+                  <section class="flagship-panel" id="flagship-panel-history" data-flagship-panel="history" hidden>
+                    <div class="history-chart" aria-hidden="true">
+                      <span style="--level: 68%"></span>
+                      <span style="--level: 60%"></span>
+                      <span style="--level: 54%"></span>
+                      <span style="--level: 47%"></span>
+                      <span style="--level: 58%"></span>
+                      <span style="--level: 42%"></span>
+                      <span style="--level: 36%"></span>
+                      <span style="--level: 40%"></span>
                     </div>
-                    <div class="admin-card">
-                      <span>Retry Queue</span>
-                      <strong>4 jobs</strong>
+                    <div class="history-caption">
+                      <p>Each snapshot keeps delta, timestamp, and source data for charts, compare, exports, and recommendations.</p>
                     </div>
-                    <div class="admin-card">
-                      <span>Blocked URLs</span>
-                      <strong>0</strong>
+                  </section>
+
+                  <section class="flagship-panel" id="flagship-panel-admin" data-flagship-panel="admin" hidden>
+                    <div class="admin-grid">
+                      <div class="admin-card">
+                        <span>Scheduler</span>
+                        <strong>Running</strong>
+                      </div>
+                      <div class="admin-card">
+                        <span>Readiness</span>
+                        <strong>6 / 6 passed</strong>
+                      </div>
+                      <div class="admin-card">
+                        <span>Smoke Check</span>
+                        <strong>Passed</strong>
+                      </div>
+                      <div class="admin-card">
+                        <span>DB Snapshot</span>
+                        <strong>2026-04-15</strong>
+                      </div>
                     </div>
-                    <div class="admin-card">
-                      <span>Last Audit</span>
-                      <strong>2m ago</strong>
-                    </div>
-                  </div>
-                </section>
+                  </section>
+                </div>
+
+                <div class="flagship-visual-footer">
+                  <article class="flagship-footer-card">
+                    <span>Product Outcome</span>
+                    <strong>Raw marketplace URLs become tracked products with alerts, history, and compare flows.</strong>
+                  </article>
+                  <article class="flagship-footer-card">
+                    <span>Usage Snapshot</span>
+                    <strong>17 users and 14 active subscriptions recorded in the database as of 2026-04-15.</strong>
+                  </article>
+                  <article class="flagship-footer-card">
+                    <span>Reliability</span>
+                    <strong>Dedupe, fallback fetch, native backup, and operational checks keep the bot stable.</strong>
+                  </article>
+                </div>
               </div>
 
               <div class="flagship-control">
@@ -416,37 +504,45 @@
 
                 <div class="flagship-copy-group">
                   <p class="flagship-copy is-active" data-flagship-copy="flow">
-                    <strong>User Flow:</strong> Hourly scan jobs run through async scrape, diff, and notify
-                    stages with fallback handling and retry safety.
+                    <strong>User Flow:</strong> Async scrape jobs cover direct product tracking plus trending, search,
+                    and category scenarios, then pass through fallback-aware snapshot and notify stages.
                   </p>
                   <p class="flagship-copy" data-flagship-copy="alerts" hidden>
-                    <strong>Alerts:</strong> Telegram notifications are deduplicated and stateful, with quiet
-                    hours and per-user subscription rules.
+                    <strong>Alerts:</strong> Telegram delivery is stateful and per-user, with dedupe, quiet hours,
+                    retry handling, and subscription-specific notification rules.
                   </p>
                   <p class="flagship-copy" data-flagship-copy="history" hidden>
-                    <strong>History:</strong> Price deltas and snapshots are stored in SQLite for trend
-                    analytics, comparison, exports, and recommendations.
+                    <strong>History:</strong> SQLite stores deltas and snapshots for charts, comparisons, exports,
+                    trend analytics, and personalized recommendation flows.
                   </p>
                   <p class="flagship-copy" data-flagship-copy="admin" hidden>
-                    <strong>Admin:</strong> Includes admin workflows, backup routines, locale checks, readiness
-                    checks, and deploy smoke diagnostics.
+                    <strong>Admin:</strong> The project includes admin commands, cleanup routines, locale validation,
+                    readiness checks, deploy smoke diagnostics, and backup operations.
                   </p>
                 </div>
 
-                <ul class="flagship-proof-list">
-                  <li>
-                    <span>Stack</span>
-                    <strong>Python, Aiogram, SQLite, async scraping, 4 locales (229 keys each)</strong>
-                  </li>
-                  <li>
-                    <span>Core Logic</span>
-                    <strong>Migrations, indexes, WAL, PRAGMA tuning, backup pipeline, fallback fetch flow</strong>
-                  </li>
-                  <li>
-                    <span>Product Outcome</span>
-                    <strong>Hourly refresh + discount-triggered Telegram alerts with millisecond dispatch path</strong>
-                  </li>
-                </ul>
+                <div class="flagship-proof-grid">
+                  <article class="flagship-proof-card">
+                    <span>Data Pipeline</span>
+                    <strong>Async scrape with fallback and timeout handling</strong>
+                    <p>Trendyol fetch paths cover direct URLs plus trending, search, and category scenarios.</p>
+                  </article>
+                  <article class="flagship-proof-card">
+                    <span>Database Layer</span>
+                    <strong>Migrations, indexes, WAL, PRAGMA, native backup</strong>
+                    <p>The SQLite layer is tuned for runtime use, not just local storage convenience.</p>
+                  </article>
+                  <article class="flagship-proof-card">
+                    <span>Product Surface</span>
+                    <strong>History, charts, compare, recommendations, quiet hours</strong>
+                    <p>The bot goes beyond price alerts into an actual retained product experience.</p>
+                  </article>
+                  <article class="flagship-proof-card">
+                    <span>Operational Maturity</span>
+                    <strong>Readiness 6/6, smoke checks, logs, and test contour</strong>
+                    <p>It shows deployment thinking and maintenance discipline, not just feature shipping.</p>
+                  </article>
+                </div>
               </div>
             </div>
           </article>
@@ -784,7 +880,3 @@
     <script defer src="assets/js/main.js"></script>
   </body>
 </html>
-
-
-
-
