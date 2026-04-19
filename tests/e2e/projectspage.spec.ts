@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Projects page modal', () => {
-  test('keeps the close control above the scrollable modal content', async ({ page }) => {
+  test('keeps the close control above the scrollable modal content', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Mobile uses a different close-control layout that is covered by the mobile-specific test.');
+
     await page.goto('/projects.html');
 
     await page.locator('[data-project-card]').first().click();

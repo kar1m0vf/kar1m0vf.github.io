@@ -17,6 +17,9 @@ playwright-report/
 .lighthouseci/
 .playwright-browsers/
 
+# Local rollback copies
+assets/css/styles.css
+
 # OS/editor noise
 .DS_Store
 Thumbs.db
