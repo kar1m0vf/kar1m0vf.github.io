@@ -4,10 +4,11 @@ test.describe('About page', () => {
   test('renders redesigned profile sections', async ({ page }) => {
     await page.goto('/about.html');
 
-    await expect(page.getByRole('heading', { name: /I build product systems that stay useful/i })).toBeVisible();
-    await expect(page.getByText('Profile Snapshot')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /What I usually build and where I am strongest/i })).toBeVisible();
-    await expect(page.getByText('Localization-ready')).toBeVisible();
-    await expect(page.getByText('Useful software should survive ordinary weekdays')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /I like products with a real job to do/i })).toBeVisible();
+    await expect(page.getByText('Project Fit')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /This site is also part of the proof/i })).toBeVisible();
+    await expect(page.getByText('What you actually get')).toBeVisible();
+    await expect(page.getByText('Repo hygiene')).toBeVisible();
+    await expect(page.getByText('If a product only looks convincing in screenshots')).toBeVisible();
   });
 });

@@ -220,6 +220,10 @@
               <div class="project-preview preview-tracker" aria-hidden="true">
                 <span class="preview-glare"></span>
                 <div class="tracker-price-card">
+                  <div class="tracker-surface-meta">
+                    <span>scan live</span>
+                    <span>4 locales</span>
+                  </div>
                   <span class="tracker-title-line"></span>
                   <div class="tracker-prices">
                     <span class="tracker-price-old"></span>
@@ -227,6 +231,19 @@
                   </div>
                   <div class="tracker-sparkline">
                     <span></span>
+                    <div class="tracker-history-bars" aria-hidden="true">
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                      <span></span>
+                    </div>
+                  </div>
+                  <div class="tracker-kpi-row">
+                    <span><strong>-18%</strong> drop</span>
+                    <span><strong>1h</strong> cadence</span>
+                    <span><strong>WAL</strong> store</span>
                   </div>
                 </div>
                 <div class="tracker-alert-card">
@@ -239,6 +256,10 @@
                   <div class="tracker-chat-foot">
                     <span class="tracker-chat-typing" aria-hidden="true"></span>
                     <span class="tracker-alert-chip">online</span>
+                  </div>
+                  <div class="tracker-dispatch-list">
+                    <span class="tracker-dispatch-item">nike zoom <strong>sent</strong></span>
+                    <span class="tracker-dispatch-item">adidas daily <strong>queued</strong></span>
                   </div>
                 </div>
               </div>
@@ -289,8 +310,22 @@
               <div class="project-preview preview-blaster" aria-hidden="true">
                 <span class="preview-glare"></span>
                 <div class="preview-arena">
+                  <div class="arena-hud">
+                    <span>Wave 04</span>
+                    <span>Shield 92%</span>
+                    <span>Combo x12</span>
+                  </div>
+                  <div class="arena-bottom-readout">
+                    <span>Boss phase 2</span>
+                    <span>2.4k score</span>
+                  </div>
+                  <span class="arena-trail arena-trail-left"></span>
+                  <span class="arena-trail arena-trail-right"></span>
+                  <span class="arena-beacon"></span>
                   <span class="ship"></span>
                   <span class="projectile"></span>
+                  <span class="projectile projectile-alt projectile-alt-left"></span>
+                  <span class="projectile projectile-alt projectile-alt-right"></span>
                   <span class="enemy"></span>
                   <span class="enemy enemy-2"></span>
                 </div>
@@ -393,9 +428,11 @@
           aria-modal="true"
           tabindex="-1"
         >
-          <button class="project-modal-close" type="button" data-project-modal-close aria-label="Close project details">
-            &#10005;
-          </button>
+          <div class="project-modal-chrome">
+            <button class="project-modal-close" type="button" data-project-modal-close aria-label="Close project details">
+              &#10005;
+            </button>
+          </div>
           <div class="project-modal-content" data-project-modal-content></div>
         </article>
       </div>

@@ -1453,6 +1453,15 @@
         const rowLevel = Math.floor(index / 3);
         const enemy = document.createElement('span');
         enemy.className = 'enemy dynamic-enemy';
+        const variantIndex = index % 3;
+
+        if (variantIndex === 0) {
+          enemy.classList.add('variant-scout');
+        } else if (variantIndex === 1) {
+          enemy.classList.add('variant-brute');
+        } else {
+          enemy.classList.add('variant-glider');
+        }
 
         const posX = 10 + lane * 80 + (index % 2 === 0 ? -2.2 : 2.2);
         const posY = 10 + row * 9 + rowLevel * 3;
@@ -1466,6 +1475,11 @@
         enemy.style.setProperty('--enemy-float', `${floatDuration.toFixed(2)}s`);
         enemy.style.setProperty('--enemy-delay', `${(index * 0.11).toFixed(2)}s`);
         enemy.style.setProperty('--enemy-pulse-delay', `${((index % 3) * 0.14).toFixed(2)}s`);
+
+        const isElite = enemyCount >= 6 && index === Math.ceil(enemyCount / 2);
+        if (isElite) {
+          enemy.classList.add('is-elite');
+        }
 
         const isShooter = (index + enemyCount) % 2 === 0 || (enemyCount >= 6 && index === enemyCount - 1);
         if (isShooter) {
@@ -1735,6 +1749,7 @@
           .map((node) => node.cloneNode(true));
 
         projectModalContent.replaceChildren(...nodes);
+        projectModalContent.scrollTop = 0;
 
         const titleNode = projectModalContent.querySelector('h3');
         if (titleNode) {
@@ -1761,6 +1776,7 @@
           setProjectModalScrollLock(false);
           activeBlasterArena = null;
           activeBlasterEnemyCount = 0;
+          projectModalContent.scrollTop = 0;
           projectModalContent.replaceChildren();
           activeModalCard = null;
 
@@ -2599,11 +2615,11 @@
           return;
         }
         node.textContent = `${Math.round(normalized)}`;
-        if (normalized >= 95) {
+        if (normalized >= 90) {
           node.classList.add('score-good');
           return;
         }
-        if (normalized >= 70) {
+        if (normalized >= 50) {
           node.classList.add('score-warn');
           return;
         }
