@@ -7,7 +7,7 @@
   "display": "standalone",
   "background_color": "#f4f8f9",
   "theme_color": "#f4f8f9",
-  "description": "Portfolio of Kamil Kerimov with production web, Python, and automation projects.",
+  "description": "Portfolio of Kamil Kerimov, also known as kar1m0vf, featuring full-stack, Python automation, and Telegram projects.",
   "icons": [
     {
       "src": "assets/icons/pwa-192.png",

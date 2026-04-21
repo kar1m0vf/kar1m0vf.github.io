@@ -1,5 +1,8 @@
 # Kamil Kerimov Portfolio
 
+Personal portfolio repository for Kamil Kerimov, also known as `kar1m0vf`.
+Live site: https://kar1m0vf.github.io/
+
 Static portfolio website for GitHub Pages with a product-style homepage, TypeScript-backed logic, automated tests, and CI quality gates.
 
 ## Stack
