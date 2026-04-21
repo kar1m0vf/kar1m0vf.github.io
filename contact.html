@@ -225,7 +225,14 @@
             <span class="eyebrow">Project Brief</span>
             <h3>Send a project brief</h3>
             <p>Share goals, constraints, stack preferences, and timeline. I respond with a practical execution plan.</p>
-            <form data-demo-form>
+            <form
+              data-demo-form
+              action="https://formsubmit.co/kamil16092006@gmail.com"
+              method="POST"
+              data-form-endpoint="https://formsubmit.co/ajax/kamil16092006@gmail.com"
+            >
+              <input type="hidden" name="_subject" value="Portfolio project brief from kar1m0vf.github.io" />
+              <input type="hidden" name="_template" value="table" />
               <div class="form-row">
                 <div class="input-wrap">
                   <label for="name">Name</label>
@@ -246,7 +253,7 @@
                 ></textarea>
               </div>
               <button class="button primary" type="submit">Send Brief</button>
-              <p class="form-note" data-form-response>I usually reply within 24 hours.</p>
+              <p class="form-note" data-form-response role="status" aria-live="polite">I usually reply within 24 hours.</p>
             </form>
           </article>
 

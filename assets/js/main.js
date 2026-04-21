@@ -618,6 +618,15 @@
         node.setAttribute('href', config[hrefKey] || 'contact.html');
       });
     });
+
+    document.querySelectorAll('[data-demo-form]').forEach((node) => {
+      if (config.contactFormAction) {
+        node.setAttribute('action', config.contactFormAction);
+      }
+      if (config.contactFormEndpoint) {
+        node.setAttribute('data-form-endpoint', config.contactFormEndpoint);
+      }
+    });
   };
 
   const updateThemeChrome = () => {
@@ -3496,7 +3505,26 @@
   const form = document.querySelector('[data-demo-form]');
   const formNote = document.querySelector('[data-form-response]');
   if (form && formNote) {
-    form.addEventListener('submit', (event) => {
+    const submitButton = form.querySelector('button[type="submit"]');
+    const setFormState = (message, pending = false) => {
+      formNote.textContent = message;
+      if (pending) {
+        form.setAttribute('aria-busy', 'true');
+      } else {
+        form.removeAttribute('aria-busy');
+      }
+      if (submitButton) {
+        submitButton.disabled = pending;
+      }
+    };
+    const openMailClientFallback = (name, email, message, contactEmail) => {
+      const subject = encodeURIComponent(`Project inquiry from ${name}`);
+      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+      setFormState('Direct submit is unavailable right now. Opening your email client...');
+      window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`;
+    };
+
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
       const formData = new FormData(form);
       const name = String(formData.get('name') || '').trim();
@@ -3504,16 +3532,38 @@
       const message = String(formData.get('message') || '').trim();
 
       if (!name || !email || !message) {
-        formNote.textContent = 'Please complete all fields before sending.';
+        setFormState('Please complete all fields before sending.');
         return;
       }
 
       const contactEmail = (window.siteConfig && window.siteConfig.email) || 'hello@example.com';
-      const subject = encodeURIComponent(`Project inquiry from ${name}`);
-      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
+      const endpoint =
+        form.getAttribute('data-form-endpoint') || (window.siteConfig && window.siteConfig.contactFormEndpoint) || '';
 
-      formNote.textContent = 'Opening your email client...';
-      window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`;
+      if (!window.fetch || !endpoint) {
+        openMailClientFallback(name, email, message, contactEmail);
+        return;
+      }
+
+      setFormState('Sending your brief...', true);
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Form submit failed with status ${response.status}`);
+        }
+
+        form.reset();
+        setFormState('Thanks, your brief was sent successfully. I usually reply within 24 hours.');
+      } catch (error) {
+        openMailClientFallback(name, email, message, contactEmail);
+      }
     });
   }
 
