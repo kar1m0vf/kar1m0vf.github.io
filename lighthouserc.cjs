@@ -1,4 +1,6 @@
 const chromePath = process.env.CHROME_PATH;
+const isLinux = process.platform === 'linux';
+const chromeFlags = isLinux ? '--no-sandbox --disable-dev-shm-usage' : '';
 
 module.exports = {
   ci: {
@@ -9,6 +11,7 @@ module.exports = {
       url: ['http://127.0.0.1:4173/', 'http://127.0.0.1:4173/projects.html', 'http://127.0.0.1:4173/contact.html'],
       settings: {
         ...(chromePath ? { chromePath } : {}),
+        ...(chromeFlags ? { chromeFlags } : {}),
         onlyCategories: ['performance', 'accessibility', 'best-practices', 'seo'],
       },
     },
