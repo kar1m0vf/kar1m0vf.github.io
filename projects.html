@@ -44,7 +44,7 @@
             "@type": "Person",
             "@id": "https://kar1m0vf.github.io/#person",
             "name": "Kamil Kerimov",
-            "alternateName": ["Камиль Керимов", "kar1m0vf"],
+            "alternateName": ["\u041a\u0430\u043c\u0438\u043b\u044c \u041a\u0435\u0440\u0438\u043c\u043e\u0432", "kar1m0vf"],
             "url": "https://kar1m0vf.github.io/",
             "jobTitle": "Full-Stack Developer and Python Engineer",
             "description": "Full-stack developer building product-grade web interfaces, Python automation, and Telegram bot systems.",
@@ -107,6 +107,18 @@
                   "@type": "ListItem",
                   "position": 3,
                   "item": {
+                    "@type": "SoftwareSourceCode",
+                    "name": "Kamil Kerimov Portfolio Website",
+                    "description": "Personal portfolio built and maintained by Kamil Kerimov with responsive UI, TypeScript modules, automated tests, and CI quality checks.",
+                    "codeRepository": "https://github.com/kar1m0vf/kar1m0vf.github.io",
+                    "url": "https://kar1m0vf.github.io/",
+                    "programmingLanguage": "HTML, CSS, JavaScript, TypeScript"
+                  }
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 4,
+                  "item": {
                     "@type": "CollectionPage",
                     "name": "More Projects",
                     "url": "https://github.com/kar1m0vf"
@@ -149,6 +161,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/projects.css" />
     <link rel="stylesheet" href="assets/css/shared-effects.css" />
     <link rel="stylesheet" href="assets/css/shared-responsive.css" />
     <link rel="icon" href="assets/icons/favicon.ico" sizes="any" />
@@ -159,7 +172,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/icons/apple-touch-icon.png" />
     <link rel="manifest" href="manifest.webmanifest" />
   </head>
-  <body>
+  <body class="projects-page">
     <div class="topbar-wrap container">
       <header class="topbar">
         <a class="brand" href="index.html" aria-label="Homepage">
@@ -398,23 +411,62 @@
       </section>
 
       <section class="section compact">
-        <div class="container split-grid">
-          <article class="surface-card reveal">
-            <span class="eyebrow">Tech Stack</span>
-            <h3 class="serif-title serif-feature-title">JavaScript, Python, APIs, and automation.</h3>
+        <div class="container">
+          <div class="section-heading reveal">
+            <span class="eyebrow">Portfolio Case Study</span>
+            <h2>This portfolio is also a shipped project by me.</h2>
             <p>
-              Typical delivery includes frontend interfaces, backend services, integrations, and operational
-              automation.
+              It works as practical proof of authorship, frontend execution, and engineering discipline through public
+              code, commit history, and automated quality checks.
             </p>
-          </article>
-          <article class="surface-card reveal delay-1">
-            <span class="eyebrow">Collaboration</span>
-            <h3 class="serif-title serif-feature-title">Clear execution with teams and founders.</h3>
-            <p>
-              I adapt to startup speed and team processes while keeping delivery transparent, structured, and
-              predictable.
-            </p>
-          </article>
+          </div>
+          <div class="split-grid projects-proof-grid">
+            <article class="surface-card reveal projects-proof-card">
+              <span class="badge">Authorship Proof</span>
+              <h3>Built and maintained by Kamil Kerimov</h3>
+              <p>
+                This site was designed and developed end-to-end by me, including interface system, frontend behavior,
+                typed modules, test coverage, and release workflow.
+              </p>
+              <div class="project-links">
+                <a
+                  class="link-button secondary"
+                  href="https://github.com/kar1m0vf/kar1m0vf.github.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Source
+                </a>
+                <a
+                  class="link-button secondary"
+                  href="https://github.com/kar1m0vf/kar1m0vf.github.io/commits/main"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Commit History
+                </a>
+                <a class="link-button secondary" href="index.html">Open Live Site</a>
+              </div>
+            </article>
+
+            <article class="surface-card reveal delay-1 projects-proof-card">
+              <span class="badge">Technologies Used</span>
+              <h3>Stack used in this portfolio</h3>
+              <div class="metrics">
+                <span class="tag">HTML + CSS + JavaScript</span>
+                <span class="tag">TypeScript Modules</span>
+                <span class="tag">Vitest + Playwright</span>
+                <span class="tag">Lighthouse CI</span>
+                <span class="tag">GitHub Actions</span>
+                <span class="tag">GitHub Pages</span>
+              </div>
+              <ul class="list-clean">
+                <li>Responsive layout and interaction system tuned for desktop and phone usage</li>
+                <li>Typed logic for operational UI modules and runtime behavior shaping</li>
+                <li>Automated quality contour with unit, e2e, and CI verification</li>
+              </ul>
+            </article>
+          </div>
         </div>
       </section>
 
@@ -469,6 +521,7 @@
     <script defer src="assets/js/main.js"></script>
   </body>
 </html>
+
 
 
 

@@ -44,7 +44,7 @@
             "@type": "Person",
             "@id": "https://kar1m0vf.github.io/#person",
             "name": "Kamil Kerimov",
-            "alternateName": ["Камиль Керимов", "kar1m0vf"],
+            "alternateName": ["\u041a\u0430\u043c\u0438\u043b\u044c \u041a\u0435\u0440\u0438\u043c\u043e\u0432", "kar1m0vf"],
             "url": "https://kar1m0vf.github.io/",
             "jobTitle": "Full-Stack Developer and Python Engineer",
             "description": "Full-stack developer building product-grade web interfaces, Python automation, and Telegram bot systems.",
@@ -396,14 +396,14 @@
         <div class="container">
           <div class="section-heading reveal">
             <span class="eyebrow">This Portfolio</span>
-            <h2>This site is also part of the proof.</h2>
+            <h2>This site is part of the proof and was designed and developed by Kamil Kerimov.</h2>
             <p>
-              I treat this portfolio as a small product surface, not as a static profile page. It shows how I think
-              about interface structure, state, responsiveness, and engineering finish.
+              I treat this portfolio as a small product surface, not as a static profile page. It demonstrates authorship,
+              frontend execution, responsive behavior, and engineering discipline through public code and delivery checks.
             </p>
           </div>
 
-          <div class="about-proof-grid">
+          <div class="about-proof-grid about-proof-grid-single">
             <article class="page-hero-card reveal about-proof-card about-proof-card-lg">
               <span class="badge">What it demonstrates</span>
               <h3>I can present work through a system I designed and built myself.</h3>
@@ -420,25 +420,50 @@
                 <span>Repo hygiene</span>
               </div>
             </article>
+          </div>
 
-            <article class="timeline-card reveal delay-1 about-proof-card">
-              <span class="badge">Interface</span>
-              <h3>Desktop and phone layouts are treated as different design problems.</h3>
-              <p>Sections are tuned for smaller screens instead of simply shrinking the desktop composition.</p>
+          <div class="about-authorship-grid">
+            <article class="surface-card reveal about-authorship-card">
+              <span class="badge">Ownership</span>
+              <h3>Direct ownership from concept to deployment</h3>
+              <p>
+                I built this site end-to-end: structure, visual system, frontend behavior, typed modules, tests, and
+                delivery workflow.
+              </p>
+              <div class="about-authorship-links">
+                <a
+                  class="link-button secondary"
+                  href="https://github.com/kar1m0vf/kar1m0vf.github.io"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Source
+                </a>
+                <a
+                  class="link-button secondary"
+                  href="https://github.com/kar1m0vf/kar1m0vf.github.io/commits/main"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Commit History
+                </a>
+                <a class="link-button secondary" href="index.html">Live Site</a>
+              </div>
             </article>
 
-            <article class="timeline-card reveal delay-2 about-proof-card">
-              <span class="badge">Behavior</span>
-              <h3>There is real UI state behind the presentation.</h3>
-              <p>Theme handling, command palette, tabs, device tiers, and adaptive effects are wired intentionally.</p>
-            </article>
-
-            <article class="timeline-card reveal delay-1 about-proof-card">
-              <span class="badge">Quality</span>
-              <h3>The repository is part of the craft too.</h3>
-              <p>Type checking, unit coverage, e2e coverage, asset workflow, and push-ready setup reflect how I ship.</p>
+            <article class="surface-card reveal delay-1 about-stack-card">
+              <span class="badge">Stack Used Here</span>
+              <h3>Technologies used in this portfolio</h3>
+              <ul class="list-clean about-stack-list">
+                <li><strong>Frontend:</strong> HTML, CSS, JavaScript</li>
+                <li><strong>Typed modules:</strong> TypeScript</li>
+                <li><strong>Testing:</strong> Vitest and Playwright</li>
+                <li><strong>Quality:</strong> Lighthouse CI and GitHub Actions</li>
+                <li><strong>Delivery:</strong> GitHub Pages deployment</li>
+              </ul>
             </article>
           </div>
+
         </div>
       </section>
 
@@ -525,6 +550,7 @@
     <script defer src="assets/js/main.js"></script>
   </body>
 </html>
+
 
 
 

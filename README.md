@@ -5,6 +5,15 @@ Live site: https://kar1m0vf.github.io/
 
 Static portfolio website for GitHub Pages with a product-style homepage, TypeScript-backed logic, automated tests, and CI quality gates.
 
+## Authorship Proof
+
+This portfolio is designed and developed by Kamil Kerimov (`kar1m0vf`).
+
+- Source repository: https://github.com/kar1m0vf/kar1m0vf.github.io
+- Commit history: https://github.com/kar1m0vf/kar1m0vf.github.io/commits/main
+- Live site: https://kar1m0vf.github.io/
+- CI quality workflow: https://github.com/kar1m0vf/kar1m0vf.github.io/actions
+
 ## Stack
 
 - HTML/CSS/JavaScript for the published site

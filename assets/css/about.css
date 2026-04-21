@@ -563,6 +563,80 @@ html.effects-tier-lite .about-page .about-panel-track-meter span {
   padding-top: 0.12rem;
 }
 
+.about-page .about-proof-grid.about-proof-grid-single {
+  grid-template-columns: 1fr;
+}
+
+.about-page .about-authorship-grid {
+  margin-top: var(--card-gap);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--card-gap);
+}
+
+.about-page .about-authorship-card,
+.about-page .about-stack-card {
+  min-height: 0;
+  display: grid;
+  align-content: start;
+  gap: 0.42rem;
+}
+
+.about-page .about-authorship-links {
+  margin-top: auto;
+  padding-top: 0.52rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.about-page .about-stack-list {
+  margin-top: 0.42rem;
+}
+
+.about-page .about-stack-list strong {
+  color: var(--text);
+}
+
+@media (max-width: 1120px) {
+  .about-page .about-hero-grid,
+  .about-page .about-model-grid,
+  .about-page .about-proof-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-page .about-build-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .about-page .about-authorship-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .about-page .about-hero-points,
+  .about-page .about-hero-metrics,
+  .about-page .about-build-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-page .about-panel-stage {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .about-page .about-panel-meter {
+    justify-items: flex-start;
+    gap: 0.24rem;
+  }
+
+  .about-page .about-panel-meter p {
+    max-width: none;
+    text-align: left;
+  }
+}
+
 html[data-theme='dark'] .about-page .about-hero-panel {
   border-color: rgba(var(--accent-rgb), 0.26);
   background:
