@@ -39,7 +39,7 @@ const smooth = (from, to, amount) => from + (to - from) * amount;
 const randomBetween = (min, max) => min + Math.random() * (max - min);
 
 const getConfig = () =>
-  workerState.mode === 'full'
+  workerState.mode === 'full' && workerState.tier === 'full'
     ? {
         density: 17500,
         minCount: 30,
@@ -227,7 +227,7 @@ const drawParticles = () => {
 };
 
 const animate = (now) => {
-  workerState.rafId = requestFrame(animate);
+  workerState.rafId = 0;
   if (workerState.destroyed || !workerState.visible || workerState.tier === 'off') {
     workerState.lastTick = now;
     return;
@@ -242,6 +242,7 @@ const animate = (now) => {
   const activeFrameInterval = workerState.tier === 'lite' ? Math.max(frameInterval, 1000 / 14) : frameInterval;
   const elapsed = now - workerState.lastTick;
   if (elapsed < activeFrameInterval) {
+    workerState.rafId = requestFrame(animate);
     return;
   }
 
@@ -258,10 +259,11 @@ const animate = (now) => {
 
   stepParticles(delta);
   drawParticles();
+  workerState.rafId = requestFrame(animate);
 };
 
 const ensureLoop = () => {
-  if (workerState.rafId) {
+  if (workerState.rafId || workerState.destroyed || !workerState.visible || workerState.tier === 'off') {
     return;
   }
   workerState.rafId = requestFrame(animate);
@@ -313,6 +315,11 @@ self.onmessage = (event) => {
 
   if (type === 'tier') {
     workerState.tier = payload.tier === 'full' || payload.tier === 'off' ? payload.tier : 'lite';
+    if (workerState.tier !== 'full') {
+      pointerState.targetInfluence = 0;
+    }
+    syncParticleCount();
+    ensureLoop();
     return;
   }
 
@@ -320,6 +327,7 @@ self.onmessage = (event) => {
     workerState.visible = !payload.hidden;
     if (workerState.visible) {
       workerState.lastTick = 0;
+      ensureLoop();
     }
     return;
   }

@@ -1250,7 +1250,37 @@ html[data-theme='dark'] .link-button.secondary {
   transform-style: preserve-3d;
   box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255, 255, 255, 0.62);
   backface-visibility: hidden;
+  will-change: auto;
+}
+
+html.has-pointer-effects .hero-copy,
+html.has-pointer-effects .page-hero-card,
+html.has-pointer-effects .surface-card,
+html.has-pointer-effects .project-card,
+html.has-pointer-effects .contact-card,
+html.has-pointer-effects .process-card,
+html.has-pointer-effects .info-card,
+html.has-pointer-effects .stat-card,
+html.has-pointer-effects .timeline-card,
+html.has-pointer-effects .quote-card,
+html.has-pointer-effects .form-shell {
   will-change: transform;
+}
+
+html.perf-lite .hero-copy,
+html.perf-lite .page-hero-card,
+html.perf-lite .surface-card,
+html.perf-lite .project-card,
+html.perf-lite .contact-card,
+html.perf-lite .process-card,
+html.perf-lite .info-card,
+html.perf-lite .stat-card,
+html.perf-lite .timeline-card,
+html.perf-lite .quote-card,
+html.perf-lite .form-shell {
+  transform: translateY(var(--lift));
+  transform-style: flat;
+  will-change: auto;
 }
 
 html[data-theme='dark'] .hero-copy,
@@ -2015,6 +2045,13 @@ html[data-theme='dark'].device-strong .form-shell {
   background: linear-gradient(180deg, rgba(88, 101, 242, 0.19), rgba(88, 101, 242, 0.08));
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.88rem;
+}
+
+.card-icon svg {
+  width: 1.08em;
+  height: 1.08em;
+  display: block;
+  fill: currentColor;
 }
 
 html[data-theme='dark'] .card-icon {

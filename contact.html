@@ -121,24 +121,6 @@
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link
-      rel="preload"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-      as="style"
-      integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-      />
-    </noscript>
     <link rel="stylesheet" href="assets/css/base.css" />
     <link rel="stylesheet" href="assets/css/shared-effects.css" />
     <link rel="stylesheet" href="assets/css/shared-responsive.css" />
@@ -198,19 +180,37 @@
         <div class="container">
           <div class="contact-grid">
             <article class="contact-card reveal">
-              <div class="card-icon"><i class="fa-solid fa-paper-plane"></i></div>
+              <div class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M21.7 3.3c.2-.7-.5-1.3-1.1-1L2.8 10.1c-.8.4-.8 1.5.1 1.8l4.7 1.5 1.8 5.7c.3.8 1.4.9 1.8.1l2.5-4.5 4.9 3.7c.6.5 1.5.1 1.6-.7l1.5-14.4ZM8.3 12.1l9.8-5.3-7.6 7.2-.4 3.3-1.4-4.4-.4-.8Zm2.8 1.3 5.6-5.3-4 7.2-1.6-1.9Z"
+                  />
+                </svg>
+              </div>
               <h3>Telegram</h3>
               <p>Fastest channel for project discussion, clarifications, and quick updates.</p>
               <a data-site-telegramHref href="https://t.me/kar1m0vf"><span data-site-telegram>@kar1m0vf</span></a>
             </article>
             <article class="contact-card reveal delay-1">
-              <div class="card-icon"><i class="fa-regular fa-envelope"></i></div>
+              <div class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M4.8 5.5h14.4c1.1 0 2 .9 2 2v9c0 1.1-.9 2-2 2H4.8c-1.1 0-2-.9-2-2v-9c0-1.1.9-2 2-2Zm0 1.8 7.2 5.1 7.2-5.1H4.8Zm14.6 2.2-6.8 4.8c-.4.3-.9.3-1.3 0L4.6 9.5v7c0 .1.1.2.2.2h14.4c.1 0 .2-.1.2-.2v-7Z"
+                  />
+                </svg>
+              </div>
               <h3>Email</h3>
               <p>Best for detailed requirements, attachments, and long-form communication.</p>
               <a data-site-emailHref href="mailto:kamil16092006@gmail.com"><span data-site-email>kamil16092006@gmail.com</span></a>
             </article>
             <article class="contact-card reveal delay-2">
-              <div class="card-icon"><i class="fa-brands fa-linkedin-in"></i></div>
+              <div class="card-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M6.7 8.8H3.5v11h3.2v-11ZM5.1 7.3c1 0 1.8-.8 1.8-1.8S6.1 3.7 5.1 3.7 3.3 4.5 3.3 5.5s.8 1.8 1.8 1.8Zm6.8 6.3c0-1.5.7-2.4 2-2.4 1.2 0 1.8.8 1.8 2.4v6.2H19v-6.7c0-3.1-1.7-4.6-4-4.6-1.8 0-2.7 1-3.1 1.7V8.8H8.8v11h3.1v-6.2Z"
+                  />
+                </svg>
+              </div>
               <h3>LinkedIn</h3>
               <p>Professional background, references, and collaboration context.</p>
               <a data-site-linkedinHref href="https://linkedin.com/in/kamil-kerimov"><span data-site-linkedin>linkedin.com/in/kamil-kerimov</span></a>

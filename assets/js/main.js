@@ -2,6 +2,11 @@
   const root = document.documentElement;
   const siteConfig = window.siteConfig || {};
   const effectsConfig = siteConfig.effects || {};
+  const runtimeScriptUrl =
+    document.currentScript && document.currentScript.src
+      ? document.currentScript.src
+      : new URL('assets/js/main.js', window.location.href).href;
+  const loadRuntimeModule = (name) => import(new URL(`modules/${name}.js`, runtimeScriptUrl).href).catch(() => null);
   const storage = {
     get(key) {
       try {
@@ -76,6 +81,11 @@
     } catch (error) {
       // Ignore transient worker messaging errors.
     }
+  };
+  const getAmbientRenderDpr = () => {
+    const deviceDpr = window.devicePixelRatio || 1;
+    const cap = effectsTier === 'full' && !perfLite ? 1.8 : weakProfileActive || saveData ? 1.12 : 1.25;
+    return Math.max(1, Math.min(deviceDpr, cap));
   };
 
   const syncEffectsTierState = () => {
@@ -193,7 +203,7 @@
           const rect = ambient.getBoundingClientRect();
           const width = Math.max(1, Math.round(rect.width));
           const height = Math.max(1, Math.round(rect.height));
-          const dpr = Math.min(window.devicePixelRatio || 1, 1.8);
+          const dpr = getAmbientRenderDpr();
           canvas.style.width = `${width}px`;
           canvas.style.height = `${height}px`;
           postAmbientWorkerMessage({
@@ -231,6 +241,7 @@
             type: 'tier',
             tier: event && event.detail && event.detail.tier ? event.detail.tier : effectsTier,
           });
+          syncWorkerSize();
         });
         document.addEventListener('visibilitychange', () => {
           postAmbientWorkerMessage({
@@ -298,38 +309,38 @@
       return;
     }
 
-    const config =
-      ambientMode === 'lite'
-        ? {
-            density: 36000,
-            minCount: 10,
-            maxCount: 24,
-            fps: 16,
-            speed: 0.17,
-            jitter: 0.0038,
-            pointerRadius: 112,
-            pointerForce: 0.028,
-            pointerSwirl: 0.007,
-            linkDistance: 0,
-            maxLinksPerParticle: 0,
-            dotMin: 0.8,
-            dotMax: 1.35,
-          }
-        : {
-            density: 17500,
-            minCount: 30,
-            maxCount: 74,
-            fps: 30,
-            speed: 0.24,
-            jitter: 0.0054,
-            pointerRadius: 132,
-            pointerForce: 0.044,
-            pointerSwirl: 0.012,
-            linkDistance: 64,
-            maxLinksPerParticle: 4,
-            dotMin: 0.8,
-            dotMax: 1.6,
-          };
+    const liteParticleConfig = {
+      density: 36000,
+      minCount: 10,
+      maxCount: 24,
+      fps: 16,
+      speed: 0.17,
+      jitter: 0.0038,
+      pointerRadius: 112,
+      pointerForce: 0.028,
+      pointerSwirl: 0.007,
+      linkDistance: 0,
+      maxLinksPerParticle: 0,
+      dotMin: 0.8,
+      dotMax: 1.35,
+    };
+    const fullParticleConfig = {
+      density: 17500,
+      minCount: 30,
+      maxCount: 74,
+      fps: 30,
+      speed: 0.24,
+      jitter: 0.0054,
+      pointerRadius: 132,
+      pointerForce: 0.044,
+      pointerSwirl: 0.012,
+      linkDistance: 64,
+      maxLinksPerParticle: 4,
+      dotMin: 0.8,
+      dotMax: 1.6,
+    };
+    const getParticleConfig = () => (ambientMode === 'full' && effectsTier === 'full' ? fullParticleConfig : liteParticleConfig);
+    let config = getParticleConfig();
 
     let width = 0;
     let height = 0;
@@ -397,7 +408,7 @@
       const rect = ambient.getBoundingClientRect();
       width = Math.max(1, Math.round(rect.width));
       height = Math.max(1, Math.round(rect.height));
-      dpr = Math.min(window.devicePixelRatio || 1, 1.8);
+      dpr = getAmbientRenderDpr();
       canvas.width = Math.max(1, Math.round(width * dpr));
       canvas.height = Math.max(1, Math.round(height * dpr));
       canvas.style.width = `${width}px`;
@@ -503,26 +514,31 @@
       }
     };
 
-    const frameInterval = 1000 / config.fps;
+    const canRunAmbientLoop = () => !document.hidden && visualEffectsActive && effectsTier !== 'off';
+    const queueAmbientFrame = () => {
+      if (!rafId && canRunAmbientLoop()) {
+        rafId = window.requestAnimationFrame(animate);
+      }
+    };
+
     const animate = (now) => {
-      rafId = window.requestAnimationFrame(animate);
-      if (document.hidden || !visualEffectsActive) {
+      rafId = 0;
+      if (!canRunAmbientLoop()) {
         lastTick = now;
         return;
       }
 
-      if (effectsTier === 'off') {
-        lastTick = now;
-        return;
-      }
+      config = getParticleConfig();
 
       if (!lastTick) {
         lastTick = now;
       }
 
       const elapsed = now - lastTick;
+      const frameInterval = 1000 / config.fps;
       const activeFrameInterval = effectsTier === 'lite' ? Math.max(frameInterval, 1000 / 14) : frameInterval;
       if (elapsed < activeFrameInterval) {
+        rafId = window.requestAnimationFrame(animate);
         return;
       }
 
@@ -540,6 +556,7 @@
 
       stepParticles(delta);
       drawParticles();
+      rafId = window.requestAnimationFrame(animate);
     };
 
     const handlePointerMove = (event) => {
@@ -572,15 +589,37 @@
       window.addEventListener('pointerleave', stopPointerEffect, { passive: true });
       window.addEventListener('blur', stopPointerEffect);
     }
+    const syncAmbientRuntimeProfile = () => {
+      config = getParticleConfig();
+      resizeCanvas();
+      if (effectsTier === 'off' && rafId) {
+        window.cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+      if (effectsTier !== 'full') {
+        pointer.targetInfluence = 0;
+      }
+      queueAmbientFrame();
+    };
+
+    window.addEventListener('site-effects-tierchange', syncAmbientRuntimeProfile);
+    window.addEventListener('site-effects-visualstart', queueAmbientFrame, { once: true });
     document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (rafId) {
+          window.cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+        lastTick = 0;
+        return;
+      }
       if (!document.hidden) {
         lastTick = 0;
+        queueAmbientFrame();
       }
     });
 
-    if (!rafId) {
-      rafId = window.requestAnimationFrame(animate);
-    }
+    queueAmbientFrame();
   };
 
   const applyConfig = () => {
@@ -863,448 +902,80 @@
     closeMenu();
   }
 
-  const setupCommandPalette = () => {
-    if (!document.body) {
-      return;
+  const isTypingContext = (target) => {
+    if (!target) {
+      return false;
     }
-
-    const palette = document.createElement('div');
-    palette.className = 'command-palette';
-    palette.hidden = true;
-    palette.setAttribute('aria-hidden', 'true');
-    palette.innerHTML = `
-      <button class="command-palette-backdrop" type="button" aria-label="Close command palette"></button>
-      <section class="command-palette-panel" role="dialog" aria-modal="true" aria-labelledby="command-palette-title">
-        <div class="command-palette-head">
-          <strong id="command-palette-title" class="command-palette-title">Command Palette</strong>
-          <span class="command-palette-kbd" data-command-hotkey>Ctrl K</span>
-        </div>
-        <div class="command-palette-input-wrap">
-          <input class="command-palette-input" type="text" autocomplete="off" spellcheck="false" placeholder="Search commands..." aria-label="Search commands" />
-        </div>
-        <div class="command-palette-list" role="listbox" aria-label="Command results"></div>
-        <p class="command-palette-empty" hidden>No matches found.</p>
-      </section>
-    `;
-    document.body.appendChild(palette);
-
-    const panel = palette.querySelector('.command-palette-panel');
-    const backdrop = palette.querySelector('.command-palette-backdrop');
-    const input = palette.querySelector('.command-palette-input');
-    const list = palette.querySelector('.command-palette-list');
-    const empty = palette.querySelector('.command-palette-empty');
-    const hotkeyNode = palette.querySelector('[data-command-hotkey]');
-    if (!panel || !backdrop || !input || !list || !empty) {
-      palette.remove();
-      return;
+    const element = target instanceof Element ? target : null;
+    if (!element) {
+      return false;
     }
-
-    const isMac = /Mac|iPhone|iPad|iPod/i.test(window.navigator.platform || '');
-    if (hotkeyNode) {
-      hotkeyNode.textContent = isMac ? 'Cmd K' : 'Ctrl K';
-    }
-    document.querySelectorAll('[data-command-shortcut]').forEach((node) => {
-      node.textContent = isMac ? 'Cmd+K' : 'Ctrl+K';
-    });
-
-    const config = window.siteConfig || {};
-    const emailHref = String(config.emailHref || (config.email ? `mailto:${config.email}` : 'mailto:hello@example.com'));
-    const githubHref = String(config.githubHref || '');
-    const telegramHref = String(config.telegramHref || '');
-
-    const navigateTo = (href) => {
-      const url = new URL(href, window.location.href);
-      if (url.origin !== window.location.origin) {
-        window.location.href = url.href;
-        return;
-      }
-
-      const current = new URL(window.location.href);
-      if (url.pathname === current.pathname && url.hash === current.hash) {
-        return;
-      }
-      window.location.href = url.href;
-    };
-
-    const openExternal = (href) => {
-      if (!href) {
-        return;
-      }
-      window.open(href, '_blank', 'noopener,noreferrer');
-    };
-
-    const commands = [
-      {
-        label: 'Go to Home',
-        meta: 'Navigation',
-        hint: 'index.html',
-        search: 'home main landing index',
-        run: () => navigateTo('index.html'),
-      },
-      {
-        label: 'Go to About',
-        meta: 'Navigation',
-        hint: 'about.html',
-        search: 'about profile bio',
-        run: () => navigateTo('about.html'),
-      },
-      {
-        label: 'Go to Projects',
-        meta: 'Navigation',
-        hint: 'projects.html',
-        search: 'projects portfolio work case studies',
-        run: () => navigateTo('projects.html'),
-      },
-      {
-        label: 'Go to Contact',
-        meta: 'Navigation',
-        hint: 'contact.html',
-        search: 'contact hire inquiry',
-        run: () => navigateTo('contact.html'),
-      },
-      {
-        label: 'Toggle Theme',
-        meta: 'Appearance',
-        hint: 'Light / Dark',
-        search: 'theme appearance dark light mode',
-        run: () => toggleTheme(),
-      },
-      {
-        label: 'Send Email',
-        meta: 'Contact',
-        hint: config.email || 'mailto',
-        search: 'email mail contact',
-        run: () => {
-          window.location.href = emailHref;
-        },
-      },
-    ];
-
-    if (githubHref) {
-      commands.push({
-        label: 'Open GitHub',
-        meta: 'Social',
-        hint: config.github || 'GitHub',
-        search: 'github code repository profile',
-        run: () => openExternal(githubHref),
-      });
-    }
-
-    if (telegramHref) {
-      commands.push({
-        label: 'Open Telegram',
-        meta: 'Social',
-        hint: config.telegram || 'Telegram',
-        search: 'telegram chat message',
-        run: () => openExternal(telegramHref),
-      });
-    }
-
-    const scrollToId = (id) => {
-      const target = document.getElementById(id);
-      if (!target) {
-        return false;
-      }
-
-      target.scrollIntoView({
-        behavior: reduceMotionQuery.matches ? 'auto' : 'smooth',
-        block: 'start',
-      });
-      return true;
-    };
-
-    const homepageAnchors = [
-      { id: 'home', label: 'Jump to Hero', search: 'hero homepage intro landing' },
-      { id: 'flagship', label: 'Jump to Flagship', search: 'flagship case study trendyol tracker' },
-      { id: 'quality-evidence', label: 'Jump to CI Evidence', search: 'ci evidence quality tests lighthouse' },
-      { id: 'selected-projects', label: 'Jump to Selected Projects', search: 'selected projects showcases modules' },
-      { id: 'capabilities', label: 'Jump to Capabilities', search: 'capabilities strip stack skills' },
-      { id: 'contact-cta', label: 'Jump to Contact CTA', search: 'contact cta hire collaboration' },
-    ];
-
-    homepageAnchors.forEach((entry) => {
-      if (!document.getElementById(entry.id)) {
-        return;
-      }
-
-      commands.push({
-        label: entry.label,
-        meta: 'Homepage',
-        hint: `#${entry.id}`,
-        search: entry.search,
-        run: () => {
-          scrollToId(entry.id);
-        },
-      });
-    });
-
-    const flagshipTabs = Array.from(document.querySelectorAll('[data-flagship-tab]'));
-    flagshipTabs.forEach((tab) => {
-      const tabKey = String(tab.getAttribute('data-flagship-tab') || '').trim();
-      const tabLabel = String(tab.textContent || '').trim();
-      if (!tabKey || !tabLabel) {
-        return;
-      }
-
-      commands.push({
-        label: `Flagship: ${tabLabel}`,
-        meta: 'Homepage',
-        hint: tabLabel,
-        search: `flagship ${tabKey} ${tabLabel.toLowerCase()} trendyol`,
-        run: () => {
-          scrollToId('flagship');
-          tab.click();
-        },
-      });
-    });
-
-    let open = false;
-    let closeTimer = 0;
-    let activeIndex = 0;
-    let filtered = commands.slice();
-    let previouslyFocused = null;
-
-    const clearCloseTimer = () => {
-      if (!closeTimer) {
-        return;
-      }
-      window.clearTimeout(closeTimer);
-      closeTimer = 0;
-    };
-
-    const normalize = (value) => String(value || '').trim().toLowerCase();
-
-    const renderCommands = () => {
-      const query = normalize(input.value);
-      filtered = commands.filter((command) => {
-        if (!query) {
-          return true;
-        }
-        const haystack = `${normalize(command.label)} ${normalize(command.meta)} ${normalize(command.hint)} ${normalize(
-          command.search
-        )}`;
-        return haystack.includes(query);
-      });
-
-      if (activeIndex >= filtered.length) {
-        activeIndex = Math.max(0, filtered.length - 1);
-      }
-
-      if (!filtered.length) {
-        list.replaceChildren();
-        empty.hidden = false;
-        return;
-      }
-
-      empty.hidden = true;
-      const fragment = document.createDocumentFragment();
-      filtered.forEach((command, index) => {
-        const button = document.createElement('button');
-        button.className = 'command-palette-item';
-        button.type = 'button';
-        button.dataset.commandIndex = String(index);
-        button.setAttribute('role', 'option');
-        button.setAttribute('aria-selected', String(index === activeIndex));
-        if (index === activeIndex) {
-          button.classList.add('is-active');
-        }
-
-        const main = document.createElement('span');
-        main.className = 'command-palette-item-main';
-        const label = document.createElement('span');
-        label.className = 'command-palette-item-label';
-        label.textContent = command.label;
-        const meta = document.createElement('span');
-        meta.className = 'command-palette-item-meta';
-        meta.textContent = command.meta;
-        main.append(label, meta);
-
-        const hint = document.createElement('span');
-        hint.className = 'command-palette-item-hint';
-        hint.textContent = command.hint;
-
-        button.append(main, hint);
-        fragment.appendChild(button);
-      });
-
-      list.replaceChildren(fragment);
-      const activeNode = list.querySelector('.command-palette-item.is-active');
-      if (activeNode) {
-        activeNode.scrollIntoView({ block: 'nearest' });
-      }
-    };
-
-    const executeCommand = (index) => {
-      const command = filtered[index];
-      if (!command) {
-        return;
-      }
-      closePalette({ restoreFocus: false, immediate: true });
-      command.run();
-    };
-
-    const openPalette = () => {
-      if (open) {
-        return;
-      }
-
-      clearCloseTimer();
-      open = true;
-      previouslyFocused = document.activeElement;
-      palette.hidden = false;
-      palette.setAttribute('aria-hidden', 'false');
-      document.body.classList.add('command-palette-open');
-      input.value = '';
-      activeIndex = 0;
-      renderCommands();
-      window.requestAnimationFrame(() => {
-        palette.classList.add('is-open');
-        input.focus({ preventScroll: true });
-      });
-    };
-
-    const closePalette = ({ restoreFocus = true, immediate = false } = {}) => {
-      if (!open) {
-        return;
-      }
-
-      clearCloseTimer();
-      open = false;
-      palette.classList.remove('is-open');
-      palette.setAttribute('aria-hidden', 'true');
-      document.body.classList.remove('command-palette-open');
-
-      const finalize = () => {
-        clearCloseTimer();
-        palette.hidden = true;
-        if (restoreFocus && previouslyFocused && typeof previouslyFocused.focus === 'function') {
-          previouslyFocused.focus({ preventScroll: true });
-        }
-        previouslyFocused = null;
-      };
-
-      if (immediate || reduceMotionQuery.matches) {
-        finalize();
-        return;
-      }
-
-      closeTimer = window.setTimeout(finalize, 180);
-    };
-
-    const isTypingContext = (target) => {
-      if (!target) {
-        return false;
-      }
-      const element = target instanceof Element ? target : null;
-      if (!element) {
-        return false;
-      }
-      return Boolean(
-        element.closest('input, textarea, select, [contenteditable="true"]') ||
-          (element instanceof HTMLElement && element.isContentEditable)
-      );
-    };
-
-    backdrop.addEventListener('click', () => {
-      closePalette();
-    });
-
-    list.addEventListener('click', (event) => {
-      const option = event.target.closest('[data-command-index]');
-      if (!option) {
-        return;
-      }
-      executeCommand(Number(option.dataset.commandIndex));
-    });
-
-    list.addEventListener('mouseover', (event) => {
-      const option = event.target.closest('[data-command-index]');
-      if (!option) {
-        return;
-      }
-      const nextIndex = Number(option.dataset.commandIndex);
-      if (!Number.isFinite(nextIndex) || nextIndex === activeIndex) {
-        return;
-      }
-      activeIndex = nextIndex;
-      renderCommands();
-    });
-
-    input.addEventListener('input', () => {
-      activeIndex = 0;
-      renderCommands();
-    });
-
-    input.addEventListener('keydown', (event) => {
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        if (!filtered.length) {
-          return;
-        }
-        activeIndex = (activeIndex + 1) % filtered.length;
-        renderCommands();
-        return;
-      }
-
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        if (!filtered.length) {
-          return;
-        }
-        activeIndex = (activeIndex - 1 + filtered.length) % filtered.length;
-        renderCommands();
-        return;
-      }
-
-      if (event.key === 'Enter') {
-        event.preventDefault();
-        executeCommand(activeIndex);
-        return;
-      }
-
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        closePalette();
-      }
-    });
-
-    document.addEventListener('keydown', (event) => {
-      const key = String(event.key || '').toLowerCase();
-      const hotkeyPressed = (event.ctrlKey || event.metaKey) && key === 'k';
-      if (hotkeyPressed) {
-        event.preventDefault();
-        if (open) {
-          closePalette();
-        } else {
-          openPalette();
-        }
-        return;
-      }
-
-      if (!open && key === '/' && !event.altKey && !event.ctrlKey && !event.metaKey && !isTypingContext(event.target)) {
-        event.preventDefault();
-        openPalette();
-        return;
-      }
-
-      if (open && event.key === 'Escape') {
-        event.preventDefault();
-        closePalette();
-      }
-    });
-
-    document.querySelectorAll('[data-command-open]').forEach((trigger) => {
-      trigger.addEventListener('click', () => {
-        if (open) {
-          closePalette({ restoreFocus: false });
-          return;
-        }
-        openPalette();
-      });
-    });
+    return Boolean(
+      element.closest('input, textarea, select, [contenteditable="true"]') ||
+        (element instanceof HTMLElement && element.isContentEditable)
+    );
   };
 
-  setupCommandPalette();
+  const isMac = /Mac|iPhone|iPad|iPod/i.test(window.navigator.platform || '');
+  document.querySelectorAll('[data-command-shortcut]').forEach((node) => {
+    node.textContent = isMac ? 'Cmd+K' : 'Ctrl+K';
+  });
+
+  let commandPaletteApiPromise = null;
+  let commandPaletteReady = false;
+  const loadCommandPalette = ({ open = false } = {}) => {
+    if (!commandPaletteApiPromise) {
+      commandPaletteApiPromise = loadRuntimeModule('command-palette').then((module) => {
+        if (!module || typeof module.setupCommandPalette !== 'function') {
+          return null;
+        }
+
+        const api = module.setupCommandPalette({
+          siteConfig: window.siteConfig || siteConfig,
+          toggleTheme,
+          reduceMotionQuery,
+        });
+        commandPaletteReady = Boolean(api);
+        return api;
+      });
+    }
+
+    if (open) {
+      commandPaletteApiPromise.then((api) => {
+        if (api && typeof api.openPalette === 'function') {
+          api.openPalette();
+        }
+      });
+    }
+
+    return commandPaletteApiPromise;
+  };
+
+  document.addEventListener('keydown', (event) => {
+    if (commandPaletteReady) {
+      return;
+    }
+
+    const key = String(event.key || '').toLowerCase();
+    const hotkeyPressed = (event.ctrlKey || event.metaKey) && key === 'k';
+    const searchShortcutPressed =
+      key === '/' && !event.altKey && !event.ctrlKey && !event.metaKey && !isTypingContext(event.target);
+    if (!hotkeyPressed && !searchShortcutPressed) {
+      return;
+    }
+
+    event.preventDefault();
+    loadCommandPalette({ open: true });
+  });
+
+  document.querySelectorAll('[data-command-open]').forEach((trigger) => {
+    trigger.addEventListener('click', () => {
+      if (commandPaletteReady) {
+        return;
+      }
+      loadCommandPalette({ open: true });
+    });
+  });
 
   const revealItems = document.querySelectorAll('.reveal');
   const cleanupRevealClasses = (item) => {
@@ -2551,217 +2222,15 @@
     };
 
     const setupQualityEvidence = () => {
-      const qualityNode = document.querySelector('[data-quality-evidence]');
-      if (!qualityNode) {
+      if (!document.querySelector('[data-quality-evidence]')) {
         return;
       }
 
-      const sourcePath = String(qualityNode.getAttribute('data-quality-source') || 'assets/data/quality-evidence.json').trim();
-      const statusNode = qualityNode.querySelector('[data-quality-status]');
-      const runLinkNode = qualityNode.querySelector('[data-quality-run-link]');
-
-      const ui = {
-        branch: qualityNode.querySelector('[data-quality-branch]'),
-        commit: qualityNode.querySelector('[data-quality-commit]'),
-        scope: qualityNode.querySelector('[data-quality-scope]'),
-        unitSummary: qualityNode.querySelector('[data-quality-unit-summary]'),
-        unitDuration: qualityNode.querySelector('[data-quality-unit-duration]'),
-        unitPassed: qualityNode.querySelector('[data-quality-unit-passed]'),
-        unitFailed: qualityNode.querySelector('[data-quality-unit-failed]'),
-        e2eSummary: qualityNode.querySelector('[data-quality-e2e-summary]'),
-        e2eDuration: qualityNode.querySelector('[data-quality-e2e-duration]'),
-        e2eDesktop: qualityNode.querySelector('[data-quality-e2e-desktop]'),
-        e2eMobile: qualityNode.querySelector('[data-quality-e2e-mobile]'),
-        lhPerformance: qualityNode.querySelector('[data-quality-lh-performance]'),
-        lhAccessibility: qualityNode.querySelector('[data-quality-lh-accessibility]'),
-        lhBest: qualityNode.querySelector('[data-quality-lh-best]'),
-        lhSeo: qualityNode.querySelector('[data-quality-lh-seo]'),
-        build: qualityNode.querySelector('[data-quality-build]'),
-        typecheck: qualityNode.querySelector('[data-quality-typecheck]'),
-        overall: qualityNode.querySelector('[data-quality-overall]'),
-      };
-
-      const setText = (node, value) => {
-        if (!node) {
-          return;
+      loadRuntimeModule('quality-evidence').then((module) => {
+        if (module && typeof module.setupQualityEvidence === 'function') {
+          module.setupQualityEvidence();
         }
-        node.textContent = value;
-      };
-
-      const toNumber = (value) => {
-        const parsed = Number(value);
-        return Number.isFinite(parsed) ? parsed : null;
-      };
-
-      const formatDuration = (value) => {
-        const durationMs = toNumber(value);
-        if (durationMs === null) {
-          return '--';
-        }
-        if (durationMs >= 1000) {
-          return `${(durationMs / 1000).toFixed(durationMs >= 10000 ? 1 : 2)}s`;
-        }
-        return `${Math.round(durationMs)}ms`;
-      };
-
-      const normalizeScore = (value) => {
-        const score = toNumber(value);
-        if (score === null) {
-          return null;
-        }
-        return score <= 1 ? score * 100 : score;
-      };
-
-      const applyScore = (node, value) => {
-        if (!node) {
-          return;
-        }
-        const normalized = normalizeScore(value);
-        node.classList.remove('score-good', 'score-warn', 'score-bad', 'score-pending');
-        if (normalized === null) {
-          node.textContent = '--';
-          node.classList.add('score-pending');
-          return;
-        }
-        node.textContent = `${Math.round(normalized)}`;
-        if (normalized >= 90) {
-          node.classList.add('score-good');
-          return;
-        }
-        if (normalized >= 50) {
-          node.classList.add('score-warn');
-          return;
-        }
-        node.classList.add('score-bad');
-      };
-
-      const formatProjectSummary = (projectData) => {
-        if (!projectData || typeof projectData !== 'object') {
-          return 'pending';
-        }
-        const passed = Math.max(0, toNumber(projectData.passed) || 0);
-        const failed = Math.max(0, toNumber(projectData.failed) || 0);
-        return `${passed} pass / ${failed} fail`;
-      };
-
-      const sumProjectResults = (projectsData, key) =>
-        Object.values(projectsData).reduce(
-          (total, projectData) => total + Math.max(0, toNumber(projectData && projectData[key]) || 0),
-          0
-        );
-
-      const applyGateStatus = (node, label, status) => {
-        if (!node) {
-          return;
-        }
-        if (status === true) {
-          node.textContent = `${label}: pass`;
-          return;
-        }
-        if (status === false) {
-          node.textContent = `${label}: fail`;
-          return;
-        }
-        if (status === 'monitor') {
-          node.textContent = `${label}: monitor`;
-          return;
-        }
-        node.textContent = `${label}: pending`;
-      };
-
-      const applyEvidence = (evidence, note) => {
-        const safeEvidence = evidence && typeof evidence === 'object' ? evidence : {};
-        const branchValue = safeEvidence.branch ? String(safeEvidence.branch) : 'pending';
-        const commitValue = safeEvidence.commit ? String(safeEvidence.commit).slice(0, 7) : 'pending';
-
-        const unit = safeEvidence.unit && typeof safeEvidence.unit === 'object' ? safeEvidence.unit : {};
-        const unitPassed = Math.max(0, toNumber(unit.passed) || 0);
-        const unitFailed = Math.max(0, toNumber(unit.failed) || 0);
-        const unitTotal = unitPassed + unitFailed;
-
-        const e2e = safeEvidence.e2e && typeof safeEvidence.e2e === 'object' ? safeEvidence.e2e : {};
-        const e2ePassed = Math.max(0, toNumber(e2e.passed) || 0);
-        const e2eFailed = Math.max(0, toNumber(e2e.failed) || 0);
-        const projects = e2e.projects && typeof e2e.projects === 'object' ? e2e.projects : {};
-        const projectPassed = sumProjectResults(projects, 'passed');
-        const projectFailed = sumProjectResults(projects, 'failed');
-        const hasProjectResults = projectPassed + projectFailed > 0;
-        const displayedE2ePassed = hasProjectResults ? projectPassed : e2ePassed;
-        const displayedE2eFailed = hasProjectResults ? projectFailed : e2eFailed;
-        const e2eTotal = displayedE2ePassed + displayedE2eFailed;
-
-        const lighthouse =
-          safeEvidence.lighthouse && typeof safeEvidence.lighthouse === 'object' ? safeEvidence.lighthouse : {};
-        const overallStatus =
-          typeof safeEvidence.overallStatus === 'string' ? safeEvidence.overallStatus.toLowerCase() : '';
-        const buildOk = safeEvidence.build && typeof safeEvidence.build === 'object' ? safeEvidence.build.ok : null;
-        const typecheckOk =
-          safeEvidence.typecheck && typeof safeEvidence.typecheck === 'object' ? safeEvidence.typecheck.ok : null;
-
-        const hasFailedChecks =
-          unitFailed > 0 || displayedE2eFailed > 0 || buildOk === false || typecheckOk === false;
-        const scopeLabel = [unitTotal > 0 ? `${unitTotal} unit` : '', e2eTotal > 0 ? `${e2eTotal} e2e` : '']
-          .filter(Boolean)
-          .join(' + ');
-
-        setText(ui.branch, branchValue);
-        setText(ui.commit, commitValue);
-        setText(ui.scope, scopeLabel || 'pending');
-
-        setText(ui.unitSummary, unitTotal > 0 ? `${unitPassed}/${unitTotal} green` : 'pending');
-        setText(ui.unitDuration, formatDuration(unit.durationMs));
-        setText(ui.unitPassed, String(unitPassed));
-        setText(ui.unitFailed, String(unitFailed));
-
-        setText(ui.e2eSummary, e2eTotal > 0 ? `${displayedE2ePassed}/${e2eTotal} green` : 'pending');
-        setText(ui.e2eDuration, formatDuration(e2e.durationMs));
-        setText(ui.e2eDesktop, formatProjectSummary(projects['chromium-desktop']));
-        setText(ui.e2eMobile, formatProjectSummary(projects['chromium-mobile']));
-
-        applyScore(ui.lhPerformance, lighthouse.performance);
-        applyScore(ui.lhAccessibility, lighthouse.accessibility);
-        applyScore(ui.lhBest, lighthouse.bestPractices);
-        applyScore(ui.lhSeo, lighthouse.seo);
-
-        applyGateStatus(ui.build, 'Build', buildOk);
-        applyGateStatus(ui.typecheck, 'Typecheck', typecheckOk);
-        const overallGateState = hasFailedChecks
-          ? false
-          : overallStatus === 'healthy'
-            ? true
-            : overallStatus === 'degraded'
-              ? false
-              : overallStatus === 'monitoring'
-                ? 'monitor'
-                : null;
-        applyGateStatus(ui.overall, 'Overall', overallGateState);
-
-        if (runLinkNode && safeEvidence.runUrl) {
-          const runUrl = String(safeEvidence.runUrl);
-          runLinkNode.setAttribute('href', runUrl);
-          const runMatch = runUrl.match(/\/runs\/(\d+)/);
-          runLinkNode.textContent = runMatch ? `Open Full CI Run #${runMatch[1]}` : 'Open Full CI Run';
-        }
-
-        setText(statusNode, note);
-      };
-
-      fetch(sourcePath, { cache: 'no-store' })
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`Unable to load evidence: ${response.status}`);
-          }
-          return response.json();
-        })
-        .then((evidence) => {
-          applyEvidence(evidence, 'Live snapshot loaded from repository evidence JSON.');
-        })
-        .catch(() => {
-          applyEvidence(
-            {},
-            'Quality evidence JSON is unavailable. Run the quality pipeline to regenerate the snapshot.'
-          );
-        });
+      });
     };
 
     setupQualityEvidence();
@@ -3170,7 +2639,7 @@
       card.addEventListener(
         'pointermove',
         (event) => {
-          if (effectsTier === 'off' || root.classList.contains('theme-transition-running')) {
+          if (!isPointerEffectsActive() || root.classList.contains('theme-transition-running')) {
             return;
           }
 
@@ -3195,6 +2664,11 @@
 
       card.addEventListener('pointerleave', resetCardTilt);
       card.addEventListener('pointercancel', resetCardTilt);
+      window.addEventListener('site-effects-tierchange', () => {
+        if (!isPointerEffectsActive()) {
+          resetCardTilt({ resetPointer: true });
+        }
+      });
     });
   }
 
@@ -3510,77 +2984,25 @@
     });
   };
 
+  const setupContactFormModule = () => {
+    if (!document.querySelector('[data-demo-form]')) {
+      return;
+    }
+
+    loadRuntimeModule('contact-form').then((module) => {
+      if (module && typeof module.setupContactForm === 'function') {
+        module.setupContactForm(window.siteConfig || siteConfig);
+      }
+    });
+  };
+
   setupAutoEffectsTierMonitor();
   setupWebVitalsPanel();
   setupServiceWorkerRegistration();
 
-  const form = document.querySelector('[data-demo-form]');
-  const formNote = document.querySelector('[data-form-response]');
-  if (form && formNote) {
-    const submitButton = form.querySelector('button[type="submit"]');
-    const setFormState = (message, pending = false) => {
-      formNote.textContent = message;
-      if (pending) {
-        form.setAttribute('aria-busy', 'true');
-      } else {
-        form.removeAttribute('aria-busy');
-      }
-      if (submitButton) {
-        submitButton.disabled = pending;
-      }
-    };
-    const openMailClientFallback = (name, email, message, contactEmail) => {
-      const subject = encodeURIComponent(`Project inquiry from ${name}`);
-      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`);
-      setFormState('Direct submit is unavailable right now. Opening your email client...');
-      window.location.href = `mailto:${contactEmail}?subject=${subject}&body=${body}`;
-    };
-
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData(form);
-      const name = String(formData.get('name') || '').trim();
-      const email = String(formData.get('email') || '').trim();
-      const message = String(formData.get('message') || '').trim();
-
-      if (!name || !email || !message) {
-        setFormState('Please complete all fields before sending.');
-        return;
-      }
-
-      const contactEmail = (window.siteConfig && window.siteConfig.email) || 'hello@example.com';
-      const endpoint =
-        form.getAttribute('data-form-endpoint') || (window.siteConfig && window.siteConfig.contactFormEndpoint) || '';
-
-      if (!window.fetch || !endpoint) {
-        openMailClientFallback(name, email, message, contactEmail);
-        return;
-      }
-
-      setFormState('Sending your brief...', true);
-      try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-          },
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`Form submit failed with status ${response.status}`);
-        }
-
-        form.reset();
-        setFormState('Thanks, your brief was sent successfully. I usually reply within 24 hours.');
-      } catch (error) {
-        openMailClientFallback(name, email, message, contactEmail);
-      }
-    });
-  }
-
   applyConfig();
   updateThemeLabel();
+  setupContactFormModule();
 })();
 
 
