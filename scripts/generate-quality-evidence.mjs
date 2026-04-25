@@ -153,6 +153,37 @@ const collectPlaywrightSuites = (suites, bucket) => {
   });
 };
 
+const resolvePlaywrightCaseState = (testCase) => {
+  const status = testCase && typeof testCase.status === 'string' ? testCase.status : '';
+  if (status === 'expected' || status === 'flaky') {
+    return 'passed';
+  }
+  if (status === 'unexpected' || status === 'interrupted') {
+    return 'failed';
+  }
+  if (status === 'skipped') {
+    return 'skipped';
+  }
+
+  const results = Array.isArray(testCase.results) ? testCase.results : [];
+  const lastResult = results.length > 0 ? results[results.length - 1] : null;
+  const finalStatus = lastResult && typeof lastResult.status === 'string' ? lastResult.status : '';
+  if (finalStatus === 'passed') {
+    return 'passed';
+  }
+  if (finalStatus === 'failed' || finalStatus === 'timedOut' || finalStatus === 'interrupted') {
+    return 'failed';
+  }
+  if (finalStatus === 'skipped') {
+    return 'skipped';
+  }
+
+  return '';
+};
+
+const sumProjectResults = (projects, key) =>
+  Object.values(projects).reduce((total, project) => total + Math.max(0, toNumber(project && project[key]) || 0), 0);
+
 const parsePlaywrightSummary = (report) => {
   const fallback = {
     passed: 0,
@@ -174,13 +205,14 @@ const parsePlaywrightSummary = (report) => {
   const durationMs = toNumber(stats.duration);
 
   const summary = {
-    passed: expected,
-    failed: unexpected,
+    passed: 0,
+    failed: 0,
     durationMs: durationMs === null ? null : Math.max(0, Math.round(durationMs)),
     projects: {},
   };
 
   const specs = [];
+  let detailedTestCount = 0;
   collectPlaywrightSuites(report.suites, specs);
   specs.forEach((spec) => {
     if (!spec || !Array.isArray(spec.tests)) {
@@ -193,16 +225,16 @@ const parsePlaywrightSummary = (report) => {
         summary.projects[projectName] = { passed: 0, failed: 0 };
       }
 
-      const results = Array.isArray(testCase.results) ? testCase.results : [];
-      const lastResult = results.length > 0 ? results[results.length - 1] : null;
-      const finalStatus = lastResult && typeof lastResult.status === 'string' ? lastResult.status : '';
+      const caseState = resolvePlaywrightCaseState(testCase);
 
-      if (finalStatus === 'passed' || finalStatus === 'flaky') {
+      if (caseState === 'passed') {
         summary.projects[projectName].passed += 1;
+        detailedTestCount += 1;
         return;
       }
-      if (finalStatus) {
+      if (caseState === 'failed') {
         summary.projects[projectName].failed += 1;
+        detailedTestCount += 1;
       }
     });
   });
@@ -212,6 +244,14 @@ const parsePlaywrightSummary = (report) => {
   }
   if (!summary.projects['chromium-mobile']) {
     summary.projects['chromium-mobile'] = { passed: 0, failed: 0 };
+  }
+
+  if (detailedTestCount > 0) {
+    summary.passed = sumProjectResults(summary.projects, 'passed');
+    summary.failed = sumProjectResults(summary.projects, 'failed');
+  } else {
+    summary.passed = expected;
+    summary.failed = unexpected;
   }
 
   return summary;

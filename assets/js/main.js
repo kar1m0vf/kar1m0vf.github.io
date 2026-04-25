@@ -2644,6 +2644,12 @@
         return `${passed} pass / ${failed} fail`;
       };
 
+      const sumProjectResults = (projectsData, key) =>
+        Object.values(projectsData).reduce(
+          (total, projectData) => total + Math.max(0, toNumber(projectData && projectData[key]) || 0),
+          0
+        );
+
       const applyGateStatus = (node, label, status) => {
         if (!node) {
           return;
@@ -2676,8 +2682,13 @@
         const e2e = safeEvidence.e2e && typeof safeEvidence.e2e === 'object' ? safeEvidence.e2e : {};
         const e2ePassed = Math.max(0, toNumber(e2e.passed) || 0);
         const e2eFailed = Math.max(0, toNumber(e2e.failed) || 0);
-        const e2eTotal = e2ePassed + e2eFailed;
         const projects = e2e.projects && typeof e2e.projects === 'object' ? e2e.projects : {};
+        const projectPassed = sumProjectResults(projects, 'passed');
+        const projectFailed = sumProjectResults(projects, 'failed');
+        const hasProjectResults = projectPassed + projectFailed > 0;
+        const displayedE2ePassed = hasProjectResults ? projectPassed : e2ePassed;
+        const displayedE2eFailed = hasProjectResults ? projectFailed : e2eFailed;
+        const e2eTotal = displayedE2ePassed + displayedE2eFailed;
 
         const lighthouse =
           safeEvidence.lighthouse && typeof safeEvidence.lighthouse === 'object' ? safeEvidence.lighthouse : {};
@@ -2687,7 +2698,8 @@
         const typecheckOk =
           safeEvidence.typecheck && typeof safeEvidence.typecheck === 'object' ? safeEvidence.typecheck.ok : null;
 
-        const hasFailedChecks = unitFailed > 0 || e2eFailed > 0 || buildOk === false || typecheckOk === false;
+        const hasFailedChecks =
+          unitFailed > 0 || displayedE2eFailed > 0 || buildOk === false || typecheckOk === false;
         const scopeLabel = [unitTotal > 0 ? `${unitTotal} unit` : '', e2eTotal > 0 ? `${e2eTotal} e2e` : '']
           .filter(Boolean)
           .join(' + ');
@@ -2701,7 +2713,7 @@
         setText(ui.unitPassed, String(unitPassed));
         setText(ui.unitFailed, String(unitFailed));
 
-        setText(ui.e2eSummary, e2eTotal > 0 ? `${e2ePassed}/${e2eTotal} green` : 'pending');
+        setText(ui.e2eSummary, e2eTotal > 0 ? `${displayedE2ePassed}/${e2eTotal} green` : 'pending');
         setText(ui.e2eDuration, formatDuration(e2e.durationMs));
         setText(ui.e2eDesktop, formatProjectSummary(projects['chromium-desktop']));
         setText(ui.e2eMobile, formatProjectSummary(projects['chromium-mobile']));

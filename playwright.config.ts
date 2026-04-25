@@ -6,7 +6,7 @@ if (!process.env.PLAYWRIGHT_BROWSERS_PATH) {
 
 const PORT = 4173;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
-const ciLikeReporterMode = Boolean(process.env.CI || process.env.PW_JSON_REPORT === '1');
+const ciLikeMode = Boolean(process.env.CI || process.env.PW_JSON_REPORT === '1');
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -15,8 +15,9 @@ export default defineConfig({
     timeout: 7_000,
   },
   fullyParallel: true,
-  retries: process.env.CI ? 1 : 0,
-  reporter: ciLikeReporterMode
+  retries: ciLikeMode ? 1 : 0,
+  ...(ciLikeMode ? { workers: 2 } : {}),
+  reporter: ciLikeMode
     ? [
         ...(process.env.CI ? [['github'] as const] : [['list'] as const]),
         ['html', { open: 'never' }],

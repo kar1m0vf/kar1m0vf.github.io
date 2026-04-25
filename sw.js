@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'portfolio-v8';
+const CACHE_VERSION = 'portfolio-v9';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -11,7 +11,12 @@ const STATIC_ASSETS = [
   './manifest.webmanifest',
   './robots.txt',
   './sitemap.xml',
-  './assets/css/styles.css',
+  './assets/css/base.css',
+  './assets/css/home.css',
+  './assets/css/about.css',
+  './assets/css/projects.css',
+  './assets/css/shared-effects.css',
+  './assets/css/shared-responsive.css',
   './assets/js/main.js',
   './assets/js/site-config.js',
   './assets/js/ambient-particles-worker.js',
@@ -86,19 +91,20 @@ const staleWhileRevalidate = async (request, cacheName) => {
 };
 
 const networkFirst = async (request) => {
-  const cache = await caches.open(RUNTIME_CACHE);
+  const runtimeCache = await caches.open(RUNTIME_CACHE);
+  const staticCache = await caches.open(STATIC_CACHE);
   try {
     const response = await fetch(request);
     if (response && (response.ok || response.type === 'opaque')) {
-      cache.put(request, response.clone());
+      runtimeCache.put(request, response.clone());
     }
     return response;
   } catch (error) {
-    const cached = await cache.match(request);
+    const cached = (await runtimeCache.match(request)) || (await staticCache.match(request));
     if (cached) {
       return cached;
     }
-    const fallback = await cache.match('./index.html');
+    const fallback = await staticCache.match('./index.html');
     if (fallback) {
       return fallback;
     }
