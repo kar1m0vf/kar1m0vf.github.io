@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-04-25T09:45:41.417Z",
+  "generatedAt": "2026-04-25T11:03:01.579Z",
   "source": "ci-generated",
   "branch": "main",
-  "commit": "def8b793a9735e58f712c5db99f1951e051f2115",
-  "runUrl": "https://github.com/kar1m0vf/kar1m0vf.github.io/actions/runs/24928041819",
+  "commit": "32d26e3fdac500b41df9f924346bdf61aa57863c",
+  "runUrl": "https://github.com/kar1m0vf/kar1m0vf.github.io/actions/runs/24929363438",
   "build": {
     "ok": true
   },
@@ -13,25 +13,25 @@
   "unit": {
     "passed": 10,
     "failed": 0,
-    "durationMs": 5
+    "durationMs": 6
   },
   "e2e": {
-    "passed": 11,
+    "passed": 19,
     "failed": 0,
-    "durationMs": 23375,
+    "durationMs": 26232,
     "projects": {
       "chromium-desktop": {
-        "passed": 6,
+        "passed": 10,
         "failed": 0
       },
       "chromium-mobile": {
-        "passed": 5,
+        "passed": 9,
         "failed": 0
       }
     }
   },
   "lighthouse": {
-    "performance": 0.77,
+    "performance": 0.8433,
     "accessibility": 0.9867,
     "bestPractices": 1,
     "seo": 1
