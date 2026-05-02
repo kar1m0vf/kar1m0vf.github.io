@@ -182,7 +182,647 @@
 
     ambient.classList.add('has-canvas-particles');
     root.classList.add('ambient-canvas-ready');
-    const pointerReactive = ambientMode === 'full' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const pointerReactive =
+      ambientMode === 'full' && pointerEffectsEnabled && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    const setupAmbientPointField = () => {
+      const gl =
+        canvas.getContext('webgl', {
+          alpha: true,
+          antialias: false,
+          depth: false,
+          stencil: false,
+          preserveDrawingBuffer: false,
+          powerPreference: 'low-power',
+        }) || null;
+      if (!gl) {
+        return false;
+      }
+
+      const vertexSource = `
+        attribute vec2 aBase;
+        attribute float aSize;
+        attribute float aAlpha;
+        attribute float aPhase;
+        attribute float aSpeed;
+        attribute float aDrift;
+        attribute float aKind;
+
+        uniform float uTime;
+        uniform float uDpr;
+        uniform float uTier;
+        uniform vec2 uPointer;
+        uniform float uPointerStrength;
+
+        varying float vAlpha;
+        varying float vKind;
+        varying float vPulse;
+
+        void main() {
+          float motion = mix(0.35, 1.0, uTier);
+          vec2 pos = aBase;
+          pos.x += sin(uTime * aSpeed + aPhase) * aDrift * motion;
+          pos.y += cos(uTime * (aSpeed * 0.83) + aPhase * 1.37) * aDrift * motion;
+          pos = fract(pos);
+
+          float isPointer = step(1.5, aKind);
+          pos = mix(pos, uPointer, isPointer);
+          float isOrb = step(0.5, aKind);
+          float pulse = mix(0.82 + 0.18 * sin(uTime * (aSpeed + 0.2) + aPhase), 1.0, isOrb);
+          gl_Position = vec4(pos * 2.0 - 1.0, 0.0, 1.0);
+          gl_PointSize = aSize * uDpr * pulse;
+
+          vAlpha = aAlpha * mix(0.72, 1.0, uTier) * mix(1.0, uPointerStrength, isPointer);
+          vKind = aKind;
+          vPulse = pulse;
+        }
+      `;
+      const fragmentSource = `
+        precision mediump float;
+
+        uniform float uTheme;
+        varying float vAlpha;
+        varying float vKind;
+        varying float vPulse;
+
+        void main() {
+          vec2 local = gl_PointCoord - 0.5;
+          float dist = length(local) * 2.0;
+          float isOrb = step(0.5, vKind);
+          float starMask = smoothstep(1.0, 0.22, dist);
+          float orbMask = pow(max(0.0, 1.0 - dist), 2.8);
+          float mask = mix(starMask, orbMask, isOrb);
+          if (mask < 0.004) {
+            discard;
+          }
+
+          vec3 lightColor = vec3(0.31, 0.49, 1.0);
+          vec3 darkColor = vec3(0.61, 0.74, 1.0);
+          vec3 color = mix(lightColor, darkColor, uTheme);
+          gl_FragColor = vec4(color, vAlpha * mask * vPulse);
+        }
+      `;
+
+      const compileShader = (type, source) => {
+        const shader = gl.createShader(type);
+        if (!shader) {
+          return null;
+        }
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      };
+
+      const vertexShader = compileShader(gl.VERTEX_SHADER, vertexSource);
+      const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentSource);
+      if (!vertexShader || !fragmentShader) {
+        return false;
+      }
+
+      const program = gl.createProgram();
+      if (!program) {
+        return false;
+      }
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        gl.deleteProgram(program);
+        return false;
+      }
+
+      const locations = {
+        base: gl.getAttribLocation(program, 'aBase'),
+        size: gl.getAttribLocation(program, 'aSize'),
+        alpha: gl.getAttribLocation(program, 'aAlpha'),
+        phase: gl.getAttribLocation(program, 'aPhase'),
+        speed: gl.getAttribLocation(program, 'aSpeed'),
+        drift: gl.getAttribLocation(program, 'aDrift'),
+        kind: gl.getAttribLocation(program, 'aKind'),
+        time: gl.getUniformLocation(program, 'uTime'),
+        dpr: gl.getUniformLocation(program, 'uDpr'),
+        tier: gl.getUniformLocation(program, 'uTier'),
+        theme: gl.getUniformLocation(program, 'uTheme'),
+        pointer: gl.getUniformLocation(program, 'uPointer'),
+        pointerStrength: gl.getUniformLocation(program, 'uPointerStrength'),
+      };
+      const requiredLocations = [
+        locations.base,
+        locations.size,
+        locations.alpha,
+        locations.phase,
+        locations.speed,
+        locations.drift,
+        locations.kind,
+      ];
+      if (requiredLocations.some((location) => location < 0)) {
+        gl.deleteProgram(program);
+        return false;
+      }
+
+      const buffer = gl.createBuffer();
+      if (!buffer) {
+        gl.deleteProgram(program);
+        return false;
+      }
+
+      ambient.classList.add('has-webgl-ambient');
+      root.classList.add('ambient-webgl-ready');
+
+      const strideFields = 8;
+      const strideBytes = strideFields * Float32Array.BYTES_PER_ELEMENT;
+      let width = 1;
+      let height = 1;
+      let dpr = 1;
+      let pointCount = 0;
+      let rafId = 0;
+      let frameTimer = 0;
+      let lastDraw = 0;
+      let pointerX = 0.5;
+      let pointerY = 0.5;
+      let pointerStrength = 0;
+      let pointerTargetStrength = 0;
+      let lastPointerMove = 0;
+      const startedAt = performance.now();
+      const randomBetween = (min, max) => min + Math.random() * (max - min);
+      const getPointFps = () => (effectsTier === 'full' ? 18 : 8);
+      const canRunPointField = () => !document.hidden && visualEffectsActive && effectsTier !== 'off';
+      const pointSizeRange = gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE) || [1, 96];
+      const maxPointSize = Math.max(32, Math.min(Number(pointSizeRange[1]) || 96, 180));
+
+      const buildPointData = () => {
+        const starCount = effectsTier === 'full' && ambientMode === 'full' ? 42 : 20;
+        const rows = [];
+        for (let index = 0; index < starCount; index += 1) {
+          rows.push(
+            Math.random(),
+            Math.random(),
+            randomBetween(1.05, 2.6),
+            randomBetween(0.13, 0.38),
+            randomBetween(0, Math.PI * 2),
+            randomBetween(0.12, 0.42),
+            randomBetween(0.001, 0.006),
+            0
+          );
+        }
+
+        const orbScale = Math.min(width, height);
+        const orbSizeA = Math.min(maxPointSize, Math.max(52, orbScale * 0.2));
+        const orbSizeB = Math.min(maxPointSize, Math.max(44, orbScale * 0.16));
+        const orbSizeC = Math.min(maxPointSize, Math.max(36, orbScale * 0.12));
+        rows.push(0.08, 0.84, orbSizeA, 0.045, 0.1, 0.03, 0.012, 1);
+        rows.push(0.94, 0.18, orbSizeB, 0.035, 2.4, 0.025, 0.01, 1);
+        rows.push(0.52, 0.48, orbSizeC, 0.026, 4.2, 0.02, 0.007, 1);
+        rows.push(0.5, 0.5, Math.min(maxPointSize, 120), 0.07, 0.1, 0, 0, 2);
+
+        const data = new Float32Array(rows);
+        pointCount = data.length / strideFields;
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+      };
+
+      const bindPointAttributes = () => {
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+        gl.enableVertexAttribArray(locations.base);
+        gl.vertexAttribPointer(locations.base, 2, gl.FLOAT, false, strideBytes, 0);
+        gl.enableVertexAttribArray(locations.size);
+        gl.vertexAttribPointer(locations.size, 1, gl.FLOAT, false, strideBytes, 2 * Float32Array.BYTES_PER_ELEMENT);
+        gl.enableVertexAttribArray(locations.alpha);
+        gl.vertexAttribPointer(locations.alpha, 1, gl.FLOAT, false, strideBytes, 3 * Float32Array.BYTES_PER_ELEMENT);
+        gl.enableVertexAttribArray(locations.phase);
+        gl.vertexAttribPointer(locations.phase, 1, gl.FLOAT, false, strideBytes, 4 * Float32Array.BYTES_PER_ELEMENT);
+        gl.enableVertexAttribArray(locations.speed);
+        gl.vertexAttribPointer(locations.speed, 1, gl.FLOAT, false, strideBytes, 5 * Float32Array.BYTES_PER_ELEMENT);
+        gl.enableVertexAttribArray(locations.drift);
+        gl.vertexAttribPointer(locations.drift, 1, gl.FLOAT, false, strideBytes, 6 * Float32Array.BYTES_PER_ELEMENT);
+        gl.enableVertexAttribArray(locations.kind);
+        gl.vertexAttribPointer(locations.kind, 1, gl.FLOAT, false, strideBytes, 7 * Float32Array.BYTES_PER_ELEMENT);
+      };
+
+      const syncPointSize = () => {
+        const rect = ambient.getBoundingClientRect();
+        width = Math.max(1, Math.round(rect.width));
+        height = Math.max(1, Math.round(rect.height));
+        dpr = 1;
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        gl.viewport(0, 0, width, height);
+        buildPointData();
+        bindPointAttributes();
+      };
+
+      const clearPointFrame = () => {
+        if (rafId) {
+          window.cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+        if (frameTimer) {
+          window.clearTimeout(frameTimer);
+          frameTimer = 0;
+        }
+      };
+
+      const queuePointFrame = (delay = 0) => {
+        if (rafId || frameTimer || !canRunPointField()) {
+          return;
+        }
+        if (delay > 8) {
+          frameTimer = window.setTimeout(() => {
+            frameTimer = 0;
+            if (canRunPointField()) {
+              rafId = window.requestAnimationFrame(renderPointField);
+            }
+          }, delay);
+          return;
+        }
+        rafId = window.requestAnimationFrame(renderPointField);
+      };
+
+      const renderPointField = (now) => {
+        rafId = 0;
+        if (!canRunPointField()) {
+          return;
+        }
+        const frameInterval = 1000 / getPointFps();
+        const elapsed = now - lastDraw;
+        if (lastDraw && elapsed < frameInterval) {
+          queuePointFrame(frameInterval - elapsed);
+          return;
+        }
+
+        if (pointerReactive && lastPointerMove && now - lastPointerMove > 260) {
+          pointerTargetStrength = 0;
+        }
+        pointerStrength += (pointerTargetStrength - pointerStrength) * 0.16;
+        lastDraw = now;
+        gl.useProgram(program);
+        bindPointAttributes();
+        gl.uniform1f(locations.time, (now - startedAt) / 1000);
+        gl.uniform1f(locations.dpr, dpr);
+        gl.uniform1f(locations.tier, effectsTier === 'full' ? 1 : 0);
+        gl.uniform1f(locations.theme, root.getAttribute('data-theme') === 'dark' ? 1 : 0);
+        gl.uniform2f(locations.pointer, pointerX, pointerY);
+        gl.uniform1f(locations.pointerStrength, pointerStrength);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.POINTS, 0, pointCount);
+        queuePointFrame(frameInterval);
+      };
+
+      gl.useProgram(program);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.STENCIL_TEST);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.clearColor(0, 0, 0, 0);
+      syncPointSize();
+
+      window.addEventListener('resize', syncPointSize, { passive: true });
+      window.addEventListener('site-effects-tierchange', () => {
+        syncPointSize();
+        if (effectsTier === 'off') {
+          clearPointFrame();
+          return;
+        }
+        lastDraw = 0;
+        queuePointFrame();
+      });
+      window.addEventListener('site-effects-visualstart', () => queuePointFrame(), { once: true });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          clearPointFrame();
+          lastDraw = 0;
+          return;
+        }
+        lastDraw = 0;
+        queuePointFrame();
+      });
+      canvas.addEventListener('webglcontextlost', (event) => {
+        event.preventDefault();
+        clearPointFrame();
+      });
+
+      if (pointerReactive) {
+        window.addEventListener(
+          'pointermove',
+          (event) => {
+            if (!visualEffectsActive || effectsTier !== 'full') {
+              return;
+            }
+            pointerX = Math.min(Math.max(event.clientX / Math.max(window.innerWidth || width, 1), 0), 1);
+            pointerY = 1 - Math.min(Math.max(event.clientY / Math.max(window.innerHeight || height, 1), 0), 1);
+            pointerTargetStrength = 1;
+            lastPointerMove = performance.now();
+          },
+          { passive: true }
+        );
+        window.addEventListener('pointerleave', () => {
+          pointerTargetStrength = 0;
+        });
+        window.addEventListener('blur', () => {
+          pointerTargetStrength = 0;
+        });
+      }
+
+      queuePointFrame();
+      return true;
+    };
+
+    const setupAmbientWebGL = () => {
+      const gl =
+        canvas.getContext('webgl', {
+          alpha: true,
+          antialias: false,
+          depth: false,
+          stencil: false,
+          preserveDrawingBuffer: false,
+          powerPreference: 'low-power',
+        }) || null;
+      if (!gl) {
+        return false;
+      }
+
+      const vertexSource = `
+        attribute vec2 aPosition;
+        varying vec2 vUv;
+
+        void main() {
+          vUv = aPosition * 0.5 + 0.5;
+          gl_Position = vec4(aPosition, 0.0, 1.0);
+        }
+      `;
+      const fragmentSource = `
+        precision mediump float;
+
+        varying vec2 vUv;
+        uniform vec2 uResolution;
+        uniform float uTime;
+        uniform float uTheme;
+        uniform float uTier;
+        uniform vec2 uPointer;
+        uniform float uPointerStrength;
+
+        float hash(vec2 value) {
+          return fract(sin(dot(value, vec2(127.1, 311.7))) * 43758.5453123);
+        }
+
+        float starLayer(vec2 uv, float scale, float cutoff, float sizeBase, float speed) {
+          vec2 grid = uv * scale;
+          vec2 cell = floor(grid);
+          vec2 local = fract(grid) - 0.5;
+          float rnd = hash(cell);
+          float rare = smoothstep(cutoff, 1.0, rnd);
+          float size = sizeBase * mix(0.7, 1.35, hash(cell + 23.19));
+          float dot = smoothstep(size, 0.0, length(local));
+          float pulse = 0.74 + 0.26 * sin(uTime * speed + rnd * 6.28318);
+          return dot * rare * pulse;
+        }
+
+        float glow(vec2 uv, vec2 center, float radius, float power) {
+          float distanceRatio = distance(uv, center) / radius;
+          return pow(max(0.0, 1.0 - distanceRatio), power);
+        }
+
+        void main() {
+          vec2 uv = vUv;
+          float aspect = max(uResolution.x / max(uResolution.y, 1.0), 1.0);
+          vec2 scene = vec2((uv.x - 0.5) * aspect + 0.5, uv.y);
+          vec2 pointer = vec2((uPointer.x - 0.5) * aspect + 0.5, uPointer.y);
+          float tier = mix(0.58, 1.0, uTier);
+          vec2 pointerDrift = (pointer - vec2(0.5)) * (0.018 * uPointerStrength * tier);
+          float time = uTime * tier;
+
+          float stars =
+            starLayer(scene + vec2(time * 0.004, -time * 0.003) + pointerDrift, 15.0, 0.935, 0.032, 0.7) +
+            starLayer(scene + vec2(-time * 0.003, time * 0.002) - pointerDrift * 0.5, 28.0, 0.955, 0.024, 1.1) * 0.62;
+
+          float orbA = glow(scene, vec2(0.08 + sin(time * 0.012) * 0.025, 0.86), 0.48, 2.45) * 0.24;
+          float orbB = glow(scene, vec2(1.02 + cos(time * 0.01) * 0.028, 0.18), 0.42, 2.55) * 0.18;
+          float orbC = glow(scene, vec2(0.52 + sin(time * 0.007) * 0.022, 0.48), 0.38, 2.75) * 0.10;
+          float pointerGlow = glow(scene, pointer, 0.34, 2.6) * 0.10 * uPointerStrength;
+
+          vec3 lightColor = vec3(0.31, 0.49, 1.0);
+          vec3 darkColor = vec3(0.61, 0.74, 1.0);
+          vec3 color = mix(lightColor, darkColor, uTheme);
+          float alpha = clamp((stars * 0.42 + orbA + orbB + orbC + pointerGlow) * tier, 0.0, 0.42);
+
+          gl_FragColor = vec4(color, alpha);
+        }
+      `;
+
+      const compileShader = (type, source) => {
+        const shader = gl.createShader(type);
+        if (!shader) {
+          return null;
+        }
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+          gl.deleteShader(shader);
+          return null;
+        }
+        return shader;
+      };
+
+      const vertexShader = compileShader(gl.VERTEX_SHADER, vertexSource);
+      const fragmentShader = compileShader(gl.FRAGMENT_SHADER, fragmentSource);
+      if (!vertexShader || !fragmentShader) {
+        return true;
+      }
+
+      const program = gl.createProgram();
+      if (!program) {
+        return true;
+      }
+      gl.attachShader(program, vertexShader);
+      gl.attachShader(program, fragmentShader);
+      gl.linkProgram(program);
+      gl.deleteShader(vertexShader);
+      gl.deleteShader(fragmentShader);
+      if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        gl.deleteProgram(program);
+        return true;
+      }
+
+      const positionLocation = gl.getAttribLocation(program, 'aPosition');
+      const resolutionLocation = gl.getUniformLocation(program, 'uResolution');
+      const timeLocation = gl.getUniformLocation(program, 'uTime');
+      const themeLocation = gl.getUniformLocation(program, 'uTheme');
+      const tierLocation = gl.getUniformLocation(program, 'uTier');
+      const pointerLocation = gl.getUniformLocation(program, 'uPointer');
+      const pointerStrengthLocation = gl.getUniformLocation(program, 'uPointerStrength');
+      const triangleBuffer = gl.createBuffer();
+      if (positionLocation < 0 || !triangleBuffer) {
+        return true;
+      }
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, triangleBuffer);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+      gl.useProgram(program);
+      gl.enableVertexAttribArray(positionLocation);
+      gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+      gl.disable(gl.DEPTH_TEST);
+      gl.disable(gl.STENCIL_TEST);
+      gl.clearColor(0, 0, 0, 0);
+
+      ambient.classList.add('has-webgl-ambient');
+      root.classList.add('ambient-webgl-ready');
+
+      let width = 0;
+      let height = 0;
+      let dpr = 1;
+      let rafId = 0;
+      let frameTimer = 0;
+      let lastDraw = 0;
+      let pointerX = 0.5;
+      let pointerY = 0.5;
+      let pointerStrength = 0;
+      let pointerTargetStrength = 0;
+      let lastPointerMove = 0;
+      const startedAt = performance.now();
+
+      const getWebGLFps = () => (effectsTier === 'full' ? 24 : 12);
+      const canRunWebGL = () => !document.hidden && visualEffectsActive && effectsTier !== 'off';
+
+      const clearQueuedFrame = () => {
+        if (rafId) {
+          window.cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+        if (frameTimer) {
+          window.clearTimeout(frameTimer);
+          frameTimer = 0;
+        }
+      };
+
+      const syncWebGLSize = () => {
+        const rect = ambient.getBoundingClientRect();
+        width = Math.max(1, Math.round(rect.width));
+        height = Math.max(1, Math.round(rect.height));
+        dpr = getAmbientRenderDpr();
+        const nextWidth = Math.max(1, Math.round(width * dpr));
+        const nextHeight = Math.max(1, Math.round(height * dpr));
+        if (canvas.width !== nextWidth || canvas.height !== nextHeight) {
+          canvas.width = nextWidth;
+          canvas.height = nextHeight;
+        }
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        gl.viewport(0, 0, nextWidth, nextHeight);
+      };
+
+      const queueWebGLFrame = (delay = 0) => {
+        if (rafId || frameTimer || !canRunWebGL()) {
+          return;
+        }
+        if (delay > 8) {
+          frameTimer = window.setTimeout(() => {
+            frameTimer = 0;
+            if (canRunWebGL()) {
+              rafId = window.requestAnimationFrame(renderWebGL);
+            }
+          }, delay);
+          return;
+        }
+        rafId = window.requestAnimationFrame(renderWebGL);
+      };
+
+      const renderWebGL = (now) => {
+        rafId = 0;
+        if (!canRunWebGL()) {
+          return;
+        }
+
+        const frameInterval = 1000 / getWebGLFps();
+        const elapsed = now - lastDraw;
+        if (lastDraw && elapsed < frameInterval) {
+          queueWebGLFrame(frameInterval - elapsed);
+          return;
+        }
+
+        if (pointerReactive && lastPointerMove && now - lastPointerMove > 360) {
+          pointerTargetStrength = 0;
+        }
+        pointerStrength += (pointerTargetStrength - pointerStrength) * 0.12;
+        lastDraw = now;
+
+        gl.useProgram(program);
+        gl.uniform2f(resolutionLocation, width * dpr, height * dpr);
+        gl.uniform1f(timeLocation, (now - startedAt) / 1000);
+        gl.uniform1f(themeLocation, root.getAttribute('data-theme') === 'dark' ? 1 : 0);
+        gl.uniform1f(tierLocation, effectsTier === 'full' ? 1 : 0);
+        gl.uniform2f(pointerLocation, pointerX, pointerY);
+        gl.uniform1f(pointerStrengthLocation, pointerStrength);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        queueWebGLFrame(frameInterval);
+      };
+
+      syncWebGLSize();
+      window.addEventListener('resize', syncWebGLSize, { passive: true });
+      window.addEventListener('site-effects-tierchange', () => {
+        syncWebGLSize();
+        if (effectsTier === 'off') {
+          clearQueuedFrame();
+          return;
+        }
+        lastDraw = 0;
+        queueWebGLFrame();
+      });
+      window.addEventListener('site-effects-visualstart', () => queueWebGLFrame(), { once: true });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          clearQueuedFrame();
+          lastDraw = 0;
+          return;
+        }
+        lastDraw = 0;
+        queueWebGLFrame();
+      });
+      canvas.addEventListener('webglcontextlost', (event) => {
+        event.preventDefault();
+        clearQueuedFrame();
+      });
+
+      if (pointerReactive) {
+        window.addEventListener(
+          'pointermove',
+          (event) => {
+            if (!visualEffectsActive || effectsTier !== 'full') {
+              return;
+            }
+            pointerX = Math.min(Math.max(event.clientX / Math.max(window.innerWidth || width, 1), 0), 1);
+            pointerY = 1 - Math.min(Math.max(event.clientY / Math.max(window.innerHeight || height, 1), 0), 1);
+            pointerTargetStrength = 1;
+            lastPointerMove = performance.now();
+          },
+          { passive: true }
+        );
+        window.addEventListener('pointerleave', () => {
+          pointerTargetStrength = 0;
+        });
+        window.addEventListener('blur', () => {
+          pointerTargetStrength = 0;
+        });
+      }
+
+      queueWebGLFrame();
+      return true;
+    };
+
+    if (setupAmbientPointField()) {
+      return;
+    }
+
     const canUseWorkerCanvas =
       typeof window.OffscreenCanvas !== 'undefined' &&
       typeof window.Worker !== 'undefined' &&
@@ -2415,6 +3055,7 @@
     root.style.setProperty('--particle-shift-soft-x', '0px');
     root.style.setProperty('--particle-shift-soft-y', '0px');
     const enableParticleParallax = ambientMode !== 'off' && !root.classList.contains('ambient-canvas-ready');
+    const isCssPointerGlowActive = () => !root.classList.contains('ambient-webgl-ready');
     const particleRangeX = ambientMode === 'lite' ? 28 : 42;
     const particleRangeY = ambientMode === 'lite' ? 22 : 34;
 
@@ -2507,8 +3148,11 @@
 
         const viewportW = window.innerWidth || 1;
         const viewportH = window.innerHeight || 1;
-        glowTargetX = (event.clientX / viewportW) * 100;
-        glowTargetY = (event.clientY / viewportH) * 100;
+        if (isCssPointerGlowActive()) {
+          glowTargetX = (event.clientX / viewportW) * 100;
+          glowTargetY = (event.clientY / viewportH) * 100;
+          queueCursorGlow();
+        }
         if (enableParticleParallax) {
           particleTargetX = (event.clientX / viewportW - 0.5) * particleRangeX;
           particleTargetY = (event.clientY / viewportH - 0.5) * particleRangeY;
@@ -2516,7 +3160,6 @@
           particleTargetSoftY = particleTargetY * 0.56;
           queueParticleShift();
         }
-        queueCursorGlow();
       },
       { passive: true }
     );
@@ -3004,9 +3647,4 @@
   updateThemeLabel();
   setupContactFormModule();
 })();
-
-
-
-
-
 

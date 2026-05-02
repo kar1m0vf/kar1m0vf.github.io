@@ -189,6 +189,10 @@ html.has-pointer-effects body::after {
   opacity: 1;
 }
 
+html.ambient-webgl-ready.has-pointer-effects body::after {
+  display: none;
+}
+
 html[data-theme='dark'] body::after {
   background: radial-gradient(
     440px circle at var(--cursor-x) var(--cursor-y),
@@ -328,7 +332,8 @@ html[data-theme='dark'].custom-cursor-active.cursor-hovering .custom-cursor-ring
   opacity: 0.96;
 }
 
-.bg-ambient.has-canvas-particles .bg-particles {
+.bg-ambient.has-canvas-particles .bg-particles,
+.bg-ambient.has-webgl-ambient .bg-orb {
   display: none;
 }
 
@@ -1265,6 +1270,22 @@ html.has-pointer-effects .timeline-card,
 html.has-pointer-effects .quote-card,
 html.has-pointer-effects .form-shell {
   will-change: transform;
+}
+
+html:not(.has-pointer-effects) .hero-copy,
+html:not(.has-pointer-effects) .page-hero-card,
+html:not(.has-pointer-effects) .surface-card,
+html:not(.has-pointer-effects) .project-card,
+html:not(.has-pointer-effects) .contact-card,
+html:not(.has-pointer-effects) .process-card,
+html:not(.has-pointer-effects) .info-card,
+html:not(.has-pointer-effects) .stat-card,
+html:not(.has-pointer-effects) .timeline-card,
+html:not(.has-pointer-effects) .quote-card,
+html:not(.has-pointer-effects) .form-shell {
+  transform: translateY(var(--lift));
+  transform-style: flat;
+  will-change: auto;
 }
 
 html.perf-lite .hero-copy,
