@@ -406,7 +406,7 @@ html.effects-tier-off .custom-cursor-layer {
   border-radius: 50%;
   filter: blur(8px);
   will-change: transform;
-  animation: ambientFloat 28s ease-in-out infinite;
+  animation: ambientFloat 56s ease-in-out infinite;
 }
 
 .bg-orb-a {
@@ -422,7 +422,7 @@ html.effects-tier-off .custom-cursor-layer {
   aspect-ratio: 1;
   top: 58%;
   right: -8%;
-  animation-duration: 36s;
+  animation-duration: 72s;
   animation-delay: -8s;
   background: radial-gradient(circle, rgba(79, 125, 255, 0.11), rgba(79, 125, 255, 0) 72%);
 }
@@ -432,7 +432,7 @@ html.effects-tier-off .custom-cursor-layer {
   aspect-ratio: 1;
   top: 26%;
   left: 42%;
-  animation-duration: 32s;
+  animation-duration: 64s;
   animation-delay: -14s;
   background: radial-gradient(circle, rgba(79, 125, 255, 0.08), rgba(79, 125, 255, 0) 72%);
 }
@@ -452,8 +452,8 @@ html.effects-tier-off .custom-cursor-layer {
     calc(50% + var(--particle-shift-x)) calc(50% + var(--particle-shift-y)),
     calc(18% - var(--particle-shift-soft-x)) calc(24% - var(--particle-shift-soft-y));
   mask-image: radial-gradient(circle at center, black 62%, transparent 100%);
-  transition: background-position 220ms ease-out;
-  animation: particlesDrift 28s linear infinite;
+  transition: background-position 360ms ease-out;
+  animation: particlesDrift 72s linear infinite;
 }
 
 .bg-particles.layer-b {
@@ -467,8 +467,8 @@ html.effects-tier-off .custom-cursor-layer {
   background-position:
     calc(50% + var(--particle-shift-soft-x)) calc(50% + var(--particle-shift-soft-y)),
     calc(70% - var(--particle-shift-x)) calc(74% - var(--particle-shift-y));
-  transition-duration: 320ms;
-  animation: particlesDriftAlt 34s linear infinite reverse;
+  transition-duration: 520ms;
+  animation: particlesDriftAlt 88s linear infinite reverse;
   transform: rotate(8deg);
 }
 
@@ -505,12 +505,12 @@ html[data-theme='dark'] .bg-particles.layer-b {
 
 .bg-ambient.is-lite .bg-orb {
   filter: blur(9px);
-  animation-duration: 38s;
+  animation-duration: 80s;
 }
 
 .bg-ambient.is-lite .bg-particles {
   opacity: 0.28;
-  animation-duration: 36s;
+  animation-duration: 96s;
   background-size:
     92px 92px,
     62px 62px;

@@ -84,7 +84,7 @@
   };
   const getAmbientRenderDpr = () => {
     const deviceDpr = window.devicePixelRatio || 1;
-    const cap = effectsTier === 'full' && !perfLite ? 1.8 : weakProfileActive || saveData ? 1.12 : 1.25;
+    const cap = effectsTier === 'full' && !perfLite ? 1.35 : weakProfileActive || saveData ? 1 : 1.1;
     return Math.max(1, Math.min(deviceDpr, cap));
   };
 
@@ -310,32 +310,32 @@
     }
 
     const liteParticleConfig = {
-      density: 36000,
-      minCount: 10,
-      maxCount: 24,
-      fps: 16,
-      speed: 0.17,
-      jitter: 0.0038,
-      pointerRadius: 112,
-      pointerForce: 0.028,
-      pointerSwirl: 0.007,
+      density: 56000,
+      minCount: 6,
+      maxCount: 14,
+      fps: 10,
+      speed: 0.09,
+      jitter: 0.0018,
+      pointerRadius: 96,
+      pointerForce: 0.016,
+      pointerSwirl: 0.004,
       linkDistance: 0,
       maxLinksPerParticle: 0,
       dotMin: 0.8,
       dotMax: 1.35,
     };
     const fullParticleConfig = {
-      density: 17500,
-      minCount: 30,
-      maxCount: 74,
-      fps: 30,
-      speed: 0.24,
-      jitter: 0.0054,
-      pointerRadius: 132,
-      pointerForce: 0.044,
-      pointerSwirl: 0.012,
-      linkDistance: 64,
-      maxLinksPerParticle: 4,
+      density: 32000,
+      minCount: 18,
+      maxCount: 42,
+      fps: 18,
+      speed: 0.14,
+      jitter: 0.0028,
+      pointerRadius: 112,
+      pointerForce: 0.026,
+      pointerSwirl: 0.007,
+      linkDistance: 52,
+      maxLinksPerParticle: 2,
       dotMin: 0.8,
       dotMax: 1.6,
     };
@@ -3004,7 +3004,6 @@
   updateThemeLabel();
   setupContactFormModule();
 })();
-
 
 
 
