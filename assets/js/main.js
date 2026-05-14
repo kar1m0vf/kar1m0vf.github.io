@@ -24,6 +24,14 @@
       }
     },
   };
+  const debugSurfaceEnabled = (() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('debug') === '1' || params.get('debug') === 'true';
+    } catch (error) {
+      return false;
+    }
+  })();
   const storedTheme = storage.get('site-theme');
   const preferredDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -58,15 +66,34 @@
   root.dataset.deviceProfileSource = deviceProfileSource;
   root.classList.toggle('device-strong', deviceProfile === 'strong');
   root.classList.toggle('device-weak', deviceProfile === 'weak');
-  const forcedPerfLite = effectsConfig.perfLite === true;
+  const runtimeParams = (() => {
+    try {
+      return new URLSearchParams(window.location.search);
+    } catch (error) {
+      return new URLSearchParams();
+    }
+  })();
+  const normalizeEffectsTier = (tier) =>
+    tier === 'full' || tier === 'balanced' || tier === 'lite' || tier === 'off' ? tier : null;
+  const requestedEffectsTier = normalizeEffectsTier(runtimeParams.get('effects'));
+  const configuredEffectsTier = normalizeEffectsTier(effectsConfig.visualQuality);
+  const forcedPerfLite = effectsConfig.perfLite === true || requestedEffectsTier === 'lite';
   const autoPerfLiteSignals = weakProfileActive;
   const normalizeAmbientMode = (mode) => (mode === 'off' || mode === 'lite' || mode === 'full' ? mode : 'auto');
   const forcedAmbientMode = normalizeAmbientMode(effectsConfig.ambientParticles);
-  const ambientAutoMode = reduceMotionQuery.matches || saveData || weakProfileActive ? 'lite' : 'full';
-  const ambientMode = forcedAmbientMode === 'auto' ? ambientAutoMode : forcedAmbientMode;
-  let effectsTier = reduceMotionQuery.matches ? 'off' : autoPerfLiteSignals ? 'lite' : 'full';
+  let effectsTier = reduceMotionQuery.matches
+    ? 'off'
+    : requestedEffectsTier || (autoPerfLiteSignals ? 'lite' : configuredEffectsTier || 'balanced');
   let perfLite = forcedPerfLite || reduceMotionQuery.matches || autoPerfLiteSignals;
   let visualEffectsActive = false;
+  let effectsFpsEstimate = null;
+  const ambientAutoMode =
+    effectsTier === 'off' || reduceMotionQuery.matches || saveData
+      ? 'off'
+      : effectsTier === 'full'
+        ? 'full'
+        : 'lite';
+  const ambientMode = forcedAmbientMode === 'auto' ? ambientAutoMode : forcedAmbientMode;
   const customCursorEnabled = effectsConfig.customCursor !== false;
   const pointerEffectsEnabled = effectsConfig.pointerEffects !== false;
   const pageTransitionsEnabled = effectsConfig.pageTransitions !== false;
@@ -87,20 +114,29 @@
     const cap = effectsTier === 'full' && !perfLite ? 1.35 : weakProfileActive || saveData ? 1 : 1.1;
     return Math.max(1, Math.min(deviceDpr, cap));
   };
+  const canRunAmbientCanvas = () => ambientMode !== 'off' && effectsTier === 'full' && !perfLite;
+  const canRunGlobalPointerEffects = () => visualEffectsActive && effectsTier === 'full' && !perfLite;
+  const canRunCardPointerEffects = () =>
+    visualEffectsActive && (effectsTier === 'full' || effectsTier === 'balanced') && !perfLite;
 
   const syncEffectsTierState = () => {
-    const activePerfLite = perfLite || effectsTier !== 'full';
+    const activePerfLite = perfLite || effectsTier === 'lite' || effectsTier === 'off';
     root.classList.toggle('perf-lite', activePerfLite);
     root.classList.toggle('effects-tier-full', effectsTier === 'full');
+    root.classList.toggle('effects-tier-balanced', effectsTier === 'balanced');
     root.classList.toggle('effects-tier-lite', effectsTier === 'lite');
     root.classList.toggle('effects-tier-off', effectsTier === 'off');
-    if (effectsTier !== 'full') {
-      root.classList.remove('has-pointer-effects', 'cursor-visible', 'cursor-hovering', 'cursor-pressed', 'cursor-text-target');
+    root.dataset.effectsTier = effectsTier;
+    if (!canRunCardPointerEffects()) {
+      root.classList.remove('has-pointer-effects');
+    }
+    if (!canRunGlobalPointerEffects()) {
+      root.classList.remove('has-global-pointer-effects', 'cursor-visible', 'cursor-hovering', 'cursor-pressed', 'cursor-text-target');
     }
   };
 
   const setEffectsTier = (nextTier, reason = 'manual') => {
-    if (nextTier !== 'full' && nextTier !== 'lite' && nextTier !== 'off') {
+    if (nextTier !== 'full' && nextTier !== 'balanced' && nextTier !== 'lite' && nextTier !== 'off') {
       return false;
     }
     if (nextTier === effectsTier) {
@@ -125,6 +161,35 @@
     root.classList.add('ambient-full');
   }
   syncEffectsTierState();
+
+  const restoreHashScrollAfterPaint = () => {
+    if (!window.location.hash) {
+      return;
+    }
+
+    let target = null;
+    try {
+      target = document.querySelector(window.location.hash);
+    } catch (error) {
+      target = null;
+    }
+
+    if (!target || typeof target.scrollIntoView !== 'function') {
+      return;
+    }
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        target.scrollIntoView({ block: 'start' });
+      });
+    });
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', restoreHashScrollAfterPaint, { once: true });
+  } else {
+    restoreHashScrollAfterPaint();
+  }
 
   const ensureAmbientBackground = () => {
     if (!document.body) {
@@ -155,7 +220,7 @@
   };
 
   const setupAmbientParticles = () => {
-    if (ambientMode === 'off') {
+    if (!canRunAmbientCanvas()) {
       return;
     }
 
@@ -1470,8 +1535,10 @@
     syncControl();
   };
 
-  setupDeviceProfileControl();
-  showDeviceProfileToast();
+  if (debugSurfaceEnabled) {
+    setupDeviceProfileControl();
+    showDeviceProfileToast();
+  }
 
   const topbar = document.querySelector('.topbar');
   const menuToggle = document.querySelector('.menu-toggle');
@@ -2469,90 +2536,90 @@
       const stepEventTemplates = [
         [
           {
-            message: 'Catalog ingest cycle finished with hourly fetch cadence.',
+            message: 'Hero hierarchy loads the frontend/product signal before technical proof.',
             stateClass: 'state-good',
-            stateLabel: 'ingest',
+            stateLabel: 'ui',
           },
           {
-            message: 'Fallback source path engaged for resilient product collection.',
+            message: 'Role chips frame the offer around product UI, motion, and automation.',
             stateClass: 'state-live',
-            stateLabel: 'fallback',
+            stateLabel: 'focus',
           },
           {
-            message: 'Source snapshot queued for parse pipeline.',
+            message: 'Primary actions route visitors into interface work and the flagship case.',
             stateClass: 'state-good',
-            stateLabel: 'queued',
+            stateLabel: 'flow',
           },
           {
-            message: 'Marketplace timeout handled without pipeline interruption.',
+            message: 'Debug-only controls stay hidden unless the URL includes ?debug=1.',
             stateClass: 'state-warn',
-            stateLabel: 'retry',
+            stateLabel: 'dev',
           },
         ],
         [
           {
-            message: 'Parser normalized product payload and extracted fresh price fields.',
+            message: 'Parser normalized product payload into clear proof, case, and contact sections.',
             stateClass: 'state-good',
             stateLabel: 'parsed',
           },
           {
-            message: 'Diff engine compared previous snapshot and marked candidate delta.',
+            message: 'Content model separates frontend craft, Python systems, and CI evidence.',
             stateClass: 'state-live',
-            stateLabel: 'diff',
+            stateLabel: 'model',
           },
           {
-            message: 'Threshold rules evaluated for trigger eligibility.',
+            message: 'Case study copy turns implementation details into user-facing product decisions.',
             stateClass: 'state-good',
-            stateLabel: 'rules',
+            stateLabel: 'case',
           },
           {
-            message: 'Localization layer verified message templates across 4 locales.',
+            message: 'Design system samples expose tokens, states, layout, and typography choices.',
             stateClass: 'state-warn',
-            stateLabel: 'locale',
+            stateLabel: 'tokens',
           },
         ],
         [
           {
-            message: 'Discount trigger matched and alert payload assembled.',
+            message: 'Interface Lab shows command navigation, tabs, mobile menu, and adaptive effects.',
             stateClass: 'state-live',
-            stateLabel: 'live',
+            stateLabel: 'lab',
           },
           {
-            message: 'Telegram dispatch completed in millisecond response window.',
+            message: 'Responsive density keeps the same product story readable on narrow screens.',
             stateClass: 'state-good',
-            stateLabel: 'sent',
+            stateLabel: 'mobile',
           },
           {
-            message: 'Dedup guard prevented duplicate alert emission.',
+            message: 'Motion scales with device capability and reduced-motion preferences.',
             stateClass: 'state-good',
-            stateLabel: 'dedupe',
+            stateLabel: 'motion',
           },
           {
-            message: 'Retry branch confirmed delivery after transient transport delay.',
+            message: 'Quality evidence remains available without stealing the first impression.',
             stateClass: 'state-warn',
-            stateLabel: 'retry',
+            stateLabel: 'proof',
           },
         ],
         [
           {
-            message: 'Readiness and deploy smoke checks completed successfully.',
+            message: 'Repository checks validate build, typecheck, unit tests, and e2e flows.',
             stateClass: 'state-good',
-            stateLabel: 'ready',
+            stateLabel: 'ci',
           },
           {
-            message: 'SQLite backup routine finished with integrity validation.',
+            message: 'Project proof links visual decisions to shipped code and public repositories.',
             stateClass: 'state-good',
-            stateLabel: 'backup',
+            stateLabel: 'repo',
           },
           {
-            message: 'Health telemetry confirms stable scheduler and queue behavior.',
+            message: 'Accessibility and SEO signals stay visible as part of delivery quality.',
             stateClass: 'state-live',
-            stateLabel: 'health',
+            stateLabel: 'a11y',
           },
           {
-            message: 'Test contour confirms 115 functions across 40 files in CI flow.',
+            message: 'Debug panels can still be inspected by opening the site with ?debug=1.',
             stateClass: 'state-warn',
-            stateLabel: 'tests',
+            stateLabel: 'debug',
           },
         ],
       ];
@@ -2724,10 +2791,11 @@
         syncValue = clamp(syncValue + (Math.random() - 0.5) * 0.045, 99.72, 99.99);
         latencyValue = Math.round(clamp(latencyValue + (Math.random() - 0.5) * 20, 82, 248));
 
-        syncNode.textContent = `${syncValue.toFixed(2)}%`;
-        queueNode.textContent = 'Hourly checks';
-        deliveredNode.textContent = '~140ms';
-        latencyNode.textContent = `${latencyValue}ms`;
+        syncNode.textContent = 'Synced';
+        queueNode.textContent = 'Case study';
+        deliveredNode.textContent = 'CI backed';
+        latencyNode.textContent =
+          effectsTier === 'full' ? 'Full' : effectsTier === 'balanced' ? 'Balanced' : effectsTier === 'lite' ? 'Lite' : 'Off';
 
         const touchLockActive = manualStepLockUntil > Date.now();
         const shouldFreezeStepAutoRotate = (manualStepFreezeOnHover && surfaceHovering) || touchLockActive;
@@ -2884,7 +2952,7 @@
 
   let ambientParticlesQueued = false;
   const scheduleAmbientParticles = () => {
-    if (ambientMode === 'off' || ambientParticlesQueued || effectsTier === 'off') {
+    if (!canRunAmbientCanvas() || ambientParticlesQueued) {
       return;
     }
 
@@ -2964,12 +3032,19 @@
     }
     observeHeroForVisualEffects();
   });
+  window.addEventListener('site-effects-tierchange', (event) => {
+    if (!event || !event.detail || event.detail.tier !== 'full' || !visualEffectsActive) {
+      return;
+    }
+    scheduleAmbientParticles();
+  });
 
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   const canRunPointerEffects = !reducedMotion && finePointer && pointerEffectsEnabled;
-  const customCursorActive = canRunPointerEffects && customCursorEnabled && !perfLite;
-  const isPointerEffectsActive = () => visualEffectsActive && effectsTier === 'full';
+  const customCursorActive = canRunPointerEffects && customCursorEnabled && effectsTier === 'full' && !perfLite;
+  const isPointerEffectsActive = () => canRunCardPointerEffects();
+  const isGlobalPointerEffectsActive = () => canRunGlobalPointerEffects();
   if (canRunPointerEffects) {
     const lerp = (current, target, amount) => current + (target - current) * amount;
     let cursorRing = null;
@@ -3035,11 +3110,13 @@
 
     const syncPointerRuntimeState = () => {
       const pointerActive = isPointerEffectsActive();
+      const globalPointerActive = isGlobalPointerEffectsActive();
       root.classList.toggle('has-pointer-effects', pointerActive);
+      root.classList.toggle('has-global-pointer-effects', globalPointerActive);
       if (customCursorActive) {
-        root.classList.toggle('custom-cursor-active', pointerActive);
+        root.classList.toggle('custom-cursor-active', globalPointerActive);
       }
-      if (!pointerActive) {
+      if (!globalPointerActive) {
         root.classList.remove('cursor-visible', 'cursor-hovering', 'cursor-pressed', 'cursor-text-target');
       }
     };
@@ -3128,7 +3205,7 @@
           return;
         }
 
-        if (customCursorActive && cursorRing && cursorDot) {
+        if (isGlobalPointerEffectsActive() && customCursorActive && cursorRing && cursorDot) {
           cursorTargetX = event.clientX;
           cursorTargetY = event.clientY;
 
@@ -3148,12 +3225,12 @@
 
         const viewportW = window.innerWidth || 1;
         const viewportH = window.innerHeight || 1;
-        if (isCssPointerGlowActive()) {
+        if (isGlobalPointerEffectsActive() && isCssPointerGlowActive()) {
           glowTargetX = (event.clientX / viewportW) * 100;
           glowTargetY = (event.clientY / viewportH) * 100;
           queueCursorGlow();
         }
-        if (enableParticleParallax) {
+        if (isGlobalPointerEffectsActive() && enableParticleParallax) {
           particleTargetX = (event.clientX / viewportW - 0.5) * particleRangeX;
           particleTargetY = (event.clientY / viewportH - 0.5) * particleRangeY;
           particleTargetSoftX = particleTargetX * 0.56;
@@ -3167,7 +3244,7 @@
     window.addEventListener(
       'pointerdown',
       (event) => {
-        if (!isPointerEffectsActive() || !customCursorActive || !event.isPrimary) {
+        if (!isGlobalPointerEffectsActive() || !customCursorActive || !event.isPrimary) {
           return;
         }
         root.classList.add('cursor-pressed');
@@ -3179,7 +3256,7 @@
     window.addEventListener(
       'pointerup',
       () => {
-        if (!isPointerEffectsActive() || !customCursorActive) {
+        if (!isGlobalPointerEffectsActive() || !customCursorActive) {
           return;
         }
         root.classList.remove('cursor-pressed');
@@ -3190,7 +3267,7 @@
     window.addEventListener(
       'pointercancel',
       () => {
-        if (!isPointerEffectsActive() || !customCursorActive) {
+        if (!isGlobalPointerEffectsActive() || !customCursorActive) {
           return;
         }
         root.classList.remove('cursor-pressed');
@@ -3240,8 +3317,8 @@
 
       const renderCard = () => {
         state.frame = 0;
-        state.currentTiltX = lerp(state.currentTiltX, state.targetTiltX, 0.3);
-        state.currentTiltY = lerp(state.currentTiltY, state.targetTiltY, 0.3);
+        state.currentTiltX = lerp(state.currentTiltX, state.targetTiltX, 0.22);
+        state.currentTiltY = lerp(state.currentTiltY, state.targetTiltY, 0.22);
         state.currentPointerX = lerp(state.currentPointerX, state.targetPointerX, 0.32);
         state.currentPointerY = lerp(state.currentPointerY, state.targetPointerY, 0.32);
 
@@ -3295,9 +3372,13 @@
           const py = (event.clientY - rect.top) / rect.height;
           const clampedX = Math.min(Math.max(px, 0), 1);
           const clampedY = Math.min(Math.max(py, 0), 1);
-          const tiltMultiplier = card.classList.contains('product-project-card') ? 0.72 : 1;
-          state.targetTiltX = (0.5 - clampedY) * 5.4 * tiltMultiplier;
-          state.targetTiltY = (clampedX - 0.5) * 6.3 * tiltMultiplier;
+          const isLargeSurface =
+            card.classList.contains('hero-copy') ||
+            card.classList.contains('page-hero-card') ||
+            card.classList.contains('surface-card');
+          const tiltMultiplier = card.classList.contains('product-project-card') ? 0.72 : isLargeSurface ? 0.78 : 1;
+          state.targetTiltX = (0.5 - clampedY) * 2.1 * tiltMultiplier;
+          state.targetTiltY = (clampedX - 0.5) * 2.4 * tiltMultiplier;
           state.targetPointerX = clampedX * 100;
           state.targetPointerY = clampedY * 100;
           queueCardRender();
@@ -3320,7 +3401,7 @@
       return;
     }
 
-    const maxRecoverTier = autoPerfLiteSignals ? 'lite' : 'full';
+    const maxRecoverTier = autoPerfLiteSignals ? 'lite' : requestedEffectsTier || configuredEffectsTier || 'balanced';
     let started = false;
     let lastTime = 0;
     let deltaSum = 0;
@@ -3334,13 +3415,23 @@
         return;
       }
 
-      if (effectsTier === 'lite' && maxRecoverTier === 'full') {
+      if (effectsTier === 'lite' && (maxRecoverTier === 'balanced' || maxRecoverTier === 'full')) {
+        setEffectsTier('balanced', 'fps-recover');
+        return;
+      }
+
+      if (effectsTier === 'balanced' && maxRecoverTier === 'full') {
         setEffectsTier('full', 'fps-recover');
       }
     };
 
     const degradeTier = () => {
       if (effectsTier === 'full') {
+        setEffectsTier('balanced', 'fps-drop');
+        return;
+      }
+
+      if (effectsTier === 'balanced') {
         setEffectsTier('lite', 'fps-drop');
       }
     };
@@ -3371,6 +3462,7 @@
 
       const avgDelta = deltaSum / frameCount;
       const fps = 1000 / avgDelta;
+      effectsFpsEstimate = fps;
       deltaSum = 0;
       frameCount = 0;
 
@@ -3425,6 +3517,13 @@
     panel.innerHTML = `
       <button type="button" class="vitals-panel-toggle" aria-expanded="false">Vitals</button>
       <section class="vitals-panel-body" data-vitals-body hidden>
+        <p class="vitals-panel-title">Effects Runtime</p>
+        <div class="vitals-grid runtime-grid">
+          <div class="vitals-row" data-runtime-id="TIER"><span>Tier</span><strong>--</strong></div>
+          <div class="vitals-row" data-runtime-id="FPS"><span>FPS</span><strong>--</strong></div>
+          <div class="vitals-row" data-runtime-id="CANVAS"><span>Canvas</span><strong>--</strong></div>
+          <div class="vitals-row" data-runtime-id="POINTER"><span>Pointer</span><strong>--</strong></div>
+        </div>
         <p class="vitals-panel-title">Web Vitals</p>
         <div class="vitals-grid">
           <div class="vitals-row" data-vital-id="TTFB"><span>TTFB</span><strong>--</strong></div>
@@ -3452,6 +3551,50 @@
         rowMap[metricId] = { row, valueNode };
       }
     });
+    const runtimeMap = {};
+    panel.querySelectorAll('[data-runtime-id]').forEach((row) => {
+      const runtimeId = String(row.getAttribute('data-runtime-id') || '').toUpperCase();
+      const valueNode = row.querySelector('strong');
+      if (runtimeId && valueNode) {
+        runtimeMap[runtimeId] = { row, valueNode };
+      }
+    });
+
+    const updateRuntimeRow = (runtimeId, value, state = 'is-unknown') => {
+      const target = runtimeMap[runtimeId];
+      if (!target) {
+        return;
+      }
+      target.valueNode.textContent = value;
+      target.row.classList.remove('is-good', 'is-needs', 'is-poor', 'is-unknown');
+      target.row.classList.add(state);
+    };
+
+    const updateRuntimeDebug = () => {
+      const canvasActive = Boolean(document.querySelector('.bg-particles-canvas'));
+      const globalPointerActive = root.classList.contains('has-global-pointer-effects');
+      const cardPointerActive = root.classList.contains('has-pointer-effects');
+      updateRuntimeRow(
+        'TIER',
+        effectsTier,
+        effectsTier === 'full' ? 'is-needs' : effectsTier === 'off' ? 'is-unknown' : 'is-good'
+      );
+      updateRuntimeRow(
+        'FPS',
+        effectsFpsEstimate === null ? '--' : String(Math.round(effectsFpsEstimate)),
+        effectsFpsEstimate === null ? 'is-unknown' : effectsFpsEstimate >= 55 ? 'is-good' : effectsFpsEstimate >= 45 ? 'is-needs' : 'is-poor'
+      );
+      updateRuntimeRow('CANVAS', canvasActive ? 'on' : 'off', canvasActive ? 'is-needs' : 'is-good');
+      updateRuntimeRow(
+        'POINTER',
+        globalPointerActive ? 'global' : cardPointerActive ? 'cards' : 'off',
+        globalPointerActive ? 'is-needs' : cardPointerActive ? 'is-good' : 'is-unknown'
+      );
+    };
+    updateRuntimeDebug();
+    window.addEventListener('site-effects-tierchange', updateRuntimeDebug);
+    window.addEventListener('site-effects-visualstart', updateRuntimeDebug);
+    window.setInterval(updateRuntimeDebug, 900);
 
     const thresholds = {
       TTFB: { good: 800, needs: 1800, unit: 'ms' },
@@ -3640,11 +3783,12 @@
   };
 
   setupAutoEffectsTierMonitor();
-  setupWebVitalsPanel();
+  if (debugSurfaceEnabled) {
+    setupWebVitalsPanel();
+  }
   setupServiceWorkerRegistration();
 
   applyConfig();
   updateThemeLabel();
   setupContactFormModule();
 })();
-

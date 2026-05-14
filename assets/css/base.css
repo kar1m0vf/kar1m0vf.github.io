@@ -185,11 +185,11 @@ body::after {
   transition: opacity 220ms ease;
 }
 
-html.has-pointer-effects body::after {
+html.has-global-pointer-effects body::after {
   opacity: 1;
 }
 
-html.ambient-webgl-ready.has-pointer-effects body::after {
+html.ambient-webgl-ready.has-global-pointer-effects body::after {
   display: none;
 }
 
@@ -398,6 +398,84 @@ html.perf-lite .bg-particles-canvas {
 
 html.perf-lite .custom-cursor-layer {
   display: none !important;
+}
+
+html.effects-tier-balanced .bg-particles.layer-b {
+  display: none;
+}
+
+html.effects-tier-balanced .bg-orb {
+  animation-duration: 72s;
+  will-change: auto;
+}
+
+html.effects-tier-balanced .preview-glare {
+  animation-play-state: paused;
+  opacity: 0.34;
+  will-change: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.effects-tier-balanced .project-card:hover .preview-glare,
+  html.effects-tier-balanced .project-card:focus-within .preview-glare {
+    animation-duration: 14s;
+    animation-play-state: running;
+  }
+}
+
+html.effects-tier-balanced .bg-particles {
+  animation-duration: 118s;
+  will-change: auto;
+}
+
+html.effects-tier-balanced .chat-line,
+html.effects-tier-balanced .bar,
+html.effects-tier-balanced .preview-line span,
+html.effects-tier-balanced .tracker-price-new,
+html.effects-tier-balanced .tracker-sparkline span,
+html.effects-tier-balanced .tracker-alert-card,
+html.effects-tier-balanced .tracker-chat-dot,
+html.effects-tier-balanced .tracker-chat-bubble,
+html.effects-tier-balanced .tracker-chat-typing,
+html.effects-tier-balanced .tracker-alert-chip,
+html.effects-tier-balanced .panel,
+html.effects-tier-balanced .ship,
+html.effects-tier-balanced .projectile,
+html.effects-tier-balanced .enemy {
+  animation-play-state: paused;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  html.effects-tier-balanced .project-card:hover .chat-line,
+  html.effects-tier-balanced .project-card:hover .bar,
+  html.effects-tier-balanced .project-card:hover .preview-line span,
+  html.effects-tier-balanced .project-card:hover .tracker-price-new,
+  html.effects-tier-balanced .project-card:hover .tracker-sparkline span,
+  html.effects-tier-balanced .project-card:hover .tracker-alert-card,
+  html.effects-tier-balanced .project-card:hover .tracker-chat-dot,
+  html.effects-tier-balanced .project-card:hover .tracker-chat-bubble,
+  html.effects-tier-balanced .project-card:hover .tracker-chat-typing,
+  html.effects-tier-balanced .project-card:hover .tracker-alert-chip,
+  html.effects-tier-balanced .project-card:hover .panel,
+  html.effects-tier-balanced .project-card:hover .ship,
+  html.effects-tier-balanced .project-card:hover .projectile,
+  html.effects-tier-balanced .project-card:hover .enemy,
+  html.effects-tier-balanced .project-card:focus-within .chat-line,
+  html.effects-tier-balanced .project-card:focus-within .bar,
+  html.effects-tier-balanced .project-card:focus-within .preview-line span,
+  html.effects-tier-balanced .project-card:focus-within .tracker-price-new,
+  html.effects-tier-balanced .project-card:focus-within .tracker-sparkline span,
+  html.effects-tier-balanced .project-card:focus-within .tracker-alert-card,
+  html.effects-tier-balanced .project-card:focus-within .tracker-chat-dot,
+  html.effects-tier-balanced .project-card:focus-within .tracker-chat-bubble,
+  html.effects-tier-balanced .project-card:focus-within .tracker-chat-typing,
+  html.effects-tier-balanced .project-card:focus-within .tracker-alert-chip,
+  html.effects-tier-balanced .project-card:focus-within .panel,
+  html.effects-tier-balanced .project-card:focus-within .ship,
+  html.effects-tier-balanced .project-card:focus-within .projectile,
+  html.effects-tier-balanced .project-card:focus-within .enemy {
+    animation-play-state: running;
+  }
 }
 
 html.effects-tier-off .bg-ambient,
@@ -1249,7 +1327,7 @@ html[data-theme='dark'] .link-button.secondary {
   --lift: 0px;
   --pointer-x: 50%;
   --pointer-y: 50%;
-  --base-transform: perspective(980px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))
+  --base-transform: perspective(1400px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))
     translateY(var(--lift));
   transform: var(--base-transform);
   transform-style: preserve-3d;
@@ -1258,18 +1336,31 @@ html[data-theme='dark'] .link-button.secondary {
   will-change: auto;
 }
 
-html.has-pointer-effects .hero-copy,
-html.has-pointer-effects .page-hero-card,
-html.has-pointer-effects .surface-card,
-html.has-pointer-effects .project-card,
-html.has-pointer-effects .contact-card,
-html.has-pointer-effects .process-card,
-html.has-pointer-effects .info-card,
-html.has-pointer-effects .stat-card,
-html.has-pointer-effects .timeline-card,
-html.has-pointer-effects .quote-card,
-html.has-pointer-effects .form-shell {
-  will-change: transform;
+@media (hover: hover) and (pointer: fine) {
+  html.has-pointer-effects .hero-copy:hover,
+  html.has-pointer-effects .hero-copy:focus-within,
+  html.has-pointer-effects .page-hero-card:hover,
+  html.has-pointer-effects .page-hero-card:focus-within,
+  html.has-pointer-effects .surface-card:hover,
+  html.has-pointer-effects .surface-card:focus-within,
+  html.has-pointer-effects .project-card:hover,
+  html.has-pointer-effects .project-card:focus-within,
+  html.has-pointer-effects .contact-card:hover,
+  html.has-pointer-effects .contact-card:focus-within,
+  html.has-pointer-effects .process-card:hover,
+  html.has-pointer-effects .process-card:focus-within,
+  html.has-pointer-effects .info-card:hover,
+  html.has-pointer-effects .info-card:focus-within,
+  html.has-pointer-effects .stat-card:hover,
+  html.has-pointer-effects .stat-card:focus-within,
+  html.has-pointer-effects .timeline-card:hover,
+  html.has-pointer-effects .timeline-card:focus-within,
+  html.has-pointer-effects .quote-card:hover,
+  html.has-pointer-effects .quote-card:focus-within,
+  html.has-pointer-effects .form-shell:hover,
+  html.has-pointer-effects .form-shell:focus-within {
+    will-change: transform;
+  }
 }
 
 html:not(.has-pointer-effects) .hero-copy,

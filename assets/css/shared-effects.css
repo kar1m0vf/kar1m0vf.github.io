@@ -357,6 +357,10 @@ html[data-theme='dark'] .device-profile-toast {
   gap: 0.22rem;
 }
 
+.runtime-grid {
+  margin-bottom: 0.58rem;
+}
+
 .vitals-row {
   display: flex;
   align-items: baseline;
@@ -1556,7 +1560,6 @@ html[data-theme='dark'] .vitals-row.is-poor strong {
     display: none;
   }
 }
-
 
 
 
