@@ -87,7 +87,7 @@
                   "item": {
                     "@type": "SoftwareSourceCode",
                     "name": "Trendyol Price Tracker",
-                    "description": "End-to-end Telegram tracker on Python, Aiogram, and SQLite with subscriptions, history analytics, recommendations, multilingual UI, backup, and deploy/readiness checks.",
+                    "description": "Source-available Telegram service for Trendyol price tracking with watchlists, alert rules, price history, compare/export flows, recommendations, admin tools, localization, and diagnostics.",
                     "codeRepository": "https://github.com/kar1m0vf/trendyol-price-tracker",
                     "programmingLanguage": "Python"
                   }
@@ -98,7 +98,7 @@
                   "item": {
                     "@type": "SoftwareSourceCode",
                     "name": "Blaster Game",
-                    "description": "Python 3.11 and Pygame 2D shooter with procedural audio synthesis, multi-phase boss logic, replay buffer, tests, and CI.",
+                    "description": "Python and Pygame 2D arcade shooter with a 16:9 playfield, animated menus, quality presets, waves, boss phases, death replay, persistent settings, tests, and Windows build flow.",
                     "codeRepository": "https://github.com/kar1m0vf/blaster-game",
                     "programmingLanguage": "Python"
                   }
@@ -208,10 +208,9 @@
         <div class="container">
           <article class="page-hero-card">
             <span class="eyebrow">Projects</span>
-            <h1 class="page-title">Projects by Kamil Kerimov for real users and business goals.</h1>
+            <h1 class="page-title">Selected software work by Kamil Kerimov.</h1>
             <p class="page-intro">
-              A selection of web products, automation systems, and Telegram bot solutions by Kamil Kerimov
-              (kar1m0vf), delivered for practical use.
+              Telegram automation, a Pygame desktop game, and this tested portfolio frontend.
             </p>
           </article>
         </div>
@@ -234,67 +233,31 @@
                 </div>
                 <span class="project-metric">Python | Aiogram | SQLite</span>
               </div>
-              <div class="project-preview preview-tracker" aria-hidden="true">
-                <span class="preview-glare"></span>
-                <div class="tracker-price-card">
-                  <div class="tracker-surface-meta">
-                    <span>scan live</span>
-                    <span>4 locales</span>
-                  </div>
-                  <span class="tracker-title-line"></span>
-                  <div class="tracker-prices">
-                    <span class="tracker-price-old"></span>
-                    <span class="tracker-price-new"></span>
-                  </div>
-                  <div class="tracker-sparkline">
-                    <span></span>
-                    <div class="tracker-history-bars" aria-hidden="true">
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                      <span></span>
-                    </div>
-                  </div>
-                  <div class="tracker-kpi-row">
-                    <span><strong>-18%</strong> drop</span>
-                    <span><strong>1h</strong> cadence</span>
-                    <span><strong>WAL</strong> store</span>
-                  </div>
-                </div>
-                <div class="tracker-alert-card">
-                  <div class="tracker-chat-head">
-                    <span class="tracker-chat-dot" aria-hidden="true"></span>
-                    <span class="tracker-chat-title">Telegram</span>
-                  </div>
-                  <span class="tracker-chat-bubble"></span>
-                  <span class="tracker-chat-bubble out"></span>
-                  <div class="tracker-chat-foot">
-                    <span class="tracker-chat-typing" aria-hidden="true"></span>
-                    <span class="tracker-alert-chip">online</span>
-                  </div>
-                  <div class="tracker-dispatch-list">
-                    <span class="tracker-dispatch-item">nike zoom <strong>sent</strong></span>
-                    <span class="tracker-dispatch-item">adidas daily <strong>queued</strong></span>
-                  </div>
-                </div>
-              </div>
+              <figure class="project-preview preview-tracker project-media project-media-logo project-media-trendyol">
+                <img
+                  src="assets/media/projects/trendyol-price-tracker-logo.png"
+                  alt="Price Tracker for Trendyol logo"
+                  width="1254"
+                  height="1254"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
               <div class="gold-line"></div>
               <div class="project-copy">
                 <p>
-                  End-to-end Telegram tracker built with Python, Aiogram, and SQLite: subscriptions,
-                  price history, product comparison, recommendations, multilingual UX, and admin tooling.
+                  Source-available Telegram service for Trendyol price tracking: user watchlists, alert rules,
+                  price history, compare/export flows, recommendations, admin tools, and localization.
                 </p>
                 <div class="metrics">
-                  <span class="tag">SQLite + WAL + PRAGMA</span>
-                  <span class="tag">4 Locales (229 Keys Each)</span>
-                  <span class="tag">Readiness + Smoke Checks</span>
+                  <span class="tag">Aiogram 3 Runtime</span>
+                  <span class="tag">SQLite History Store</span>
+                  <span class="tag">293 Passed / 3 Skipped Recorded</span>
                 </div>
                 <ul class="list-clean">
-                  <li>Hourly price scan jobs with fallback fetch paths and discount-triggered Telegram alerts</li>
-                  <li>Data layer with migrations, indexes, backup pipeline, and runtime optimization</li>
-                  <li>Operational diagnostics and quality checks: readiness checks, deploy smoke checks, and a green CI test contour across 115 test functions in 40 files</li>
+                  <li>Tracks Trendyol links as saved products with history, stats, charts, and CSV/JSON exports</li>
+                  <li>Supports target prices, min/max and percent thresholds, quiet hours, intervals, and grouped alerts</li>
+                  <li>Includes admin controls, backups, health checks, locale validation, and deployment diagnostics</li>
                 </ul>
               </div>
               <div class="project-links">
@@ -322,48 +285,65 @@
                   <div class="project-index">02</div>
                   <h3>Blaster Game</h3>
                 </div>
-                <span class="project-metric">Python 3.11 | Pygame</span>
+                <span class="project-metric">Python | Pygame</span>
               </div>
-              <div class="project-preview preview-blaster" aria-hidden="true">
-                <span class="preview-glare"></span>
-                <div class="preview-arena">
-                  <div class="arena-hud">
-                    <span>Wave 04</span>
-                    <span>Shield 92%</span>
-                    <span>Combo x12</span>
-                  </div>
-                  <div class="arena-bottom-readout">
-                    <span>Boss phase 2</span>
-                    <span>2.4k score</span>
-                  </div>
-                  <span class="arena-trail arena-trail-left"></span>
-                  <span class="arena-trail arena-trail-right"></span>
-                  <span class="arena-beacon"></span>
-                  <span class="ship"></span>
-                  <span class="projectile"></span>
-                  <span class="projectile projectile-alt projectile-alt-left"></span>
-                  <span class="projectile projectile-alt projectile-alt-right"></span>
-                  <span class="enemy"></span>
-                  <span class="enemy enemy-2"></span>
-                </div>
-              </div>
+              <figure class="project-preview preview-blaster project-media project-media-screenshot">
+                <img
+                  src="assets/media/projects/blaster-menu.png"
+                  alt="Blaster main menu screenshot"
+                  width="1280"
+                  height="720"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <img
+                  class="project-media-badge"
+                  src="assets/media/projects/blaster-logo.png"
+                  alt=""
+                  width="1024"
+                  height="1024"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </figure>
               <div class="gold-line"></div>
               <div class="project-copy">
                 <p>
-                  Python 3.11 + Pygame project built as a full 2D engineering stack with custom render
-                  pipeline, procedural audio, advanced boss phases, and production-oriented tooling.
+                  Python and Pygame arcade shooter with animated menus, a 1280x720 scaled playfield,
+                  quality presets, wave progression, boss phases, and local user data.
                 </p>
                 <div class="metrics">
-                  <span class="tag">Real-Time FX Pipeline</span>
-                  <span class="tag">Procedural WAV Audio</span>
-                  <span class="tag">Boss + Replay Systems</span>
+                  <span class="tag">16:9 Playfield</span>
+                  <span class="tag">Quality Presets</span>
+                  <span class="tag">Windows Release Zip</span>
+                </div>
+                <div class="project-shot-strip" aria-label="Blaster gameplay screenshots">
+                  <figure>
+                    <img
+                      src="assets/media/projects/blaster-battle.png"
+                      alt="Blaster wave gameplay screenshot"
+                      width="1280"
+                      height="720"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </figure>
+                  <figure>
+                    <img
+                      src="assets/media/projects/blaster-boss.png"
+                      alt="Blaster boss phase screenshot"
+                      width="1280"
+                      height="720"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </figure>
                 </div>
                 <ul class="list-clean">
-                  <li>Visual pipeline with quality presets, scanlines, vignette, trails, and screen shake</li>
-                  <li>Procedural sound generation using Python's wave, struct, and math modules</li>
-                  <li>Multi-phase telegraph boss attacks, power-up system, and death replay buffer</li>
-                  <li>Validated/sanitized JSON storage for highscores and settings</li>
-                  <li>Pytest coverage, GitHub Actions CI, and automated Windows executable builds via PyInstaller</li>
+                  <li>Animated main and pause menus with mouse and keyboard options UI</li>
+                  <li>Offline 8-wave run mode with special enemies, boss phases, and skippable death replay</li>
+                  <li>Persistent settings and high scores stored in the user's app data directory</li>
+                  <li>Pytest command and release script for building the Windows executable archive</li>
                 </ul>
               </div>
               <div class="project-links">
@@ -390,8 +370,8 @@
               <div class="gold-line"></div>
               <div class="project-copy">
                 <p>
-                  Explore additional repositories, experiments, and production code samples on my GitHub
-                  profile.
+                  GitHub currently includes 11 public repositories: the portfolio, Trendyol tracker, Blaster,
+                  and earlier JavaScript/CSS/HTML practice builds.
                 </p>
               </div>
               <div class="project-links">
@@ -414,10 +394,9 @@
         <div class="container">
           <div class="section-heading reveal">
             <span class="eyebrow">Portfolio Case Study</span>
-            <h2>This portfolio is also a shipped project by me.</h2>
+            <h2>Portfolio source and quality proof.</h2>
             <p>
-              It works as practical proof of authorship, frontend execution, and engineering discipline through public
-              code, commit history, and automated quality checks.
+              Public source, commit history, typed modules, end-to-end checks, and Lighthouse evidence for this site.
             </p>
           </div>
           <div class="split-grid projects-proof-grid">
@@ -425,8 +404,7 @@
               <span class="badge">Authorship Proof</span>
               <h3>Built and maintained by Kamil Kerimov</h3>
               <p>
-                This site was designed and developed end-to-end by me, including interface system, frontend behavior,
-                typed modules, test coverage, and release workflow.
+                Designed and built end to end: layout, theme behavior, command navigation, responsive states, and release checks.
               </p>
               <div class="project-links">
                 <a
@@ -521,10 +499,6 @@
     <script defer src="assets/js/main.js"></script>
   </body>
 </html>
-
-
-
-
 
 
 

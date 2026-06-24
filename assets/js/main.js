@@ -2536,90 +2536,90 @@
       const stepEventTemplates = [
         [
           {
-            message: 'Hero hierarchy loads the frontend/product signal before technical proof.',
+            message: 'Trendyol links are saved as tracked products with price history.',
             stateClass: 'state-good',
-            stateLabel: 'ui',
+            stateLabel: 'track',
           },
           {
-            message: 'Role chips frame the offer around product UI, motion, and automation.',
+            message: 'Watchlists keep alert rules, quiet hours, and user thresholds together.',
             stateClass: 'state-live',
-            stateLabel: 'focus',
+            stateLabel: 'rules',
           },
           {
-            message: 'Primary actions route visitors into interface work and the flagship case.',
+            message: 'Projects are placed before deeper proof so visitors reach the work faster.',
             stateClass: 'state-good',
             stateLabel: 'flow',
           },
           {
-            message: 'Debug-only controls stay hidden unless the URL includes ?debug=1.',
-            stateClass: 'state-warn',
-            stateLabel: 'dev',
-          },
-        ],
-        [
-          {
-            message: 'Parser normalized product payload into clear proof, case, and contact sections.',
-            stateClass: 'state-good',
-            stateLabel: 'parsed',
-          },
-          {
-            message: 'Content model separates frontend craft, Python systems, and CI evidence.',
-            stateClass: 'state-live',
-            stateLabel: 'model',
-          },
-          {
-            message: 'Case study copy turns implementation details into user-facing product decisions.',
-            stateClass: 'state-good',
-            stateLabel: 'case',
-          },
-          {
-            message: 'Design system samples expose tokens, states, layout, and typography choices.',
-            stateClass: 'state-warn',
-            stateLabel: 'tokens',
-          },
-        ],
-        [
-          {
-            message: 'Interface Lab shows command navigation, tabs, mobile menu, and adaptive effects.',
-            stateClass: 'state-live',
-            stateLabel: 'lab',
-          },
-          {
-            message: 'Responsive density keeps the same product story readable on narrow screens.',
-            stateClass: 'state-good',
-            stateLabel: 'mobile',
-          },
-          {
-            message: 'Motion scales with device capability and reduced-motion preferences.',
-            stateClass: 'state-good',
-            stateLabel: 'motion',
-          },
-          {
-            message: 'Quality evidence remains available without stealing the first impression.',
+            message: 'Portfolio quality checks stay available without owning the first impression.',
             stateClass: 'state-warn',
             stateLabel: 'proof',
           },
         ],
         [
           {
-            message: 'Repository checks validate build, typecheck, unit tests, and e2e flows.',
+            message: 'Parser normalizes Trendyol product payloads for history and alerts.',
+            stateClass: 'state-good',
+            stateLabel: 'parsed',
+          },
+          {
+            message: 'SQLite stores snapshots, subscriptions, and compare-ready product data.',
+            stateClass: 'state-live',
+            stateLabel: 'db',
+          },
+          {
+            message: 'Fallback fetch paths keep direct URLs, search, and category flows usable.',
+            stateClass: 'state-good',
+            stateLabel: 'fetch',
+          },
+          {
+            message: 'Locale and smoke checks catch release issues before deployment.',
+            stateClass: 'state-warn',
+            stateLabel: 'checks',
+          },
+        ],
+        [
+          {
+            message: 'Telegram alerts group price drops into readable product updates.',
+            stateClass: 'state-live',
+            stateLabel: 'alert',
+          },
+          {
+            message: 'History powers charts, compare views, exports, and recommendations.',
+            stateClass: 'state-good',
+            stateLabel: 'hist',
+          },
+          {
+            message: 'Admin tools expose cleanup, backup, diagnostics, and user controls.',
+            stateClass: 'state-good',
+            stateLabel: 'admin',
+          },
+          {
+            message: 'Blaster and portfolio work stay one scroll away from the flagship case.',
+            stateClass: 'state-warn',
+            stateLabel: 'more',
+          },
+        ],
+        [
+          {
+            message: 'Portfolio checks validate build, typecheck, unit tests, and e2e flows.',
             stateClass: 'state-good',
             stateLabel: 'ci',
           },
           {
-            message: 'Project proof links visual decisions to shipped code and public repositories.',
+            message: 'Public repositories keep implementation details inspectable.',
             stateClass: 'state-good',
             stateLabel: 'repo',
           },
           {
-            message: 'Accessibility and SEO signals stay visible as part of delivery quality.',
+            message: 'Accessibility and SEO stay part of delivery quality.',
             stateClass: 'state-live',
             stateLabel: 'a11y',
           },
           {
-            message: 'Debug panels can still be inspected by opening the site with ?debug=1.',
+            message: 'Command navigation remains available without adding visible copy.',
             stateClass: 'state-warn',
-            stateLabel: 'debug',
+            stateLabel: 'nav',
           },
         ],
       ];

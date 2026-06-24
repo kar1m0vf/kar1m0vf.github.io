@@ -27,7 +27,7 @@ test.describe('Homepage core UX', () => {
     await parseStep.click();
 
     await expect(parseStep).toHaveClass(/is-active/);
-    await expect(page.locator('[data-ops-events]')).toContainText('Parser normalized product payload');
+    await expect(page.locator('[data-ops-events]')).toContainText('Parser normalizes Trendyol product payloads');
   });
 });
 
