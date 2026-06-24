@@ -161,10 +161,10 @@ export const setupCommandPalette = ({
 
   const homepageAnchors = [
     { id: 'home', label: 'Jump to Hero', search: 'hero homepage intro landing' },
-    { id: 'flagship', label: 'Jump to Flagship', search: 'flagship case study trendyol tracker' },
-    { id: 'quality-evidence', label: 'Jump to CI Evidence', search: 'ci evidence quality tests lighthouse' },
     { id: 'selected-projects', label: 'Jump to Selected Projects', search: 'selected projects showcases modules' },
+    { id: 'flagship', label: 'Jump to Flagship', search: 'flagship case study trendyol tracker' },
     { id: 'capabilities', label: 'Jump to Capabilities', search: 'capabilities strip stack skills' },
+    { id: 'quality-evidence', label: 'Jump to CI Evidence', search: 'ci evidence quality tests lighthouse' },
     { id: 'contact-cta', label: 'Jump to Contact CTA', search: 'contact cta hire collaboration' },
   ];
 
