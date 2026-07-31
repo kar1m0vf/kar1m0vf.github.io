@@ -16,7 +16,7 @@ export default defineConfig({
   },
   fullyParallel: true,
   retries: ciLikeMode ? 1 : 0,
-  ...(ciLikeMode ? { workers: 2 } : {}),
+  workers: ciLikeMode ? 2 : 1,
   reporter: ciLikeMode
     ? [
         ...(process.env.CI ? [['github'] as const] : [['list'] as const]),
@@ -26,13 +26,14 @@ export default defineConfig({
     : [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: BASE_URL,
+    colorScheme: 'dark',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
   outputDir: 'test-results/playwright-artifacts',
   webServer: {
-    command: `npx http-server . -p ${PORT} -c-1 --silent`,
+    command: `npm run build && npm run preview -- --port ${PORT}`,
     url: BASE_URL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

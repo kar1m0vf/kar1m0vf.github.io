@@ -2,31 +2,45 @@
   "name": "kar1m0vf-portfolio",
   "version": "1.0.0",
   "private": true,
-  "description": "Static portfolio with professional quality tooling.",
+  "type": "module",
+  "description": "The Whole Loop — Kamil Kerimov's frontend and software development portfolio.",
   "engines": {
     "node": ">=20.0.0"
   },
   "scripts": {
-    "build:ts": "tsc -p tsconfig.build.json",
+    "dev": "vite --host 127.0.0.1",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview --host 127.0.0.1",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "icons:generate": "node ./scripts/generate-icons.mjs",
+    "optimize:media": "node ./scripts/optimize-media.mjs",
     "playwright:install": "node ./scripts/install-playwright.mjs",
-    "repo:ready": "npm run build:ts && npm run typecheck && npm run test:unit",
+    "repo:ready": "npm run typecheck && npm run test:unit && npm run build",
     "test:unit": "vitest run",
     "test:unit:ci": "node -e \"require('fs').mkdirSync('test-results',{recursive:true})\" && vitest run --reporter=json --outputFile=test-results/vitest-report.json",
     "test:e2e": "node ./scripts/run-playwright-tests.mjs",
     "test:e2e:ci": "node ./scripts/run-playwright-tests.mjs --ci",
     "test": "npm run test:unit && npm run test:e2e",
     "lhci": "lhci autorun --config=./lighthouserc.cjs",
-    "quality:evidence": "node ./scripts/generate-quality-evidence.mjs",
-    "quality": "npm run build:ts && npm run typecheck && npm run test:unit:ci && npm run test:e2e:ci && npm run lhci && npm run quality:evidence"
+    "quality": "npm run typecheck && npm run test:unit:ci && npm run build && npm run test:e2e:ci && npm run lhci"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.54.1",
     "@types/node": "^22.15.3",
-    "http-server": "^14.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "sharp": "^0.35.3",
     "typescript": "^5.8.3",
+    "vite": "^5.4.21",
     "vitest": "^2.1.9"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@fontsource/instrument-serif": "^5.3.0",
+    "motion": "^12.42.2",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

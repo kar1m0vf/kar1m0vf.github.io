@@ -6,9 +6,9 @@ module.exports = {
   ci: {
     collect: {
       numberOfRuns: 3,
-      startServerCommand: 'npx http-server . -p 4173 -c-1',
-      startServerReadyPattern: 'Available on:',
-      url: ['http://127.0.0.1:4173/', 'http://127.0.0.1:4173/projects.html', 'http://127.0.0.1:4173/contact.html'],
+      startServerCommand: 'npm run preview -- --port 4173',
+      startServerReadyPattern: 'Local:',
+      url: ['http://127.0.0.1:4173/'],
       settings: {
         ...(chromePath ? { chromePath } : {}),
         ...(chromeFlags ? { chromeFlags } : {}),
@@ -17,10 +17,10 @@ module.exports = {
     },
     assert: {
       assertions: {
-        'categories:performance': ['error', { minScore: 0.7 }],
-        'categories:accessibility': ['error', { minScore: 0.9 }],
-        'categories:best-practices': ['error', { minScore: 0.9 }],
-        'categories:seo': ['error', { minScore: 0.9 }],
+        'categories:performance': ['error', { minScore: 0.9 }],
+        'categories:accessibility': ['error', { minScore: 0.95 }],
+        'categories:best-practices': ['error', { minScore: 0.95 }],
+        'categories:seo': ['error', { minScore: 0.95 }],
         'largest-contentful-paint': ['warn', { maxNumericValue: 2500 }],
         'cumulative-layout-shift': ['warn', { maxNumericValue: 0.1 }],
       },

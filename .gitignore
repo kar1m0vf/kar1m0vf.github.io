@@ -2,12 +2,22 @@
 
 # Node/tooling
 node_modules/
+dist/
 npm-debug.log*
 debug.log
 chrome_debug.log
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 
 # TypeScript
 *.tsbuildinfo
@@ -18,6 +28,11 @@ test-results/
 playwright-report/
 .lighthouseci/
 .playwright-browsers/
+
+# Local scratch and agent state
+tmp/
+.codex/
+.agents/
 
 # Local rollback copies
 assets/css/styles.css
