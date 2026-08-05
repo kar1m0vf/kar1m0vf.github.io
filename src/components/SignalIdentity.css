@@ -1,0 +1,148 @@
+.loop-trace__traveller {
+  fill: none;
+  stroke: var(--blue-bright);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 0.035 0.965;
+  stroke-dashoffset: 1;
+  opacity: 0;
+  vector-effect: non-scaling-stroke;
+}
+
+.loop-trace--nar .loop-trace__traveller {
+  stroke: var(--nar);
+}
+
+.loop-trace--trendyol .loop-trace__traveller {
+  stroke: var(--trendyol);
+}
+
+.loop-trace--blaster .loop-trace__traveller {
+  stroke: var(--blaster);
+}
+
+.loop-trace--finale .loop-trace__traveller {
+  stroke: var(--blue-bright);
+}
+
+html[data-experience-section='nar'] .loop-trace--nar .loop-trace__traveller,
+html[data-experience-section='trendyol'] .loop-trace--trendyol .loop-trace__traveller,
+html[data-experience-section='journey'] .loop-trace--finale .loop-trace__traveller,
+html[data-experience-section='contact'] .loop-trace--finale .loop-trace__traveller {
+  animation: signal-handoff 1.55s 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.project__flow li {
+  font-size: 0.84rem;
+}
+
+.project__decision > span,
+.project__meta dt {
+  font-size: 0.72rem;
+}
+
+.project__decision > p,
+.project__meta dd,
+.project-link {
+  font-size: 0.86rem;
+}
+
+.project-media__heading,
+.data-loop__heading {
+  font-size: 0.75rem;
+}
+
+.media-explorer__tabs button > span,
+.media-explorer__readout > span,
+.media-explorer__readout > strong {
+  font-size: 0.7rem;
+}
+
+.media-explorer__tabs button strong {
+  font-size: 0.88rem;
+}
+
+.media-explorer__readout p {
+  font-size: 0.86rem;
+}
+
+.journey__story {
+  width: min(76rem, 88%);
+  margin-top: 0;
+}
+
+.journey__heading > span {
+  font-size: 0.82rem;
+}
+
+.journey__heading p {
+  max-width: 42rem;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.timeline strong {
+  font-size: 0.78rem;
+}
+
+.timeline h3 {
+  font-size: 0.95rem;
+}
+
+.timeline p {
+  font-size: 0.86rem;
+}
+
+@keyframes signal-handoff {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 1;
+  }
+
+  16%,
+  72% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .loop-trace__traveller {
+    display: none;
+  }
+
+  .journey__story {
+    width: 100%;
+    margin-top: 0;
+  }
+
+  .timeline p {
+    max-width: 38rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 800px) {
+  .contact {
+    min-height: 36rem;
+    padding-block: clamp(4.5rem, 10svh, 6rem) 1.5rem;
+  }
+
+  .contact__inner {
+    min-height: 30rem;
+  }
+
+  .contact__copy h2 {
+    font-size: clamp(3.2rem, 8svh, 4.7rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loop-trace__traveller {
+    display: none;
+  }
+}

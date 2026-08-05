@@ -1,0 +1,270 @@
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { CSSProperties, SyntheticEvent } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import type { ProjectMedia } from '../types';
+import { projectWorlds } from '../data/projects';
+
+const minimumVisibleTime = 2000;
+const maximumWaitTime = 15000;
+const fontAssetId = 'portfolio-fonts';
+
+interface LoaderMedia {
+  id: string;
+  media: ProjectMedia;
+  sizes: string;
+}
+
+interface SiteLoaderProps {
+  onComplete: () => void;
+}
+
+const journeyBackdrop: ProjectMedia = {
+  alt: '',
+  avifSrcSet: '/media/journey/baku-1280.avif 1280w, /media/journey/baku-1920.avif 1672w',
+  caption: 'Baku skyline',
+  height: 941,
+  src: '/media/journey/baku-1920.webp',
+  srcSet: '/media/journey/baku-1280.webp 1280w, /media/journey/baku-1920.webp 1672w',
+  width: 1672,
+};
+
+const loaderMedia: readonly LoaderMedia[] = [
+  ...projectWorlds.flatMap((project) => {
+    if (project.theme !== 'nar' && project.theme !== 'blaster') return [];
+
+    return project.media.map((media) => ({
+      id: media.src,
+      media,
+      sizes: project.theme === 'nar'
+        ? '(min-width: 1100px) 68vw, 94vw'
+        : '(min-width: 901px) min(78rem, 108vw), 94vw',
+    }));
+  }),
+  {
+    id: journeyBackdrop.src,
+    media: journeyBackdrop,
+    sizes: '100vw',
+  },
+] as const;
+
+const totalAssetCount = loaderMedia.length + 1;
+
+export function SiteLoader({ onComplete }: SiteLoaderProps) {
+  const reduceMotion = useReducedMotion();
+  const startedAtRef = useRef(performance.now());
+  const completedAssetsRef = useRef(new Set<string>());
+  const completionReportedRef = useRef(false);
+  const completedCountRef = useRef(0);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [completedMediaCount, setCompletedMediaCount] = useState(0);
+  const [displayProgress, setDisplayProgress] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
+  const [usedFallback, setUsedFallback] = useState(false);
+
+  const markAssetReady = useCallback((id: string) => {
+    const completedAssets = completedAssetsRef.current;
+    if (completedAssets.has(id)) return;
+
+    completedAssets.add(id);
+    completedCountRef.current = completedAssets.size;
+    setCompletedCount(completedAssets.size);
+    setCompletedMediaCount(loaderMedia.reduce(
+      (count, asset) => count + (completedAssets.has(asset.id) ? 1 : 0),
+      0,
+    ));
+  }, []);
+
+  const decodeImage = useCallback((id: string, image: HTMLImageElement) => {
+    if (!image.complete) return;
+    if (!image.naturalWidth) {
+      markAssetReady(id);
+      return;
+    }
+
+    void image.decode()
+      .catch(() => undefined)
+      .then(() => markAssetReady(id));
+  }, [markAssetReady]);
+
+  const handleImageLoad = useCallback((id: string, event: SyntheticEvent<HTMLImageElement>) => {
+    decodeImage(id, event.currentTarget);
+  }, [decodeImage]);
+
+  const handleImageError = useCallback((id: string) => {
+    setUsedFallback(true);
+    markAssetReady(id);
+  }, [markAssetReady]);
+
+  useLayoutEffect(() => {
+    document.documentElement.dataset.siteLoading = 'true';
+    return () => {
+      delete document.documentElement.dataset.siteLoading;
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const prepareFonts = async () => {
+      if (!('fonts' in document)) return;
+
+      await Promise.all([
+        document.fonts.load('400 1em "Instrument Serif"'),
+        document.fonts.load('400 1em "Manrope Variable"'),
+        document.fonts.ready,
+      ]);
+    };
+
+    void prepareFonts()
+      .catch(() => undefined)
+      .then(() => {
+        if (!cancelled) markAssetReady(fontAssetId);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [markAssetReady]);
+
+  useEffect(() => {
+    if (isExiting) return;
+
+    let animationFrame = 0;
+    const updateProgress = (time: number) => {
+      const elapsed = time - startedAtRef.current;
+      const timeCap = Math.min(1, elapsed / minimumVisibleTime);
+      const resourceProgress = completedCountRef.current / totalAssetCount;
+      const nextProgress = Math.round(Math.min(resourceProgress, timeCap) * 100);
+
+      setDisplayProgress((current) => current === nextProgress ? current : nextProgress);
+      animationFrame = window.requestAnimationFrame(updateProgress);
+    };
+
+    animationFrame = window.requestAnimationFrame(updateProgress);
+    return () => window.cancelAnimationFrame(animationFrame);
+  }, [isExiting]);
+
+  useEffect(() => {
+    if (completedCount < totalAssetCount || isExiting) return;
+
+    const remaining = Math.max(0, minimumVisibleTime - (performance.now() - startedAtRef.current));
+    const timer = window.setTimeout(() => {
+      setDisplayProgress(100);
+      setIsExiting(true);
+    }, remaining);
+
+    return () => window.clearTimeout(timer);
+  }, [completedCount, isExiting]);
+
+  useEffect(() => {
+    if (isExiting) return;
+
+    const fallbackTimer = window.setTimeout(() => {
+      setUsedFallback(true);
+      setDisplayProgress(100);
+      setIsExiting(true);
+    }, maximumWaitTime);
+
+    return () => window.clearTimeout(fallbackTimer);
+  }, [isExiting]);
+
+  const completeLoader = () => {
+    if (!isExiting || completionReportedRef.current) return;
+    completionReportedRef.current = true;
+    onComplete();
+  };
+
+  const loaderStyle = {
+    '--loader-progress': displayProgress / 100,
+    '--loader-progress-width': `${displayProgress}%`,
+  } as CSSProperties;
+
+  return (
+    <motion.div
+      animate={isExiting ? { opacity: 0 } : { opacity: 1 }}
+      aria-live="polite"
+      className={`site-loader${isExiting ? ' site-loader--exit' : ''}`}
+      initial={false}
+      onAnimationComplete={completeLoader}
+      role="status"
+      transition={{
+        delay: reduceMotion ? 0 : 0.28,
+        duration: reduceMotion ? 0 : 0.52,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+    >
+      <div className="site-loader__scope" style={loaderStyle}>
+        <span className="sr-only">
+          {isExiting
+            ? 'Portfolio ready.'
+            : `Preparing portfolio media. ${completedMediaCount} of ${loaderMedia.length} images decoded.`}
+        </span>
+        <div aria-hidden="true" className="site-loader__panel site-loader__panel--left" />
+        <div aria-hidden="true" className="site-loader__panel site-loader__panel--right" />
+        <div aria-hidden="true" className="site-loader__topline">
+          <span>KK / SYSTEM ENTRY</span>
+          <span>BAKU · UTC+4</span>
+        </div>
+
+        <div aria-hidden="true" className="site-loader__mark">
+          <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 800 800">
+            <g className="site-loader__threads site-loader__threads--base">
+              <path d="M244 58 C304 212 204 326 271 400 C336 474 218 608 278 744" />
+              <path d="M712 82 C568 158 462 292 271 400" />
+              <path d="M271 400 C432 472 540 620 716 742" />
+            </g>
+            <g className="site-loader__threads site-loader__threads--live">
+              <path d="M244 58 C304 212 204 326 271 400 C336 474 218 608 278 744" pathLength="1" />
+              <path d="M712 82 C568 158 462 292 271 400" pathLength="1" />
+              <path d="M271 400 C432 472 540 620 716 742" pathLength="1" />
+            </g>
+            <g className="site-loader__nodes">
+              <circle className={displayProgress >= 18 ? 'is-ready' : ''} cx="244" cy="58" r="5" />
+              <circle className={displayProgress >= 42 ? 'is-ready' : ''} cx="271" cy="400" r="7" />
+              <circle className={displayProgress >= 68 ? 'is-ready' : ''} cx="712" cy="82" r="5" />
+              <circle className={displayProgress >= 88 ? 'is-ready' : ''} cx="716" cy="742" r="5" />
+            </g>
+          </svg>
+        </div>
+
+        <div aria-hidden="true" className="site-loader__readout">
+          <div>
+            <span>{usedFallback ? 'CONTINUING WITH AVAILABLE MEDIA' : 'PREPARING VISUAL WORLDS'}</span>
+            <output>{String(displayProgress).padStart(2, '0')}%</output>
+          </div>
+          <div aria-hidden="true" className="site-loader__rail"><i /></div>
+          <p>
+            {completedMediaCount < loaderMedia.length
+              ? `${String(completedMediaCount).padStart(2, '0')} / ${String(loaderMedia.length).padStart(2, '0')} MEDIA DECODED`
+              : 'MEDIA DECODED · TYPE ALIGNED'}
+          </p>
+        </div>
+
+        <div aria-hidden="true" className="site-loader__preloads">
+          {loaderMedia.map(({ id, media, sizes }, index) => (
+            <picture key={id}>
+              <source sizes={sizes} srcSet={media.avifSrcSet} type="image/avif" />
+              <source sizes={sizes} srcSet={media.srcSet} type="image/webp" />
+              <img
+                alt=""
+                decoding="async"
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                height={media.height}
+                loading="eager"
+                onError={() => handleImageError(id)}
+                onLoad={(event) => handleImageLoad(id, event)}
+                ref={(image) => {
+                  if (image?.complete) queueMicrotask(() => decodeImage(id, image));
+                }}
+                sizes={sizes}
+                src={media.src}
+                srcSet={media.srcSet}
+                width={media.width}
+              />
+            </picture>
+          ))}
+        </div>
+      </div>
+    </motion.div>
+  );
+}

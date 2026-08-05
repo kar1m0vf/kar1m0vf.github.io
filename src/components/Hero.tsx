@@ -39,9 +39,9 @@ export function Hero() {
         >
           <p className="hero__promise">I build the <em>whole loop.</em></p>
           <p className="hero__summary">
-            React interfaces people use. Python workflows they don’t see. Tests that keep both honest.
+            React interfaces. Python systems. Tests and releases that keep both honest.
           </p>
-          <p className="hero__role">Frontend &amp; Software Developer · Baku</p>
+          <p className="hero__role">Software Developer · Interfaces, automation &amp; runtime · Baku</p>
           <div className="hero__actions">
             <a className="button button--primary" href="#method">
               See how I build <ArrowIcon />

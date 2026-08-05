@@ -1,103 +1,135 @@
 import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { LoopTrace } from './LoopTrace';
+import { ArrowRightIcon } from './Icons';
 
-const stages = [
-  {
-    title: 'Map the flow',
-    detail: 'Turn user needs and business rules into one clear path.',
-    output: 'A clear path from need to interaction.',
-  },
-  {
-    title: 'Hold the state',
-    detail: 'Keep interface, storage, data, and background work consistent.',
-    output: 'One consistent source of truth across the workflow.',
-  },
-  {
-    title: 'Test the seams',
-    detail: 'Check persistence, invalid states, and the handoffs where software breaks.',
-    output: 'Known failure paths before users find them.',
-  },
-  {
-    title: 'Ship the release',
-    detail: 'Deploy the web build or package the desktop one.',
-    output: 'A deployable web build or packaged desktop release.',
-  },
+type JunctionDirection = 'junction' | 'interface' | 'automation' | 'runtime';
+
+interface JunctionAnchor {
+  direction: Exclude<JunctionDirection, 'junction'>;
+  href: string;
+  index: string;
+  label: string;
+  project: string;
+}
+
+const anchors: readonly JunctionAnchor[] = [
+  { direction: 'interface', href: '#nar', index: '01', label: 'Interface', project: 'Nar Patisserie' },
+  { direction: 'automation', href: '#trendyol', index: '02', label: 'Automation', project: 'Price Tracker' },
+  { direction: 'runtime', href: '#blaster', index: '03', label: 'Runtime', project: 'Blaster' },
 ] as const;
+
+const signalTargets: Record<JunctionDirection, { x: number; y: number }> = {
+  junction: { x: 292, y: 326 },
+  interface: { x: 646, y: 88 },
+  automation: { x: 292, y: 618 },
+  runtime: { x: 666, y: 590 },
+};
+
+const activePaths: Record<JunctionDirection, string> = {
+  junction: 'M292 48 L292 326',
+  interface: 'M292 48 L292 326 L646 88',
+  automation: 'M292 48 L292 618',
+  runtime: 'M292 48 L292 326 L666 590',
+};
+
+const activeLabels: Record<JunctionDirection, string> = {
+  junction: 'Signal waiting at the junction.',
+  interface: 'Interface leads to Nar Patisserie.',
+  automation: 'Automation leads to Trendyol Price Tracker.',
+  runtime: 'Runtime leads to Blaster.',
+};
 
 export function Method() {
   const reduceMotion = useReducedMotion();
-  const [activeStageIndex, setActiveStageIndex] = useState(0);
-  const activeStage = stages[activeStageIndex] ?? stages[0];
+  const [activeDirection, setActiveDirection] = useState<JunctionDirection>('junction');
+  const signalTarget = signalTargets[activeDirection];
 
   return (
-    <section className="method" id="method">
-      <LoopTrace variant="method" />
-      <div className="section-shell method__inner">
-        <div className="section-label">
-          <span>How I build</span>
-          <i>From user need to release</i>
+    <section className="junction" id="method" aria-labelledby="junction-title">
+      <div className="section-shell junction__inner">
+        <div className="junction__intro">
+          <p className="junction__eyebrow">The junction</p>
+          <h2 id="junction-title">Where the screen meets the system.</h2>
+          <p className="junction__lead">One builder. Three directions. Follow the signal.</p>
         </div>
-        <h2 className="sr-only">How I build software</h2>
-        <ol className="method__stages">
-          {stages.map((stage, index) => {
-            const isActive = index === activeStageIndex;
-            const stageNumber = String(index + 1).padStart(2, '0');
-            const detailId = `method-stage-${stageNumber}-detail`;
 
-            return (
-              <motion.li
-                className={`method__stage${isActive ? ' is-active' : ''}`}
-                initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-                key={stage.title}
-                onPointerEnter={() => setActiveStageIndex(index)}
-                transition={{ delay: reduceMotion ? 0 : index * 0.08 }}
-                viewport={{ amount: 0.45, once: true }}
-                whileInView={{ opacity: 1, y: 0 }}
-              >
-                <button
-                  aria-controls="method-stage-output"
-                  aria-current={isActive ? 'step' : undefined}
-                  aria-describedby={detailId}
-                  aria-pressed={isActive}
-                  className="method__stage-button"
-                  onClick={() => setActiveStageIndex(index)}
-                  onFocus={() => setActiveStageIndex(index)}
-                  type="button"
-                >
-                  <span className="method__stage-number">{stageNumber}</span>
-                  <strong className="method__stage-title">{stage.title}</strong>
-                </button>
-                <p className="method__stage-detail" id={detailId}>{stage.detail}</p>
-              </motion.li>
-            );
-          })}
-        </ol>
-        <div
-          aria-atomic="true"
-          aria-live="polite"
-          className="method__output"
-          id="method-stage-output"
-        >
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className="method__output-content"
-            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-            key={activeStage.title}
-            transition={{ duration: reduceMotion ? 0 : 0.22 }}
+        <div className="junction__stage" data-active={activeDirection}>
+          <svg
+            aria-hidden="true"
+            className="junction__map"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 760 680"
           >
-            <span className="method__output-label">
-              Active stage / {String(activeStageIndex + 1).padStart(2, '0')}
-            </span>
-            <strong className="method__output-title">{activeStage.title}</strong>
-            <p className="method__output-detail">{activeStage.output}</p>
-          </motion.div>
+            <defs>
+              <filter height="200%" id="junction-glow" width="200%" x="-50%" y="-50%">
+                <feGaussianBlur result="blur" stdDeviation="9" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            <path className="junction__trace" d="M292 48 L292 618" />
+            <path className="junction__trace" d="M292 326 L646 88" />
+            <path className="junction__trace" d="M292 326 L666 590" />
+            <motion.path
+              animate={{ opacity: 1, pathLength: 1 }}
+              className="junction__active-trace"
+              d={activePaths[activeDirection]}
+              initial={reduceMotion ? false : { opacity: 0.35, pathLength: 0 }}
+              key={activeDirection}
+              transition={{ duration: reduceMotion ? 0 : 0.62, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <circle className="junction__core" cx="292" cy="326" r="16" />
+            <motion.g
+              animate={{ x: signalTarget.x, y: signalTarget.y }}
+              initial={{ x: signalTargets.junction.x, y: signalTargets.junction.y }}
+              transition={{ duration: reduceMotion ? 0 : 0.56, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <circle className="junction__signal-halo" cx="0" cy="0" r="22" />
+              <circle
+                className="junction__signal"
+                cx="0"
+                cy="0"
+                filter="url(#junction-glow)"
+                r="7"
+              />
+            </motion.g>
+          </svg>
+
+          <p className="junction__origin">Intent enters here</p>
+
+          <nav aria-label="Project directions" className="junction__anchors">
+            {anchors.map((anchor) => (
+              <a
+                aria-label={`${anchor.label}: ${anchor.project}`}
+                className={`junction__anchor junction__anchor--${anchor.direction}`}
+                href={anchor.href}
+                key={anchor.direction}
+                onBlur={() => setActiveDirection('junction')}
+                onFocus={() => setActiveDirection(anchor.direction)}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === 'mouse' || event.pointerType === 'pen') {
+                    setActiveDirection(anchor.direction);
+                  }
+                }}
+                onPointerLeave={(event) => {
+                  if (document.activeElement !== event.currentTarget) setActiveDirection('junction');
+                }}
+              >
+                <span>{anchor.index}</span>
+                <strong>{anchor.label}</strong>
+                <small>{anchor.project}</small>
+                <ArrowRightIcon />
+              </a>
+            ))}
+          </nav>
         </div>
-        <div className="method__closing">
-          <blockquote>“When the happy path works, I ask what breaks next.”</blockquote>
-          <p>From user need to interface, background job, edge case, and release.</p>
-          <span>Built in Baku · Used anywhere</span>
-        </div>
+
+        <p aria-atomic="true" aria-live="polite" className="sr-only">
+          {activeLabels[activeDirection]}
+        </p>
       </div>
     </section>
   );

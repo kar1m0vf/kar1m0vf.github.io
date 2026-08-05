@@ -1,0 +1,1049 @@
+.signal-world {
+  --signal-orange: #ff7a1a;
+  --signal-blue: #64acff;
+  grid-area: visual;
+  min-width: 0;
+  margin-top: clamp(2rem, 5vw, 4.5rem);
+}
+
+.signal-world__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: center;
+  margin-bottom: 0.9rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+}
+
+.signal-world__heading span {
+  color: var(--signal-orange);
+  font-weight: 700;
+}
+
+.signal-world__heading i {
+  font-style: normal;
+}
+
+.signal-world__surface {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 50% 42%, rgb(255 122 26 / 9%), transparent 28rem),
+    linear-gradient(110deg, rgb(75 156 255 / 5%), transparent 38%),
+    #06090c;
+}
+
+.signal-world__surface::before {
+  content: '';
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  opacity: 0.42;
+  background-image:
+    linear-gradient(rgb(130 191 255 / 5%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(130 191 255 / 5%) 1px, transparent 1px);
+  background-size: 3.5rem 3.5rem;
+  mask-image: linear-gradient(to right, transparent, #000 18%, #000 82%, transparent);
+}
+
+.signal-world__statusbar {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: center;
+  min-height: 4.8rem;
+  padding: 0.7rem clamp(1rem, 2vw, 1.8rem);
+  border-bottom: 1px solid var(--line);
+  background: rgb(5 8 11 / 86%);
+  backdrop-filter: blur(14px);
+}
+
+.signal-world__statusbar > div {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+}
+
+.signal-world__statusbar p {
+  display: grid;
+  gap: 0.08rem;
+}
+
+.signal-world__statusbar small {
+  color: var(--signal-orange);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+
+.signal-world__statusbar p strong {
+  color: var(--ink-bright);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.signal-world__beacon {
+  position: relative;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: var(--signal-orange);
+  box-shadow: 0 0 1.15rem rgb(255 122 26 / 76%);
+}
+
+.signal-world__beacon::after {
+  content: '';
+  position: absolute;
+  inset: -0.45rem;
+  border: 1px solid var(--signal-orange);
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: signal-world-beacon 1.8s ease-out infinite;
+}
+
+.signal-world__statusbar > button {
+  display: inline-flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 10rem;
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--signal-orange);
+  background: var(--signal-orange);
+  color: #090604;
+  font-size: 0.9rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.signal-world__statusbar > button:hover:not(:disabled) {
+  background: #ff974c;
+  box-shadow: 0 0 1.7rem rgb(255 122 26 / 30%);
+  transform: translateY(-1px);
+}
+
+.signal-world__statusbar > button:disabled {
+  cursor: progress;
+  opacity: 0.64;
+}
+
+.signal-world[data-handoff='pending'] .signal-world__statusbar > button:disabled {
+  cursor: default;
+  opacity: 1;
+  background: linear-gradient(105deg, var(--signal-orange), #78e7ff);
+  box-shadow: 0 0 1.8rem rgb(100 172 255 / 16%);
+}
+
+.signal-world__statusbar > button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.signal-world__controls {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: minmax(19rem, 1fr) auto auto;
+  gap: 1px;
+  min-height: 6.2rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--line);
+}
+
+.signal-world__price-control,
+.signal-world__target,
+.signal-world__quiet {
+  min-width: 0;
+  padding: 1rem clamp(1rem, 2vw, 1.8rem);
+  background: #080c10;
+}
+
+.signal-world__price-control {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.8rem;
+}
+
+.signal-world__price-control > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.signal-world__price-control output {
+  color: var(--ink-bright);
+  font-size: 1.35rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-world__price-control input {
+  width: 100%;
+  height: 2px;
+  margin: 0.65rem 0;
+  appearance: none;
+  border: 0;
+  background: linear-gradient(90deg, var(--signal-blue), var(--signal-orange));
+  cursor: ew-resize;
+}
+
+.signal-world__price-control input::-webkit-slider-thumb {
+  width: 1.2rem;
+  height: 1.2rem;
+  appearance: none;
+  border: 3px solid #07090b;
+  border-radius: 50%;
+  background: var(--signal-orange);
+  box-shadow: 0 0 0 1px var(--signal-orange), 0 0 1rem rgb(255 122 26 / 58%);
+}
+
+.signal-world__price-control input::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: 3px solid #07090b;
+  border-radius: 50%;
+  background: var(--signal-orange);
+  box-shadow: 0 0 0 1px var(--signal-orange), 0 0 1rem rgb(255 122 26 / 58%);
+}
+
+.signal-world__target,
+.signal-world__quiet {
+  display: grid;
+  gap: 0.2rem;
+  align-content: center;
+  min-width: 12.5rem;
+}
+
+.signal-world__target span,
+.signal-world__quiet span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.signal-world__target strong,
+.signal-world__quiet strong {
+  color: var(--ink-bright);
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.signal-world__quiet {
+  border: 0;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 180ms ease;
+}
+
+.signal-world__quiet:hover:not(:disabled) {
+  background: #0d1319;
+}
+
+.signal-world__quiet[aria-pressed='true'] strong {
+  color: var(--signal-orange);
+}
+
+.signal-world__quiet:disabled {
+  cursor: progress;
+  opacity: 0.64;
+}
+
+.signal-world__corridor {
+  position: relative;
+  z-index: 2;
+  height: clamp(20rem, 46svh, 27rem);
+  min-height: 20rem;
+  background:
+    linear-gradient(90deg, rgb(75 156 255 / 6%), transparent 18%, transparent 82%, rgb(255 122 26 / 5%)),
+    linear-gradient(to bottom, transparent 68%, rgb(4 7 10 / 88%));
+}
+
+.signal-world__track {
+  position: absolute;
+  z-index: 1;
+  top: 36%;
+  right: 3.5%;
+  left: 3.5%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--signal-blue), rgb(100 172 255 / 28%) 18%, rgb(255 122 26 / 35%) 82%, var(--signal-orange));
+}
+
+.signal-world__track::after {
+  content: '';
+  position: absolute;
+  inset: -1.2rem 0;
+  background: linear-gradient(90deg, transparent, rgb(75 156 255 / 8%), rgb(255 122 26 / 7%), transparent);
+  filter: blur(1.2rem);
+}
+
+.signal-world__input,
+.signal-world__endpoint {
+  position: absolute;
+  z-index: 3;
+  top: 36%;
+  display: grid;
+  gap: 0.2rem;
+  width: 8rem;
+  transform: translateY(3.2rem);
+}
+
+.signal-world__input {
+  left: 1.5rem;
+}
+
+.signal-world__endpoint {
+  right: 1.5rem;
+  justify-items: end;
+  text-align: right;
+  opacity: 0.34;
+  transition: opacity 220ms ease, filter 220ms ease;
+}
+
+.signal-world__endpoint[data-active='true'] {
+  opacity: 1;
+  filter: drop-shadow(0 0 0.7rem rgb(255 122 26 / 54%));
+}
+
+.signal-world__input span,
+.signal-world__endpoint span {
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.75rem;
+}
+
+.signal-world__input strong,
+.signal-world__endpoint strong {
+  color: var(--ink-bright);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.signal-world__stations {
+  position: absolute;
+  z-index: 2;
+  inset: 0 11%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.signal-world__stations li {
+  display: grid;
+  grid-template-rows: auto auto auto auto auto;
+  align-content: center;
+  justify-items: center;
+  min-width: 0;
+  padding: 1rem;
+  color: var(--muted);
+  text-align: center;
+  opacity: 0.42;
+  transition: color 220ms ease, opacity 220ms ease, transform 220ms ease;
+}
+
+.signal-world__stations li.is-selected,
+.signal-world__stations li[data-status='active'],
+.signal-world__stations li[data-status='blocked'] {
+  color: var(--ink-bright);
+  opacity: 1;
+}
+
+.signal-world__stations li[data-status='passed'] {
+  opacity: 0.78;
+}
+
+.signal-world__stations li > span {
+  margin-top: 0.85rem;
+  color: var(--signal-orange);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-world__stations li > strong {
+  margin-top: 0.15rem;
+  color: inherit;
+  font-family: var(--serif);
+  font-size: clamp(1.65rem, 2.3vw, 2.35rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.signal-world__stations li > p,
+.signal-world__stations li > em {
+  font-size: 0.9rem;
+  font-style: normal;
+}
+
+.signal-world__stations li > p {
+  margin-top: 0.45rem;
+  color: var(--muted);
+}
+
+.signal-world__stations li > em {
+  margin-top: 0.25rem;
+  color: var(--ink-bright);
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-world__symbol {
+  position: relative;
+  width: clamp(5.8rem, 8vw, 7.4rem);
+  aspect-ratio: 1;
+  border: 1px solid rgb(100 172 255 / 28%);
+  border-radius: 50%;
+  background: rgb(7 13 19 / 82%);
+  box-shadow: inset 0 0 2.5rem rgb(75 156 255 / 7%);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.signal-world__stations li[data-status='active'] .signal-world__symbol,
+.signal-world__stations li[data-status='blocked'] .signal-world__symbol,
+.signal-world__stations li.is-selected .signal-world__symbol {
+  border-color: var(--signal-orange);
+  box-shadow: inset 0 0 2.4rem rgb(255 122 26 / 10%), 0 0 2rem rgb(255 122 26 / 18%);
+}
+
+.signal-world__stations li[data-status='blocked'] .signal-world__symbol {
+  animation: signal-world-blocked 420ms ease-in-out 2;
+}
+
+.signal-world__symbol--memory i {
+  position: absolute;
+  left: 17%;
+  width: 66%;
+  height: 28%;
+  border: 1px solid var(--signal-blue);
+  border-radius: 50%;
+  background: rgb(75 156 255 / 7%);
+  box-shadow: 0 0 0.8rem rgb(75 156 255 / 12%);
+}
+
+.signal-world__symbol--memory i:nth-child(1) {
+  top: 20%;
+}
+
+.signal-world__symbol--memory i:nth-child(2) {
+  top: 36%;
+}
+
+.signal-world__symbol--memory i:nth-child(3) {
+  top: 52%;
+}
+
+.signal-world__symbol--rule i {
+  position: absolute;
+  top: 18%;
+  bottom: 18%;
+  width: 24%;
+  border: 1px solid var(--signal-blue);
+  background: rgb(75 156 255 / 9%);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.signal-world__symbol--rule i:first-child {
+  left: 19%;
+  border-right: 0;
+}
+
+.signal-world__symbol--rule i:nth-child(2) {
+  right: 19%;
+  border-left: 0;
+}
+
+.signal-world__stations li[data-status='passed'] .signal-world__symbol--rule i:first-child {
+  transform: translateX(-42%);
+}
+
+.signal-world__stations li[data-status='passed'] .signal-world__symbol--rule i:nth-child(2) {
+  transform: translateX(42%);
+}
+
+.signal-world__symbol--rule b {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--signal-orange);
+  font-size: 1.7rem;
+  font-weight: 500;
+}
+
+.signal-world__symbol--attention i {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background: var(--signal-orange);
+  box-shadow: inset 1.2rem -0.25rem 0 #07101a, 0 0 1rem rgb(255 122 26 / 28%);
+}
+
+.signal-world__symbol--attention b {
+  position: absolute;
+  top: 15%;
+  bottom: 15%;
+  left: 50%;
+  width: 1px;
+  background: var(--signal-orange);
+  box-shadow: 0 0 0.8rem rgb(255 122 26 / 70%);
+  transition: opacity 220ms ease, transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.signal-world__stations li[data-status='passed'] .signal-world__symbol--attention b {
+  opacity: 0;
+  transform: rotate(90deg) scaleY(0.35);
+}
+
+.signal-world__pulse {
+  position: absolute;
+  z-index: 4;
+  top: 36%;
+  left: 4.5%;
+  display: grid;
+  place-items: center;
+  width: clamp(3.7rem, 5vw, 4.6rem);
+  aspect-ratio: 1;
+  border: 2px solid #fff0df;
+  border-radius: 50%;
+  background: var(--signal-orange);
+  color: #110903;
+  box-shadow: 0 0 0 0.65rem rgb(255 122 26 / 9%), 0 0 2rem rgb(255 122 26 / 68%);
+  transform: translate(-50%, -50%);
+  transition: left 560ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 220ms ease, transform 220ms ease;
+}
+
+.signal-world__pulse span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.signal-world__pulse[data-position='0'] {
+  left: 24%;
+}
+
+.signal-world__pulse[data-position='1'] {
+  left: 50%;
+}
+
+.signal-world__pulse[data-position='2'] {
+  left: 76%;
+}
+
+.signal-world__pulse[data-position='3'] {
+  left: 95.5%;
+}
+
+.signal-world__symbol > .signal-world__pulse--docked {
+  top: 50%;
+  left: 50%;
+  width: 62%;
+  transition: box-shadow 220ms ease, transform 220ms ease;
+}
+
+.signal-world.is-running .signal-world__pulse {
+  box-shadow: 0 0 0 0.8rem rgb(255 122 26 / 10%), 0 0 2.5rem rgb(255 122 26 / 78%);
+}
+
+.signal-world__nav {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background: rgb(5 8 11 / 84%);
+}
+
+.signal-world__nav button {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.7rem;
+  padding: 0.7rem;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 180ms ease, color 180ms ease;
+}
+
+.signal-world__nav button:last-child {
+  border-right: 0;
+}
+
+.signal-world__nav button:hover:not(:disabled),
+.signal-world__nav button[aria-pressed='true'] {
+  background: rgb(255 122 26 / 7%);
+  color: var(--ink-bright);
+}
+
+.signal-world__nav button span {
+  color: var(--signal-orange);
+  font-size: 0.75rem;
+}
+
+.signal-world__nav button:disabled {
+  cursor: progress;
+  opacity: 0.58;
+}
+
+.signal-world__outcome {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: minmax(18rem, 0.75fr) minmax(20rem, 1fr);
+  gap: clamp(1rem, 4vw, 4rem);
+  align-items: center;
+  min-height: 7.2rem;
+  padding: 1.25rem clamp(1rem, 2vw, 1.8rem);
+  background: #06090c;
+}
+
+.signal-world__outcome strong {
+  color: var(--signal-orange);
+  font-family: var(--serif);
+  font-size: clamp(1.8rem, 2.8vw, 2.8rem);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.signal-world[data-outcome='released'] .signal-world__outcome strong {
+  color: #7ce0b4;
+}
+
+.signal-world[data-outcome='memory'] .signal-world__outcome strong {
+  color: var(--signal-blue);
+}
+
+.signal-world__outcome p {
+  max-width: 38rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.signal-world__handoff-status {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgb(120 231 255 / 28%);
+  color: #dffaff;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  font-weight: 720;
+}
+
+.signal-world__handoff-status::before {
+  content: '';
+  width: 0.65rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #78e7ff;
+  box-shadow: 0 0 0.9rem rgb(120 231 255 / 68%);
+}
+
+.signal-world__details {
+  margin-top: 1rem;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.signal-world__details summary {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: center;
+  min-height: 4.5rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.signal-world__details summary::-webkit-details-marker {
+  display: none;
+}
+
+.signal-world__details summary span {
+  color: var(--signal-orange);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+}
+
+.signal-world__details summary strong {
+  font-weight: 550;
+}
+
+.signal-world__details summary::after {
+  content: '+';
+  color: var(--ink-bright);
+  font-size: 1.5rem;
+  font-weight: 300;
+  transition: transform 180ms ease;
+}
+
+.signal-world__details[open] summary::after {
+  transform: rotate(45deg);
+}
+
+.signal-world__details ul {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding-bottom: 1.5rem;
+}
+
+.signal-world__details li {
+  min-height: 8rem;
+  padding: 1.1rem 1.25rem;
+  border-left: 1px solid var(--line);
+}
+
+.signal-world__details li:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.signal-world__details li > strong {
+  color: var(--ink-bright);
+  font-size: 1rem;
+}
+
+.signal-world__details li p {
+  margin-top: 0.55rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+@keyframes signal-world-beacon {
+  from {
+    opacity: 0.5;
+    transform: scale(0.7);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+@keyframes signal-world-blocked {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  35% {
+    transform: translateX(-0.35rem);
+  }
+
+  65% {
+    transform: translateX(0.35rem);
+  }
+}
+
+@media (max-width: 900px) {
+  .signal-world__controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .signal-world__price-control {
+    grid-column: 1 / -1;
+  }
+
+  .signal-world__target,
+  .signal-world__quiet {
+    min-width: 0;
+  }
+
+  .signal-world__corridor {
+    height: clamp(20rem, 52svh, 24rem);
+  }
+
+  .signal-world__stations {
+    inset-inline: 6%;
+  }
+
+  .signal-world__input,
+  .signal-world__endpoint {
+    width: 6.5rem;
+  }
+
+  .signal-world__input {
+    left: 1rem;
+  }
+
+  .signal-world__endpoint {
+    right: 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .signal-world__heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: 0.75rem;
+  }
+
+  .signal-world__statusbar {
+    gap: 0.8rem;
+    min-height: 4.6rem;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .signal-world__statusbar small {
+    font-size: 0.68rem;
+  }
+
+  .signal-world__statusbar p strong {
+    font-size: 0.92rem;
+  }
+
+  .signal-world__beacon {
+    display: none;
+  }
+
+  .signal-world__statusbar > button {
+    gap: 0.7rem;
+    min-width: auto;
+    padding-inline: 0.75rem;
+    font-size: 0.86rem;
+  }
+
+  .signal-world__controls {
+    min-height: 0;
+  }
+
+  .signal-world__price-control,
+  .signal-world__target,
+  .signal-world__quiet {
+    padding: 1rem;
+  }
+
+  .signal-world__target span,
+  .signal-world__quiet span,
+  .signal-world__price-control > span {
+    font-size: 0.9rem;
+  }
+
+  .signal-world__quiet strong {
+    font-size: 0.88rem;
+  }
+
+  .signal-world__corridor {
+    height: 22rem;
+    min-height: 22rem;
+  }
+
+  .signal-world__track {
+    top: 37%;
+    right: 14%;
+    left: 14%;
+  }
+
+  .signal-world__input,
+  .signal-world__endpoint {
+    display: none;
+  }
+
+  .signal-world__stations {
+    inset: 0;
+    display: block;
+  }
+
+  .signal-world__stations li {
+    position: absolute;
+    inset: 0;
+    align-content: center;
+    padding: 1rem 2rem 1.5rem;
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(1rem);
+  }
+
+  .signal-world__stations li.is-selected {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+  }
+
+  .signal-world__stations li > span {
+    margin-top: 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  .signal-world__stations li > strong {
+    font-size: 2.25rem;
+  }
+
+  .signal-world__stations li > p,
+  .signal-world__stations li > em {
+    font-size: 0.95rem;
+  }
+
+  .signal-world__symbol {
+    width: 7rem;
+  }
+
+  .signal-world__pulse,
+  .signal-world__pulse[data-position='0'],
+  .signal-world__pulse[data-position='1'],
+  .signal-world__pulse[data-position='2'],
+  .signal-world__pulse[data-position='3'] {
+    top: 37%;
+    left: 50%;
+    width: 4.2rem;
+  }
+
+  .signal-world__nav button {
+    min-height: 3.6rem;
+    font-size: 0.88rem;
+  }
+
+  .signal-world__nav button span {
+    display: none;
+  }
+
+  .signal-world__outcome {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    min-height: 0;
+    padding: 1.25rem 1rem;
+  }
+
+  .signal-world__outcome strong {
+    font-size: 2rem;
+  }
+
+  .signal-world__outcome p {
+    font-size: 0.95rem;
+  }
+
+  .signal-world__details summary {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+    justify-content: center;
+    min-height: 5rem;
+    padding-right: 2rem;
+  }
+
+  .signal-world__details summary::after {
+    position: absolute;
+    right: 0;
+  }
+
+  .signal-world__details ul {
+    grid-template-columns: 1fr;
+  }
+
+  .signal-world__details li,
+  .signal-world__details li:first-child {
+    min-height: 0;
+    padding: 1rem 0;
+    border-top: 1px solid var(--line);
+    border-left: 0;
+  }
+
+  .signal-world__details li p {
+    font-size: 0.95rem;
+  }
+}
+
+@media (min-width: 901px) and (max-height: 820px) {
+  .project--trendyol {
+    padding-block: clamp(4.5rem, 11svh, 6rem);
+  }
+
+  .project--trendyol .project__identity h2 {
+    font-size: clamp(4.5rem, 12svh, 6.5rem);
+  }
+
+  .project--trendyol .project__header {
+    gap: 2.5rem;
+  }
+
+  .signal-world {
+    margin-top: clamp(1.75rem, 5svh, 2.5rem);
+  }
+
+  .signal-world__statusbar {
+    min-height: 4rem;
+  }
+
+  .signal-world__controls {
+    min-height: 5.2rem;
+  }
+
+  .signal-world__price-control,
+  .signal-world__target,
+  .signal-world__quiet {
+    padding-block: 0.7rem;
+  }
+
+  .signal-world__corridor {
+    height: clamp(16.5rem, 39svh, 19rem);
+    min-height: 16.5rem;
+  }
+
+  .signal-world__symbol {
+    width: clamp(4.8rem, 11svh, 5.6rem);
+  }
+
+  .signal-world__stations li {
+    padding-block: 0.5rem;
+  }
+
+  .signal-world__stations li > span {
+    margin-top: 0.45rem;
+  }
+
+  .signal-world__stations li > strong {
+    font-size: clamp(1.55rem, 4svh, 1.95rem);
+  }
+
+  .signal-world__nav button {
+    min-height: 3.1rem;
+  }
+
+  .signal-world__outcome {
+    min-height: 5.8rem;
+    padding-block: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal-world__beacon::after,
+  .signal-world__stations li[data-status='blocked'] .signal-world__symbol {
+    animation: none;
+  }
+
+  .signal-world__pulse,
+  .signal-world__symbol,
+  .signal-world__symbol * {
+    transition: none;
+  }
+}

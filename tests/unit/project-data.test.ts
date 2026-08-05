@@ -6,7 +6,7 @@ describe('portfolio project data', () => {
     expect(projectWorlds.map((project) => project.index)).toEqual(['01', '02', '03']);
     expect(projectWorlds.map((project) => project.loopLabel)).toEqual([
       'THE USER LOOP',
-      'THE DATA LOOP',
+      'THE SIGNAL LOOP',
       'THE RUNTIME LOOP',
     ]);
   });

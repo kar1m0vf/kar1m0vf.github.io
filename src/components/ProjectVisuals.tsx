@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import type { CSSProperties, KeyboardEvent, PointerEvent, ReactNode, RefObject } from 'react';
-import type { ProjectMedia, ProjectWorld } from '../types';
-import { ArrowIcon, ArrowRightIcon } from './Icons';
+import type { CSSProperties, KeyboardEvent, RefObject } from 'react';
+import type {
+  ProjectMedia,
+  ProjectWorld,
+  TrackerHandoffState,
+  TrackerSignalResult,
+} from '../types';
+import { ArrowIcon } from './Icons';
+import { PriceObservatory } from './PriceObservatory';
 import { ResponsiveImage } from './ResponsiveImage';
 
 interface MediaTriggerProps {
@@ -124,7 +130,11 @@ function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: MediaLi
             initial={{ opacity: 0, scale: 0.985 }}
             key={media[activeIndex].src}
           >
-            <ResponsiveImage media={media[activeIndex]} sizes="96vw" />
+            <ResponsiveImage
+              eager
+              media={media[activeIndex]}
+              sizes="(min-width: 1100px) 68vw, 94vw"
+            />
           </motion.div>
           <div className="media-lightbox__footer">
             <span>{String(activeIndex + 1).padStart(2, '0')} / {String(media.length).padStart(2, '0')}</span>
@@ -143,47 +153,44 @@ function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: MediaLi
   );
 }
 
-function MediaFrame({ children, label }: { children: ReactNode; label: string }) {
-  return (
-    <div className="media-frame">
-      <div aria-hidden="true" className="media-frame__bar">
-        <span /><span /><span />
-        <i>{label}</i>
-      </div>
-      {children}
-    </div>
-  );
-}
+const narStages = [
+  {
+    label: 'Discover',
+    headline: 'Let appetite lead.',
+    detail: 'The first screen establishes the brand before asking the visitor to make a decision.',
+  },
+  {
+    label: 'Narrow',
+    headline: 'Reduce the noise.',
+    detail: 'Search and filters turn a full catalog into a smaller, more useful set of choices.',
+  },
+  {
+    label: 'Choose',
+    headline: 'Keep the choice.',
+    detail: 'Product detail completes the route while favourites and cart state remain available.',
+  },
+] as const;
 
-interface ExplorerStage {
-  detail: string;
-  frameLabel: string;
-  label: string;
-}
+const narSignalPoints = [
+  { x: 116, y: 88 },
+  { x: 500, y: 74 },
+  { x: 884, y: 88 },
+] as const;
 
-interface MediaExplorerProps {
-  heading: string;
-  kind: 'nar' | 'blaster';
-  media: readonly ProjectMedia[];
-  note: string;
-  stages: readonly ExplorerStage[];
-}
-
-function MediaExplorer({ heading, kind, media, note, stages }: MediaExplorerProps) {
+function NarVisual({ project }: { project: ProjectWorld }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const reduceMotion = useReducedMotion();
   const openerRef = useRef<HTMLButtonElement | null>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const activeMedia = media[activeIndex];
-  const activeStage = stages[activeIndex];
+  const activeMedia = project.media[activeIndex];
+  const activeStage = narStages[activeIndex];
+  const signalPoint = narSignalPoints[activeIndex];
 
-  if (!activeMedia || !activeStage || media.length !== stages.length) return null;
+  if (!activeMedia || !activeStage || !signalPoint || project.media.length < narStages.length) return null;
 
   const selectStage = (nextIndex: number, focus = false) => {
-    const normalized = (nextIndex + stages.length) % stages.length;
-    setHasInteracted(true);
+    const normalized = (nextIndex + narStages.length) % narStages.length;
     setActiveIndex(normalized);
     if (focus) tabRefs.current[normalized]?.focus();
   };
@@ -203,64 +210,84 @@ function MediaExplorer({ heading, kind, media, note, stages }: MediaExplorerProp
     }
     if (event.key === 'End') {
       event.preventDefault();
-      selectStage(stages.length - 1, true);
+      selectStage(narStages.length - 1, true);
     }
-  };
-
-  const conductSpotlight = (event: PointerEvent<HTMLDivElement>) => {
-    if (event.pointerType !== 'mouse') return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    event.currentTarget.style.setProperty('--spot-x', `${event.clientX - bounds.left}px`);
-    event.currentTarget.style.setProperty('--spot-y', `${event.clientY - bounds.top}px`);
   };
 
   return (
     <>
-      <div className={`project-media media-explorer media-explorer--${kind}`}>
-        <div className="project-media__heading">
-          <span>{heading}</span>
-          <i>{note}</i>
+      <div className="nar-world" data-step={activeIndex}>
+        <div className="nar-world__heading">
+          <span>The returning choice</span>
+          <i>Move through one real shopping flow</i>
         </div>
 
-        <div className="media-explorer__stage" onPointerMove={conductSpotlight}>
-          <MediaFrame label={activeStage.frameLabel}>
+        <div className="nar-world__stage">
+          <svg aria-hidden="true" className="nar-world__ribbon" preserveAspectRatio="none" viewBox="0 0 1000 180">
+            <path d="M-24 126 C154 18 286 154 480 80 C666 8 798 34 1024 126" pathLength="1" />
+            <motion.g
+              animate={{ x: signalPoint.x, y: signalPoint.y }}
+              initial={{ x: narSignalPoints[0].x, y: narSignalPoints[0].y }}
+              transition={{ duration: reduceMotion ? 0 : 0.58, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <circle cx="0" cy="0" r="7" />
+            </motion.g>
+          </svg>
+
+          <div className="nar-world__story" aria-live="polite">
+            <span>Route {String(activeIndex + 1).padStart(2, '0')}</span>
             <AnimatePresence initial={false} mode="wait">
               <motion.div
-                animate={{ clipPath: 'inset(0 0% 0 0)', opacity: 1, y: 0 }}
-                aria-labelledby={`${kind}-tab-${activeIndex}`}
-                className="media-explorer__panel"
-                exit={reduceMotion ? { opacity: 1 } : { clipPath: 'inset(0 0 0 100%)', opacity: 0, y: -8 }}
-                id={`${kind}-panel-${activeIndex}`}
-                initial={reduceMotion ? false : { clipPath: 'inset(0 100% 0 0)', opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -10 }}
+                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+                key={activeStage.label}
+              >
+                <strong>{activeStage.headline}</strong>
+                <p>{activeStage.detail}</p>
+              </motion.div>
+            </AnimatePresence>
+            <div className="nar-world__memory" aria-label="State retained across routes">
+              <span><i aria-hidden="true">♥</i> Favourites kept</span>
+              <span><i aria-hidden="true">＋</i> Cart kept</span>
+            </div>
+          </div>
+
+          <div className="nar-world__screen">
+            <AnimatePresence initial={false} mode="wait">
+              <motion.div
+                animate={{ clipPath: 'inset(0 0 0 0)', opacity: 1, x: 0 }}
+                aria-labelledby={`nar-route-tab-${activeIndex}`}
+                exit={reduceMotion ? { opacity: 1 } : { clipPath: 'inset(0 0 0 100%)', opacity: 0, x: 18 }}
+                id="nar-route-panel"
+                initial={reduceMotion ? false : { clipPath: 'inset(0 100% 0 0)', opacity: 0, x: -18 }}
                 key={activeMedia.src}
                 role="tabpanel"
-                transition={{ duration: reduceMotion ? 0 : 0.48, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: reduceMotion ? 0 : 0.52, ease: [0.22, 1, 0.36, 1] }}
               >
                 <MediaTrigger
-                  eager={hasInteracted}
+                  className="nar-world__media"
+                  eager={activeIndex > 0}
                   media={activeMedia}
                   onOpen={(trigger) => {
                     openerRef.current = trigger;
                     setLightboxIndex(activeIndex);
                   }}
-                  sizes="(min-width: 900px) 72vw, 96vw"
+                  sizes="(min-width: 1100px) 68vw, 94vw"
                 />
               </motion.div>
             </AnimatePresence>
-          </MediaFrame>
-        </div>
+          </div>
 
-        <div className="media-explorer__controller">
-          <div aria-label={`${kind === 'nar' ? 'Nar route' : 'Blaster runtime'} states`} className="media-explorer__tabs" role="tablist">
-            {stages.map((stage, index) => (
+          <div aria-label="Nar shopping route" className="nar-world__route" role="tablist">
+            {narStages.map((stage, index) => (
               <button
-                aria-controls={`${kind}-panel-${index}`}
+                aria-controls="nar-route-panel"
                 aria-selected={activeIndex === index}
                 className={activeIndex === index ? 'is-active' : ''}
-                id={`${kind}-tab-${index}`}
+                id={`nar-route-tab-${index}`}
                 key={stage.label}
                 onClick={() => selectStage(index)}
-                onFocus={() => selectStage(index)}
                 onKeyDown={(event) => handleKeyDown(event, index)}
                 ref={(element) => { tabRefs.current[index] = element; }}
                 role="tab"
@@ -272,16 +299,17 @@ function MediaExplorer({ heading, kind, media, note, stages }: MediaExplorerProp
               </button>
             ))}
           </div>
-          <div aria-live="polite" className="media-explorer__readout">
-            <span>{kind === 'nar' ? 'Route state' : 'Runtime state'}</span>
-            <p>{activeStage.detail}</p>
-            <strong>{String(activeIndex + 1).padStart(2, '0')} / {String(stages.length).padStart(2, '0')}</strong>
-          </div>
+        </div>
+
+        <div className="nar-world__truth">
+          <strong>A choice should survive the route.</strong>
+          <p>The interface changes. The visitor’s intent does not.</p>
         </div>
       </div>
+
       <MediaLightbox
         activeIndex={lightboxIndex}
-        media={media}
+        media={project.media}
         onChange={setLightboxIndex}
         returnFocusRef={openerRef}
       />
@@ -289,149 +317,231 @@ function MediaExplorer({ heading, kind, media, note, stages }: MediaExplorerProp
   );
 }
 
-const narStages: readonly ExplorerStage[] = [
-  { label: 'Discover', detail: 'The brand and product promise land before the catalog asks for a decision.', frameLabel: 'kar1m0vf.github.io/nar-patisserie' },
-  { label: 'Narrow', detail: 'Search and filters reduce a full catalog to a useful next choice.', frameLabel: 'Catalog · Search and filters' },
-  { label: 'Choose', detail: 'Product detail keeps the purchase path clear without losing context.', frameLabel: 'Product detail · Purchase flow' },
+const blasterStages = [
+  {
+    id: 'input',
+    label: 'Input',
+    cue: 'Runtime entry',
+    headline: 'One action enters the loop.',
+    detail: 'The menu owns the entry point, settings, highscores, and the handoff into play.',
+    mediaIndex: 0,
+  },
+  {
+    id: 'state',
+    label: 'State',
+    cue: 'Clean handoff',
+    headline: 'The menu yields to the runtime.',
+    detail: 'A deliberate state boundary moves the application from navigation into the live game loop.',
+    mediaIndex: 0,
+  },
+  {
+    id: 'wave',
+    label: 'Wave',
+    cue: 'Systems update together',
+    headline: 'Combat is a coordinated update.',
+    detail: 'Input, enemies, projectiles, HUD, timing, and collisions stay coherent on one scaled 16:9 surface.',
+    mediaIndex: 1,
+  },
+  {
+    id: 'boss',
+    label: 'Boss',
+    cue: 'Pressure changes',
+    headline: 'The rules hold under pressure.',
+    detail: 'Boss phases raise the intensity without breaking the same controls, state model, or interface logic.',
+    mediaIndex: 2,
+  },
+  {
+    id: 'persist',
+    label: 'Persist',
+    cue: 'The loop closes',
+    headline: 'State survives the run.',
+    detail: 'Settings and highscores return with the player, ready for the next launch instead of disappearing on exit.',
+    mediaIndex: 0,
+  },
 ] as const;
 
-function NarVisual({ project }: { project: ProjectWorld }) {
-  if (project.media.length < 3) return null;
-  return (
-    <MediaExplorer
-      heading="Route explorer"
-      kind="nar"
-      media={project.media}
-      note="Choose a step · open any screen"
-      stages={narStages}
-    />
-  );
-}
+const inboundOutcomeLabels = {
+  memory: 'Stored decision received',
+  held: 'Quiet-hours decision received',
+  released: 'Released alert received',
+} as const;
 
-const signalSteps = [
-  { label: 'Link', system: 'Telegram input', detail: 'A product URL enters the system.' },
-  { label: 'Validate', system: 'Input guard', detail: 'The URL and product data are checked before any work persists.' },
-  { label: 'Store', system: 'SQLite', detail: 'The subscription and its settings become durable state.' },
-  { label: 'Schedule', system: 'APScheduler', detail: 'A background job brings the price check back at the right time.' },
-  { label: 'Compare', system: 'Rule engine', detail: 'Target price, discounts, quiet hours, and anti-spam rules are evaluated.' },
-  { label: 'Alert', system: 'Telegram output', detail: 'The useful change reaches the subscriber; noise stays behind.' },
-] as const;
-
-function TrendyolVisual({ project }: { project: ProjectWorld }) {
+function BlasterVisual({
+  project,
+  trackerHandoff,
+}: {
+  project: ProjectWorld;
+  trackerHandoff: TrackerHandoffState | null;
+}) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [running, setRunning] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const reduceMotion = useReducedMotion();
-  const [logo] = project.media;
-  const activeStep = signalSteps[activeIndex];
-
-  useEffect(() => {
-    if (!running || reduceMotion) return;
-    if (activeIndex >= signalSteps.length - 1) {
-      const finishTimer = window.setTimeout(() => setRunning(false), 700);
-      return () => window.clearTimeout(finishTimer);
-    }
-    const stepTimer = window.setTimeout(() => setActiveIndex((index) => index + 1), 560);
-    return () => window.clearTimeout(stepTimer);
-  }, [activeIndex, reduceMotion, running]);
-
-  if (!logo || !activeStep) return null;
-
-  const runSignal = () => {
-    if (reduceMotion) {
-      setRunning(false);
-      setActiveIndex(signalSteps.length - 1);
-      return;
-    }
-    setActiveIndex(0);
-    setRunning(true);
-  };
-
-  const progress = signalSteps.length > 1 ? activeIndex / (signalSteps.length - 1) : 1;
-  const progressStyle = { '--signal-progress': progress } as CSSProperties;
-
-  return (
-    <div className={`data-loop${running ? ' is-running' : ''}`}>
-      <div className="data-loop__heading">
-        <span>Signal lab</span>
-        <i>Run the real architecture · no live request</i>
-      </div>
-      <div className="data-loop__canvas">
-        <div className="data-loop__brand">
-          <ResponsiveImage media={logo} sizes="240px" />
-          <span>Price Tracker</span>
-          <strong>Trendyol</strong>
-          <button disabled={running} onClick={runSignal} type="button">
-            {running ? 'Signal running' : activeIndex === signalSteps.length - 1 ? 'Run again' : 'Run one check'}
-            <ArrowRightIcon />
-          </button>
-        </div>
-
-        <div className="data-loop__system">
-          <ol aria-label="Trendyol Price Tracker data flow" className="data-loop__steps" style={progressStyle}>
-            {signalSteps.map((step, index) => (
-              <li className={`${index === activeIndex ? 'is-active' : ''}${index < activeIndex ? ' is-complete' : ''}`} key={step.label}>
-                <button
-                  aria-label={`Inspect ${step.label}: ${step.system}`}
-                  aria-pressed={index === activeIndex}
-                  disabled={running}
-                  onClick={() => {
-                    setRunning(false);
-                    setActiveIndex(index);
-                  }}
-                  type="button"
-                >
-                  <span>{String(index + 1).padStart(2, '0')}</span>
-                  <strong>{step.label}</strong>
-                </button>
-              </li>
-            ))}
-          </ol>
-
-          <AnimatePresence initial={false} mode="wait">
-            <motion.div
-              animate={{ opacity: 1, y: 0 }}
-              aria-live="polite"
-              className="data-loop__readout"
-              exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-              key={activeStep.label}
-            >
-              <span>{running ? 'Signal in motion' : 'Inspecting node'} · {activeStep.system}</span>
-              <strong>{activeStep.label}</strong>
-              <p>{activeStep.detail}</p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-      <p className="data-loop__truth">The chat is the surface. Scheduling, validation, and delivery make it a product.</p>
-    </div>
-  );
-}
-
-const blasterStages: readonly ExplorerStage[] = [
-  { label: 'Launch', detail: 'The menu owns entry, settings, highscores, and a clean handoff into play.', frameLabel: 'Main menu · Ready state' },
-  { label: 'Wave 03', detail: 'Input, combat state, HUD, enemies, and persistence meet on one scaled 16:9 surface.', frameLabel: 'Wave 03 · Neon Belt' },
-  { label: 'Boss phase', detail: 'A new runtime phase raises pressure without changing the rules of the interface.', frameLabel: 'Boss phase · Combat state' },
-] as const;
-
-function BlasterVisual({ project }: { project: ProjectWorld }) {
+  const openerRef = useRef<HTMLButtonElement | null>(null);
   const [battle, menu, boss] = project.media;
   if (!battle || !menu || !boss) return null;
   const runtimeMedia = [menu, battle, boss] as const;
+  const activeStage = blasterStages[activeIndex];
+  const activeMedia = activeStage ? runtimeMedia[activeStage.mediaIndex] : undefined;
+  const inboundLabel = trackerHandoff && trackerHandoff.status !== 'idle'
+    ? inboundOutcomeLabels[trackerHandoff.outcome]
+    : null;
+
+  if (!activeStage || !activeMedia) return null;
+
+  const runtimeStyle = {
+    '--runtime-progress': activeIndex / (blasterStages.length - 1),
+  } as CSSProperties;
 
   return (
-    <MediaExplorer
-      heading="Runtime deck"
-      kind="blaster"
-      media={runtimeMedia}
-      note="Switch state · use arrow keys"
-      stages={blasterStages}
-    />
+    <>
+      <div
+        className="blaster-chamber"
+        data-inbound={inboundLabel ? 'received' : 'idle'}
+        data-stage={activeStage.id}
+        style={runtimeStyle}
+      >
+        <div className="blaster-chamber__heading">
+          <div>
+            <span>Interactive runtime model</span>
+            <strong>Flight recorder</strong>
+          </div>
+          <p>Scrub one input through the system.</p>
+        </div>
+
+        <div className="blaster-chamber__stage">
+          <div className="blaster-chamber__screen" id="blaster-runtime-panel">
+            <AnimatePresence initial={false} mode="wait">
+              <motion.div
+                animate={{ clipPath: 'inset(0 0 0 0)', opacity: 1 }}
+                className="blaster-chamber__frame"
+                exit={reduceMotion ? { opacity: 1 } : { clipPath: 'inset(0 0 0 100%)', opacity: 0.45 }}
+                initial={reduceMotion ? false : { clipPath: 'inset(0 100% 0 0)', opacity: 0.45 }}
+                key={activeStage.id}
+                transition={{ duration: reduceMotion ? 0 : 0.44, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <MediaTrigger
+                  className="blaster-chamber__media"
+                  eager={activeIndex > 0}
+                  media={activeMedia}
+                  onOpen={(trigger) => {
+                    openerRef.current = trigger;
+                    setLightboxIndex(activeStage.mediaIndex);
+                  }}
+                  sizes="(min-width: 901px) min(78rem, 108vw), 94vw"
+                />
+              </motion.div>
+            </AnimatePresence>
+
+            <span aria-hidden="true" className="blaster-chamber__scanline" key={`scan-${activeStage.id}`} />
+            <div aria-hidden="true" className="blaster-chamber__frame-count">
+              Frame {String(activeIndex + 1).padStart(2, '0')} / {String(blasterStages.length).padStart(2, '0')}
+            </div>
+
+            {activeStage.id === 'input' ? (
+              <div aria-hidden="true" className="blaster-chamber__awaiting">
+                <span /> {inboundLabel ?? 'Awaiting input'}
+              </div>
+            ) : null}
+
+            {activeStage.id === 'state' ? (
+              <div aria-hidden="true" className="blaster-chamber__handoff">
+                <span>Menu</span><i>→</i><strong>Playing</strong>
+              </div>
+            ) : null}
+
+            {activeStage.id === 'boss' ? <span aria-hidden="true" className="blaster-chamber__boss-ring" /> : null}
+
+            {activeStage.id === 'persist' ? (
+              <div className="blaster-chamber__receipt">
+                <span>State handoff</span>
+                <div><strong>Settings</strong><i>JSON</i></div>
+                <div><strong>Highscores</strong><i>JSON</i></div>
+                <div><strong>Next run</strong><i>Ready</i></div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="blaster-chamber__console">
+          <div aria-live="polite" className="blaster-chamber__readout">
+            <span>{activeStage.cue}</span>
+            <AnimatePresence initial={false} mode="wait">
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
+                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+                key={activeStage.id}
+                transition={{ duration: reduceMotion ? 0 : 0.28 }}
+              >
+                <strong>{activeStage.headline}</strong>
+                <p>{activeStage.detail}</p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="blaster-chamber__control">
+            <label htmlFor="blaster-runtime-range">Move the ship through the runtime</label>
+            <div className="blaster-chamber__rail">
+              <input
+                aria-controls="blaster-runtime-panel"
+                aria-describedby="blaster-runtime-hint"
+                aria-label="Explore the Blaster runtime"
+                aria-valuetext={`${activeStage.label}: ${activeStage.headline}`}
+                id="blaster-runtime-range"
+                max={blasterStages.length - 1}
+                min="0"
+                onChange={(event) => setActiveIndex(Number(event.currentTarget.value))}
+                step="1"
+                type="range"
+                value={activeIndex}
+              />
+            </div>
+            <ol aria-hidden="true" className="blaster-chamber__labels">
+              {blasterStages.map((stage, index) => (
+                <li className={index === activeIndex ? 'is-active' : ''} key={stage.id}>{stage.label}</li>
+              ))}
+            </ol>
+            <p id="blaster-runtime-hint">Drag the ship or focus it and use the arrow keys.</p>
+          </div>
+        </div>
+      </div>
+
+      <MediaLightbox
+        activeIndex={lightboxIndex}
+        media={runtimeMedia}
+        onChange={setLightboxIndex}
+        returnFocusRef={openerRef}
+      />
+    </>
   );
 }
 
-export function ProjectVisual({ project }: { project: ProjectWorld }) {
+const noopHandoffReset = () => undefined;
+const noopHandoffResolved = (_result: TrackerSignalResult) => undefined;
+
+interface ProjectVisualProps {
+  onHandoffReset: (() => void) | null;
+  onHandoffResolved: ((result: TrackerSignalResult) => void) | null;
+  project: ProjectWorld;
+  trackerHandoff: TrackerHandoffState | null;
+}
+
+export function ProjectVisual({
+  onHandoffReset,
+  onHandoffResolved,
+  project,
+  trackerHandoff,
+}: ProjectVisualProps) {
   if (project.theme === 'nar') return <NarVisual project={project} />;
-  if (project.theme === 'trendyol') return <TrendyolVisual project={project} />;
-  return <BlasterVisual project={project} />;
+  if (project.theme === 'trendyol' && project.observatory) {
+    return (
+      <PriceObservatory
+        config={project.observatory}
+        handoffStatus={trackerHandoff?.status ?? 'idle'}
+        onHandoffReset={onHandoffReset ?? noopHandoffReset}
+        onHandoffResolved={onHandoffResolved ?? noopHandoffResolved}
+      />
+    );
+  }
+  return <BlasterVisual project={project} trackerHandoff={trackerHandoff} />;
 }

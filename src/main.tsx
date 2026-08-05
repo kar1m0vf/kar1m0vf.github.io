@@ -5,6 +5,13 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import './components/SiteLoader.css';
+import './components/MethodJunction.css';
+import './components/NarWorld.css';
+import './components/NarTrackerHandoff.css';
+import './components/PriceObservatory.css';
+import './components/BlasterWorld.css';
+import './components/SignalIdentity.css';
 import { cleanupLegacyRuntime } from './utils/legacyRuntime';
 
 const root = document.getElementById('root');

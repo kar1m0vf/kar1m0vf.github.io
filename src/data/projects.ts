@@ -47,16 +47,18 @@ export const projectWorlds: readonly ProjectWorld[] = [
     id: 'trendyol',
     index: '02',
     title: 'Trendyol Price Tracker',
-    loopLabel: 'THE DATA LOOP',
-    statement: 'A bot that keeps watching after the chat goes quiet.',
+    loopLabel: 'THE SIGNAL LOOP',
+    statement: 'A product link goes in. A decision comes back.',
     description:
-      'The Telegram chat is the surface. Behind it, a Python system validates links, stores subscriptions, checks prices on a schedule, and decides when to alert.',
-    flow: ['Link', 'Validate', 'Store', 'Schedule', 'Compare', 'Alert'],
+      'A Python service that remembers prices and decides when a change deserves attention.',
+    flow: ['Link', 'Normalize', 'Remember', 'Check', 'Decide', 'Deliver'],
     decision:
-      'Notification logic respects target prices, discount rules, quiet hours, grouping, and anti-spam controls. The aim is a useful alert, not another noisy bot.',
+      'I separated observation from interruption: background checks collect data; personal rules decide when the system should speak.',
+    releaseNote:
+      'Persistent history, quiet hours, grouped delivery, diagnostics, backups, and four locales make it a service rather than a one-off script.',
     year: '2023—Now',
-    role: 'Product development · Automation · Data workflows',
-    stack: ['Python', 'Aiogram 3', 'SQLite / SQL', 'APScheduler', 'pytest'],
+    role: 'Product engineering · Python automation · Persistence · Operations',
+    stack: ['Python', 'aiogram 3', 'SQLite / SQL', 'APScheduler', 'pytest'],
     theme: 'trendyol',
     links: [
       { label: 'Open repository', href: 'https://github.com/kar1m0vf/trendyol-price-tracker', kind: 'primary' },
@@ -65,6 +67,30 @@ export const projectWorlds: readonly ProjectWorld[] = [
     media: [
       responsiveMedia('trendyol/logo', [560, 960], 'Price Tracker for Trendyol project logo', 'Project identity', 960, 960),
     ],
+    observatory: {
+      title: 'The Signal Path',
+      instruction: 'Change the price. Watch the decision.',
+      sampleLabel: 'Illustrative check · real rules',
+      simulation: {
+        currentPrice: 1099,
+        previousPrice: 1159,
+        targetPrice: 1130,
+        min: 1000,
+        max: 1350,
+        step: 1,
+        time: '23:40',
+      },
+      gates: [
+        { id: 'memory', label: 'Remember', detail: 'Save the new price.' },
+        { id: 'rule', label: 'Match', detail: 'Compare it with your target.' },
+        { id: 'attention', label: 'Protect', detail: 'Check quiet hours before delivery.' },
+      ],
+      facts: [
+        { label: 'Remember', detail: 'SQLite keeps watchlists, settings, migrations, indexes, and price history durable.' },
+        { label: 'Observe', detail: 'Scheduled checks use locking, batches, caching, and network limits to control external work.' },
+        { label: 'Decide', detail: 'Target, drop, range, percentage, interval, pause, and quiet-hour rules control delivery.' },
+      ],
+    },
   },
   {
     id: 'blaster',
@@ -95,10 +121,10 @@ export const projectWorlds: readonly ProjectWorld[] = [
 ] as const;
 
 export const journeyMilestones: readonly JourneyMilestone[] = [
-  { year: '2023', title: 'Tracker begins', detail: 'Background jobs, persistent data, and notification rules.' },
-  { year: '2024', title: 'Blaster teaches runtime and state', detail: 'Testing, packaging, and release discipline.' },
-  { year: '2025', title: 'DIV Academy winner', detail: '#GeleceyiYazanlar / #GələcəyiYazanlar.' },
-  { year: '2025—26', title: 'IT Brains', detail: 'Frontend Development.' },
-  { year: '2026', title: 'Nar joins UI and product flow', detail: 'React final project.' },
-  { year: '2023—27', title: 'ASOIU · B.Sc.', detail: 'Information Technologies · in progress.' },
+  { year: '2023—27', title: 'ASOIU · Information Technologies', detail: 'B.Sc. in progress · software, data, and systems foundation.' },
+  { year: '2023', title: 'Price Tracker becomes a service', detail: 'Python automation, persistent state, scheduled jobs, and alert rules.' },
+  { year: '2024', title: 'Blaster expands into runtime', detail: 'Game state, regression testing, Windows packaging, and release checks.' },
+  { year: '2025', title: 'Training and recognition', detail: 'Holberton Software Engineering training · DIV Academy project winner.' },
+  { year: '2025—26', title: 'IT Brains · Frontend Development', detail: 'React, product flows, and interface engineering.' },
+  { year: '2026', title: 'Nar connects product and UI', detail: 'A React storefront from discovery to a persistent cart.' },
 ] as const;

@@ -20,7 +20,7 @@ interface ExperienceSection {
 
 const experienceSections = [
   { id: 'top', index: '01', label: 'Start', theme: 'blue' },
-  { id: 'method', index: '02', label: 'Method', theme: 'blue' },
+  { id: 'method', index: '02', label: 'Junction', theme: 'blue' },
   { id: 'nar', index: '03', label: 'Nar', theme: 'nar' },
   { id: 'trendyol', index: '04', label: 'Trendyol', theme: 'trendyol' },
   { id: 'blaster', index: '05', label: 'Blaster', theme: 'blaster' },

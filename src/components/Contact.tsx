@@ -16,8 +16,8 @@ export function Contact() {
     <footer className="contact" id="contact">
       <div className="section-shell contact__inner">
         <div className="contact__copy">
-          <h2>I’m looking for frontend work where UI, state, and product quality all matter.</h2>
-          <p>If you need someone who can own the screen and reason about the system behind it, let’s talk.</p>
+          <h2>Have a product where the surface and the system need to agree?</h2>
+          <p>I’m open to software and product roles across interfaces, state, automation, testing, and release.</p>
           <a
             className="contact__email"
             href="mailto:kamil16092006@gmail.com"
@@ -49,7 +49,7 @@ export function Contact() {
         <div className="contact__footer">
           <a className="wordmark" href="#top">Kamil Kerimov</a>
           <span>Baku · UTC+4</span>
-          <span>Frontend &amp; Software Developer</span>
+          <span>Software Developer · Interface to runtime</span>
         </div>
       </div>
     </footer>

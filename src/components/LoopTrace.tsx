@@ -166,6 +166,10 @@ export function LoopTrace({
   variant,
 }: LoopTraceProps) {
   const reduceMotion = useReducedMotion();
+  const [canFollowPointer, setCanFollowPointer] = useState(() => (
+    typeof window !== 'undefined'
+    && window.matchMedia('(hover: hover) and (pointer: fine)').matches
+  ));
   const filterId = `trace-glow-${useId().replaceAll(':', '')}`;
   const svgRef = useRef<SVGSVGElement | null>(null);
   const beadRef = useRef<SVGCircleElement | null>(null);
@@ -178,7 +182,17 @@ export function LoopTrace({
   const [ripple, setRipple] = useState<SignalRipple | null>(null);
   const selectedStep = clampSignalStep(activeStep);
   const isInteractive = interactive && variant === 'hero';
+  const showPointerSignal = isInteractive && canFollowPointer && !reduceMotion;
   const target = { opacity: 1, pathLength: 1 };
+
+  useEffect(() => {
+    const pointerQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const updatePointerCapability = () => setCanFollowPointer(pointerQuery.matches);
+
+    updatePointerCapability();
+    pointerQuery.addEventListener('change', updatePointerCapability);
+    return () => pointerQuery.removeEventListener('change', updatePointerCapability);
+  }, []);
 
   const setBeadPosition = useCallback((point: Pick<TracePoint, 'x' | 'y'>) => {
     beadPositionRef.current = point;
@@ -220,7 +234,7 @@ export function LoopTrace({
   }, [reduceMotion]);
 
   useLayoutEffect(() => {
-    if (!isInteractive || !svgRef.current) return;
+    if (!showPointerSignal || !svgRef.current) return;
 
     const paths = Array.from(svgRef.current.querySelectorAll<SVGPathElement>('.loop-trace__line'));
     const point = getSignalPoint(paths, selectedStep);
@@ -235,10 +249,10 @@ export function LoopTrace({
     const hadPosition = beadPositionRef.current !== null;
     animateBeadTo(point);
     if (hadPosition) startRipple(point);
-  }, [animateBeadTo, isInteractive, selectedStep, startRipple]);
+  }, [animateBeadTo, selectedStep, showPointerSignal, startRipple]);
 
   useEffect(() => {
-    if (!isInteractive || reduceMotion || !svgRef.current || !window.matchMedia('(any-pointer: fine)').matches) return;
+    if (!showPointerSignal || !svgRef.current) return;
 
     const svg = svgRef.current;
     const conductor = svg.closest<HTMLElement>('.hero') ?? svg.parentElement;
@@ -278,6 +292,7 @@ export function LoopTrace({
     };
 
     const handlePointerMove = (event: PointerEvent) => {
+      if (event.pointerType === 'touch') return;
       if (event.target instanceof Element && event.target.closest('a, button, input, select, textarea')) {
         if (pointerFrameRef.current !== null) cancelAnimationFrame(pointerFrameRef.current);
         pointerFrameRef.current = null;
@@ -300,7 +315,7 @@ export function LoopTrace({
       conductor.removeEventListener('pointerleave', stopConducting);
       stopConducting();
     };
-  }, [isInteractive, onSignalStepChange, reduceMotion, setBeadPosition, startRipple]);
+  }, [onSignalStepChange, setBeadPosition, showPointerSignal, startRipple]);
 
   useEffect(() => () => {
     if (beadAnimationFrameRef.current !== null) cancelAnimationFrame(beadAnimationFrameRef.current);
@@ -338,9 +353,16 @@ export function LoopTrace({
             initial={reduceMotion ? false : { opacity: 0, pathLength: 0 }}
             transition={{ delay: index * 0.12, duration: 1.45, ease: [0.22, 1, 0.36, 1] }}
           />
+          {variant !== 'hero' && index === 0 ? (
+            <path
+              className="loop-trace__traveller"
+              d={path}
+              pathLength="1"
+            />
+          ) : null}
         </g>
       ))}
-      {isInteractive ? (
+      {showPointerSignal ? (
         <g className="loop-trace__signal" data-active-step={selectedStep} pointerEvents="none">
           {ripple && !reduceMotion ? (
             <motion.circle

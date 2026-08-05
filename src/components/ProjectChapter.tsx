@@ -1,15 +1,36 @@
+import { memo, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import type { ProjectWorld } from '../types';
+import type { ProjectWorld, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { ArrowIcon, ArrowRightIcon, GitHubIcon, TelegramIcon } from './Icons';
 import { LoopTrace } from './LoopTrace';
+import { NarTrackerHandoff } from './NarTrackerHandoff';
 import { ProjectVisual } from './ProjectVisuals';
 
-export function ProjectChapter({ project }: { project: ProjectWorld }) {
+interface ProjectChapterProps {
+  handoff: TrackerHandoffState | null;
+  onHandoffReset: (() => void) | null;
+  onHandoffResolved: ((result: TrackerSignalResult) => void) | null;
+  project: ProjectWorld;
+}
+
+function ProjectChapterComponent({
+  handoff,
+  onHandoffReset,
+  onHandoffResolved,
+  project,
+}: ProjectChapterProps) {
   const reduceMotion = useReducedMotion();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const initialDeepLink = useRef(
+    typeof window !== 'undefined' && window.location.hash === `#${project.id}`,
+  ).current;
 
   return (
-    <section className={`project project--${project.theme}`} id={project.id}>
+    <section className={`project project--${project.theme}`} id={project.id} ref={sectionRef}>
       <LoopTrace variant={project.theme} />
+      {project.theme === 'trendyol' && !reduceMotion && !initialDeepLink ? (
+        <NarTrackerHandoff targetRef={sectionRef} />
+      ) : null}
       <div className="section-shell project__inner">
         <motion.header
           className="project__header"
@@ -36,7 +57,12 @@ export function ProjectChapter({ project }: { project: ProjectWorld }) {
           ))}
         </ol>
 
-        <ProjectVisual project={project} />
+        <ProjectVisual
+          onHandoffReset={onHandoffReset}
+          onHandoffResolved={onHandoffResolved}
+          project={project}
+          trackerHandoff={handoff}
+        />
 
         <div className="project__notes">
           <div className="project__decision">
@@ -72,3 +98,5 @@ export function ProjectChapter({ project }: { project: ProjectWorld }) {
     </section>
   );
 }
+
+export const ProjectChapter = memo(ProjectChapterComponent);

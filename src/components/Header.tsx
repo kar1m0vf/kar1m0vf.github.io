@@ -3,7 +3,7 @@ import { ArrowIcon } from './Icons';
 
 const navigation = [
   { label: 'Work', href: '#work' },
-  { label: 'Method', href: '#method' },
+  { label: 'Junction', href: '#method' },
   { label: 'Journey', href: '#journey' },
   { label: 'Contact', href: '#contact' },
 ] as const;

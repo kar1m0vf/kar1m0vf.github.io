@@ -411,6 +411,12 @@ ul {
   vector-effect: non-scaling-stroke;
 }
 
+@media (hover: none), (pointer: coarse) {
+  .loop-trace--hero .loop-trace__signal {
+    display: none;
+  }
+}
+
 /* Hero */
 
 .hero {
