@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { PriceObservatoryConfig, TrackerHandoffState, TrackerSignalResult } from '../types';
+import { useSound } from '../audio/SoundProvider';
 import { ArrowRightIcon } from './Icons';
 
 interface PriceObservatoryProps {
@@ -19,6 +20,7 @@ export function PriceObservatory({
   onHandoffReset,
   onHandoffResolved,
 }: PriceObservatoryProps) {
+  const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const [currentPrice, setCurrentPrice] = useState(config.simulation.currentPrice);
   const [quietHours, setQuietHours] = useState(true);
@@ -37,7 +39,8 @@ export function PriceObservatory({
 
   const reportSignal = useCallback(() => {
     onHandoffResolved({ currentPrice, outcome: outcomeKey });
-  }, [currentPrice, onHandoffResolved, outcomeKey]);
+    playSound('complete');
+  }, [currentPrice, onHandoffResolved, outcomeKey, playSound]);
 
   useEffect(() => {
     if (!running) return;
@@ -86,6 +89,7 @@ export function PriceObservatory({
         };
 
   const runSignal = () => {
+    playSound('signal');
     onHandoffReset();
 
     if (reduceMotion) {
@@ -108,6 +112,7 @@ export function PriceObservatory({
   };
 
   const chooseGate = (index: number) => {
+    if (index !== selectedGate) playSound('select');
     setSelectedGate(index);
   };
 
@@ -182,6 +187,7 @@ export function PriceObservatory({
             className="signal-world__quiet"
             disabled={running}
             onClick={() => {
+              playSound('select');
               setQuietHours((enabled) => !enabled);
               resetSignal();
               setSelectedGate(2);

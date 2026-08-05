@@ -4,6 +4,7 @@ import '@fontsource/instrument-serif/latin-400-italic.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { SoundProvider } from './audio/SoundProvider';
 import './styles.css';
 import './components/SiteLoader.css';
 import './components/KControl.css';
@@ -20,7 +21,9 @@ if (!root) throw new Error('Root element not found');
 
 createRoot(root).render(
   <StrictMode>
-    <App />
+    <SoundProvider>
+      <App />
+    </SoundProvider>
   </StrictMode>,
 );
 

@@ -1,0 +1,674 @@
+.contact.contact--finale {
+  --contact-signal-x: 0px;
+  --contact-signal-y: 0px;
+  --contact-signal-hue: 0deg;
+  position: relative;
+  z-index: 4;
+  width: 100%;
+  height: 100svh;
+  min-height: 0;
+  max-height: 100svh;
+  padding: clamp(2.75rem, 7.5svh, 4.5rem) 0 max(1.25rem, env(safe-area-inset-bottom));
+  overflow: hidden;
+  border: 0;
+  background:
+    radial-gradient(circle at 65% 52%, rgb(39 94 165 / 7%), transparent 25rem),
+    #050607;
+  isolation: isolate;
+}
+
+.contact.contact--finale::before {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  opacity: 0.18;
+  background-image: radial-gradient(rgb(255 255 255 / 14%) 0.45px, transparent 0.6px);
+  background-size: 5px 5px;
+  mask-image: linear-gradient(transparent, #000 14%, #000 90%, transparent);
+  pointer-events: none;
+}
+
+.contact--finale .contact__inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    'label'
+    'copy'
+    'actions'
+    'footer';
+  width: min(100%, 100rem);
+  height: 100%;
+  min-height: 0;
+}
+
+.contact--finale .contact__label {
+  grid-area: label;
+  color: #e8e4de;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: clamp(0.58rem, 0.72vw, 0.7rem);
+  font-weight: 690;
+  line-height: 1;
+}
+
+.contact--finale .contact__label span {
+  color: var(--ink-bright);
+}
+
+.contact--finale .contact__label b {
+  margin-inline: 0.5rem;
+  color: var(--blue-bright);
+  font-weight: inherit;
+}
+
+.contact--finale .contact__copy {
+  position: relative;
+  z-index: 2;
+  grid-area: copy;
+  align-self: center;
+  width: min(47rem, 54vw);
+}
+
+.contact--finale .contact__copy h2 {
+  display: flex;
+  flex-direction: column;
+  color: var(--ink-bright);
+  font-family: var(--serif);
+  font-size: clamp(4.5rem, 7.2vw, 7rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+}
+
+.contact--finale .contact__copy h2 span {
+  display: block;
+  white-space: nowrap;
+}
+
+.contact--finale .contact__copy h2 em {
+  font-weight: 400;
+}
+
+.contact--finale .contact__copy > p {
+  width: min(34rem, 100%);
+  margin-top: clamp(1.45rem, 3.4svh, 2.25rem);
+  color: #b6b5b4;
+  font-size: clamp(0.96rem, 1.22vw, 1.16rem);
+  line-height: 1.55;
+}
+
+.contact--finale .contact__actions {
+  position: relative;
+  z-index: 3;
+  grid-area: actions;
+  display: grid;
+  grid-template-columns: 36rem auto;
+  gap: clamp(2rem, 4.4vw, 4rem);
+  align-items: center;
+  width: auto;
+}
+
+.contact--finale .contact__primary {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 1.35rem;
+  align-items: center;
+  width: 36rem;
+  max-width: 100%;
+  min-height: clamp(4.75rem, 9.4svh, 5.25rem);
+  padding: 1rem 1.5rem;
+  border: 1px solid rgb(75 156 255 / 78%);
+  border-radius: 0;
+  background: rgb(5 6 7 / 76%);
+  box-shadow: inset 0 0 2rem rgb(75 156 255 / 2%);
+  color: var(--ink-bright);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: clamp(0.72rem, 1.05vw, 0.94rem);
+  font-weight: 650;
+  transition: border-color 220ms ease, background 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.contact--finale .contact__primary::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -0.29rem;
+  width: 0.58rem;
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 80%);
+  border-radius: 50%;
+  background: #dff8ff;
+  box-shadow: 0 0 0.8rem var(--blue), 0 0 2rem rgb(75 156 255 / 62%);
+  transform: translateY(-50%);
+}
+
+.contact--finale .contact__primary svg,
+.contact--finale .contact__telegram svg,
+.contact--finale .contact__footer svg {
+  flex: 0 0 auto;
+  color: currentColor;
+  transition: transform 220ms ease;
+}
+
+.contact--finale .contact__primary svg {
+  width: 1rem;
+}
+
+.contact--finale .contact__primary:hover,
+.contact--finale .contact__primary:focus-visible {
+  border-color: var(--blue-bright);
+  background: rgb(11 18 25 / 84%);
+  box-shadow: 0 0 2.8rem rgb(75 156 255 / 12%), inset 0 0 2rem rgb(75 156 255 / 5%);
+  transform: translateY(-2px);
+}
+
+.contact--finale .contact__primary:hover svg,
+.contact--finale .contact__primary:focus-visible svg,
+.contact--finale .contact__telegram:hover svg,
+.contact--finale .contact__telegram:focus-visible svg,
+.contact--finale .contact__footer a:hover svg,
+.contact--finale .contact__footer a:focus-visible svg {
+  transform: translate(0.18rem, -0.18rem);
+}
+
+.contact--finale .contact__telegram {
+  display: inline-flex;
+  gap: 0.8rem;
+  align-items: center;
+  justify-self: start;
+  min-height: 2.8rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px dotted #b6b5b4;
+  color: var(--ink);
+  font-size: clamp(0.94rem, 1.3vw, 1.15rem);
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.contact--finale .contact__telegram svg {
+  width: 0.9rem;
+}
+
+.contact--finale .contact__telegram:hover,
+.contact--finale .contact__telegram:focus-visible {
+  border-color: var(--blue-bright);
+  color: var(--ink-bright);
+}
+
+.contact--finale .contact__footer {
+  grid-area: footer;
+  display: grid;
+  grid-template-columns: minmax(9rem, 1.2fr) auto auto auto auto;
+  gap: clamp(1.5rem, 4.5vw, 4.5rem);
+  align-items: center;
+  min-height: 3.25rem;
+  margin-top: clamp(4rem, 8.8svh, 5.5rem);
+  padding-top: 1rem;
+  padding-left: clamp(9rem, 14vw, 12.5rem);
+  border-top: 1px solid rgb(233 227 218 / 22%);
+  color: #b3b1ae;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: clamp(0.5rem, 0.66vw, 0.64rem);
+  white-space: nowrap;
+}
+
+.contact--finale .contact__footer a {
+  display: inline-flex;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 2.6rem;
+  color: inherit;
+  transition: color 180ms ease;
+}
+
+.contact--finale .contact__footer a:hover,
+.contact--finale .contact__footer a:focus-visible {
+  color: var(--ink-bright);
+}
+
+.contact--finale .contact__footer .wordmark {
+  color: var(--ink-bright);
+  font-weight: 690;
+}
+
+.contact--finale .contact__footer > :not(:last-child) {
+  position: relative;
+}
+
+.contact--finale .contact__footer > :not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: calc(clamp(1.5rem, 4.5vw, 4.5rem) * -0.5);
+  width: 0.25rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 0.65rem var(--blue);
+  transform: translate(50%, -50%);
+}
+
+.contact--finale .contact__footer svg {
+  width: 0.68rem;
+}
+
+.contact--finale .contact__signal-canvas {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.contact--finale .contact__signal-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.contact--finale .contact__signal-art--mobile {
+  display: none;
+}
+
+.contact--finale .contact__signal-touch-color {
+  filter: hue-rotate(var(--contact-signal-hue));
+  transition: filter 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.contact--finale .contact__gradient-stop--start {
+  animation: contact-gradient-start 42s ease-in-out infinite alternate;
+}
+
+.contact--finale .contact__gradient-stop--middle {
+  animation: contact-gradient-middle 46s ease-in-out infinite alternate;
+}
+
+.contact--finale .contact__gradient-stop--violet {
+  animation: contact-gradient-violet 50s ease-in-out infinite alternate;
+}
+
+.contact--finale .contact__gradient-stop--end {
+  animation: contact-gradient-end 44s ease-in-out infinite alternate;
+}
+
+.contact--finale .contact__path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.contact--finale .contact__path-line {
+  stroke-width: 1.45;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-width 220ms ease;
+}
+
+.contact--finale .contact__path-halo {
+  stroke-width: 9;
+  opacity: 0.12;
+}
+
+.contact--finale .contact__path--nar {
+  stroke: var(--nar);
+}
+
+.contact--finale .contact__path--trendyol {
+  stroke: var(--trendyol);
+}
+
+.contact--finale .contact__path--blaster {
+  stroke: var(--blaster);
+}
+
+.contact--finale .contact__path-halo.contact__path--loop,
+.contact--finale .contact__path-halo.contact__path--action {
+  stroke: var(--blue);
+}
+
+.contact--finale .contact__signal-end-halo,
+.contact--finale .contact__signal-end {
+  fill: #dff8ff;
+  transition: opacity 220ms ease, r 220ms ease;
+}
+
+.contact--finale .contact__signal-end-halo {
+  opacity: 0.55;
+}
+
+.contact--finale:has(.contact__primary:hover) .contact__path-line.contact__path--action,
+.contact--finale:has(.contact__primary:focus-visible) .contact__path-line.contact__path--action {
+  stroke-width: 2.25;
+}
+
+.contact--finale:has(.contact__primary:hover) .contact__signal-end-halo,
+.contact--finale:has(.contact__primary:focus-visible) .contact__signal-end-halo {
+  opacity: 0.9;
+  r: 10px;
+}
+
+html[data-experience-section='contact'] .contact--finale .contact__path-line {
+  animation: contact-signal-draw 1.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+html[data-experience-section='contact'] .contact--finale g:nth-of-type(2) > .contact__path-line {
+  animation-delay: 90ms;
+}
+
+html[data-experience-section='contact'] .contact--finale g:nth-of-type(3) > .contact__path-line {
+  animation-delay: 180ms;
+}
+
+html[data-experience-section='contact'] .contact--finale .contact__path--loop {
+  animation-delay: 240ms;
+}
+
+html[data-experience-section='contact'] .contact--finale .contact__path--action {
+  animation-delay: 360ms;
+}
+
+.contact--finale .contact__signal-hit {
+  position: absolute;
+  z-index: 4;
+  top: 54.45%;
+  left: 59.38%;
+  width: 4.5rem;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  outline-offset: -0.15rem;
+  background: transparent;
+  color: var(--blue-bright);
+  transform: translate(-50%, -50%);
+  touch-action: manipulation;
+  cursor: crosshair;
+}
+
+.contact--finale .contact__signal-node {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0.78rem;
+  aspect-ratio: 1;
+  border: 1px solid rgb(255 255 255 / 84%);
+  border-radius: 50%;
+  background: #dff8ff;
+  box-shadow: 0 0 0.9rem var(--blue), 0 0 2.3rem rgb(75 156 255 / 66%);
+  filter: hue-rotate(var(--contact-signal-hue));
+  transform: translate(-50%, -50%) translate3d(var(--contact-signal-x), var(--contact-signal-y), 0);
+  transition: width 180ms ease, filter 320ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: contact-signal-spectrum 36s ease-in-out infinite alternate;
+}
+
+.contact--finale .contact__signal-node::before {
+  content: '';
+  position: absolute;
+  inset: -0.72rem;
+  border: 1px solid rgb(130 191 255 / 46%);
+  border-radius: 50%;
+}
+
+.contact--finale .contact__signal-hit:hover .contact__signal-node,
+.contact--finale .contact__signal-hit:focus-visible .contact__signal-node,
+.contact--finale .contact__signal-hit[data-active] .contact__signal-node {
+  width: 1.05rem;
+}
+
+.contact--finale .contact__signal-hit[data-active] .contact__signal-node::before {
+  animation: contact-signal-touch 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes contact-signal-draw {
+  from { opacity: 0; stroke-dashoffset: 1; }
+  to { opacity: 1; stroke-dashoffset: 0; }
+}
+
+@keyframes contact-signal-spectrum {
+  0% { filter: hue-rotate(-6deg) saturate(0.98); }
+  50% { filter: hue-rotate(18deg) saturate(1.1); }
+  100% { filter: hue-rotate(38deg) saturate(1.03); }
+}
+
+@keyframes contact-gradient-start {
+  0% { stop-color: #69dfff; }
+  55% { stop-color: #82bfff; }
+  100% { stop-color: #a58cff; }
+}
+
+@keyframes contact-gradient-middle {
+  0% { stop-color: #5b91ff; }
+  55% { stop-color: #9b7cff; }
+  100% { stop-color: #68dff2; }
+}
+
+@keyframes contact-gradient-violet {
+  0% { stop-color: #a47aff; }
+  55% { stop-color: #e06bcb; }
+  100% { stop-color: #6ba9ff; }
+}
+
+@keyframes contact-gradient-end {
+  0% { stop-color: #ff5d7d; }
+  55% { stop-color: #b783ff; }
+  100% { stop-color: #ff8064; }
+}
+
+@keyframes contact-signal-touch {
+  0% { opacity: 0.7; transform: scale(0.65); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+
+@media (max-width: 759px) {
+  .contact.contact--finale {
+    padding: max(1.25rem, env(safe-area-inset-top)) 0 max(0.75rem, env(safe-area-inset-bottom));
+    background:
+      radial-gradient(circle at 72% 45%, rgb(39 94 165 / 8%), transparent 16rem),
+      #050607;
+  }
+
+  .contact--finale .contact__inner {
+    grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+    grid-template-areas:
+      'label'
+      'copy'
+      '.'
+      'actions'
+      'footer';
+  }
+
+  .contact--finale .contact__label {
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid rgb(233 227 218 / 24%);
+    font-size: clamp(0.54rem, 2.5vw, 0.64rem);
+  }
+
+  .contact--finale .contact__copy {
+    align-self: start;
+    width: 100%;
+    padding-top: clamp(3.6rem, 8.5svh, 4.5rem);
+  }
+
+  .contact--finale .contact__copy h2 {
+    font-size: clamp(2.65rem, 11.8vw, 3.35rem);
+    line-height: 0.94;
+  }
+
+  .contact--finale .contact__copy > p {
+    width: min(17.25rem, 82%);
+    margin-top: clamp(1rem, 2.6svh, 1.35rem);
+    font-size: clamp(0.78rem, 3.6vw, 0.94rem);
+    line-height: 1.48;
+  }
+
+  .contact--finale .contact__actions {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .contact--finale .contact__primary {
+    width: 100%;
+    min-height: clamp(3.75rem, 8svh, 4.2rem);
+    padding-inline: 0.85rem;
+    letter-spacing: 0.17em;
+    font-size: clamp(0.65rem, 3vw, 0.78rem);
+  }
+
+  .contact--finale .contact__telegram {
+    min-height: 2.7rem;
+    font-size: 0.95rem;
+  }
+
+  .contact--finale .contact__footer {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(2.2rem, auto));
+    gap: 0.2rem 0.65rem;
+    min-height: 5.25rem;
+    margin-top: clamp(0.8rem, 2.4svh, 1.25rem);
+    padding-top: 0.65rem;
+    padding-left: 0;
+    font-size: clamp(0.5rem, 2.4vw, 0.62rem);
+    letter-spacing: 0.12em;
+  }
+
+  .contact--finale .contact__footer .wordmark {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .contact--finale .contact__footer > span {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .contact--finale .contact__footer > a:nth-of-type(2) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .contact--finale .contact__footer > a:nth-of-type(3) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .contact--finale .contact__footer > a:nth-of-type(4) {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: end;
+  }
+
+  .contact--finale .contact__footer a {
+    gap: 0.32rem;
+    min-height: 2.2rem;
+  }
+
+  .contact--finale .contact__footer svg {
+    width: 0.58rem;
+  }
+
+  .contact--finale .contact__footer > :not(:last-child)::after {
+    right: -0.45rem;
+  }
+
+  .contact--finale .contact__footer > span::after {
+    display: none;
+  }
+
+  .contact--finale .contact__signal-art--desktop {
+    display: none;
+  }
+
+  .contact--finale .contact__signal-art--mobile {
+    display: block;
+  }
+
+  .contact--finale .contact__path-line {
+    stroke-width: 1.35;
+  }
+
+  .contact--finale .contact__path-halo {
+    stroke-width: 7;
+  }
+
+  .contact--finale .contact__signal-hit {
+    top: 39.34%;
+    left: 73.33%;
+    width: 3.7rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .contact.contact--finale {
+    padding-top: 0.75rem;
+    padding-bottom: max(0.45rem, env(safe-area-inset-bottom));
+  }
+
+  .contact--finale .contact__copy {
+    padding-top: clamp(0.75rem, 2svh, 1.2rem);
+  }
+
+  .contact--finale .contact__copy h2 {
+    font-size: clamp(2.15rem, 9.2vw, 3.35rem);
+  }
+
+  .contact--finale .contact__copy > p {
+    max-width: 26rem;
+    margin-top: 0.55rem;
+    font-size: clamp(0.68rem, 2.8vw, 0.86rem);
+    line-height: 1.38;
+  }
+
+  .contact--finale .contact__primary {
+    min-height: 3.35rem;
+  }
+
+  .contact--finale .contact__telegram {
+    min-height: 2.25rem;
+  }
+
+  .contact--finale .contact__footer {
+    min-height: 4.45rem;
+    margin-top: 0.45rem;
+    padding-top: 0.35rem;
+  }
+
+  .contact--finale .contact__footer a {
+    min-height: 1.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .contact--finale .contact__gradient-stop,
+  .contact--finale .contact__path-line,
+  .contact--finale .contact__signal-node,
+  .contact--finale .contact__signal-node::before {
+    animation: none !important;
+  }
+
+  .contact--finale .contact__signal-touch-color,
+  .contact--finale .contact__signal-node,
+  .contact--finale .contact__primary,
+  .contact--finale .contact__primary svg,
+  .contact--finale .contact__telegram,
+  .contact--finale .contact__telegram svg,
+  .contact--finale .contact__footer a,
+  .contact--finale .contact__footer svg {
+    transition: none !important;
+  }
+
+  .contact--finale .contact__path-line {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}

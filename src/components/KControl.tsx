@@ -6,6 +6,7 @@ import {
   resolveKControlSection,
   type SiteSectionId,
 } from '../data/siteSections';
+import { useSound } from '../audio/SoundProvider';
 
 export interface KControlProps {
   activeSection: SiteSectionId;
@@ -55,6 +56,22 @@ function BuilderCubeIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function SoundIcon({ enabled, ...props }: SVGProps<SVGSVGElement> & { enabled: boolean }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 32 32" {...props}>
+      <path d="M5.5 13h5l6-5v16l-6-5h-5Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="1.35" />
+      {enabled ? (
+        <>
+          <path d="M21 12.2c1.3 1 2 2.3 2 3.8s-.7 2.8-2 3.8" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.35" />
+          <path d="M24.3 9.2c2.1 1.8 3.2 4 3.2 6.8s-1.1 5-3.2 6.8" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.35" />
+        </>
+      ) : (
+        <path d="m21.2 12 6 8m0-8-6 8" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.35" />
+      )}
+    </svg>
+  );
+}
+
 function isEditableTarget(target: EventTarget | null) {
   return target instanceof HTMLElement && (
     target.isContentEditable
@@ -68,6 +85,7 @@ export function KControl({
   disabled = false,
   onBuilderModeChange,
 }: KControlProps) {
+  const { playSound, setSoundEnabled, soundEnabled } = useSound();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -90,8 +108,9 @@ export function KControl({
   }) as CSSProperties, [progress]);
 
   const closePalette = useCallback(() => {
+    if (isOpen) playSound('close');
     setIsOpen(false);
-  }, []);
+  }, [isOpen, playSound]);
 
   const openPalette = useCallback((source: OpenSource) => {
     if (disabled) return;
@@ -107,8 +126,9 @@ export function KControl({
     if (activeModal && activeModal !== dialogRef.current) return;
 
     openSourceRef.current = source;
+    playSound('open');
     setIsOpen(true);
-  }, [closePalette, disabled, isOpen]);
+  }, [closePalette, disabled, isOpen, playSound]);
 
   useEffect(() => {
     if (!disabled) return;
@@ -197,6 +217,8 @@ export function KControl({
   return (
     <>
       <button
+        aria-controls="k-control-dialog"
+        aria-expanded={isOpen}
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+K Meta+K"
         aria-label="Open K-Control navigation"
@@ -214,6 +236,7 @@ export function KControl({
         aria-describedby="k-control-description"
         aria-labelledby="k-control-title"
         className="k-control"
+        id="k-control-dialog"
         onCancel={(event) => {
           event.preventDefault();
           closePalette();
@@ -287,8 +310,11 @@ export function KControl({
 
           <button
             aria-checked={builderMode}
-            className="k-control__builder"
-            onClick={() => onBuilderModeChange(!builderMode)}
+            className="k-control__builder k-control__setting"
+            onClick={() => {
+              playSound(builderMode ? 'toggle-off' : 'toggle-on');
+              onBuilderModeChange(!builderMode);
+            }}
             ref={registerCommand(kControlSections.length)}
             role="switch"
             type="button"
@@ -296,6 +322,22 @@ export function KControl({
             <span aria-hidden="true" className="k-control__builder-icon"><BuilderCubeIcon /></span>
             <strong>Builder Mode</strong>
             <output>{builderMode ? 'On' : 'Off'}</output>
+            <i aria-hidden="true" className="k-control__switch"><span /></i>
+          </button>
+
+          <button
+            aria-checked={soundEnabled}
+            className="k-control__sound k-control__setting"
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            ref={registerCommand(kControlSections.length + 1)}
+            role="switch"
+            type="button"
+          >
+            <span aria-hidden="true" className="k-control__builder-icon k-control__sound-icon">
+              <SoundIcon enabled={soundEnabled} />
+            </span>
+            <strong>Interface Sound</strong>
+            <output>{soundEnabled ? 'On' : 'Off'}</output>
             <i aria-hidden="true" className="k-control__switch"><span /></i>
           </button>
 
@@ -314,7 +356,7 @@ export function KControl({
                     href={action.href}
                     key={action.label}
                     onClick={closePalette}
-                    ref={registerCommand(kControlSections.length + 1 + index)}
+                    ref={registerCommand(kControlSections.length + 2 + index)}
                   >
                     <Icon />
                     <span>{action.label}</span>
@@ -326,7 +368,7 @@ export function KControl({
           </section>
 
           <p aria-live="polite" className="sr-only">
-            Builder mode {builderMode ? 'enabled' : 'disabled'}.
+            Builder mode {builderMode ? 'enabled' : 'disabled'}. Interface sound {soundEnabled ? 'enabled' : 'disabled'}.
           </p>
 
           <button className="k-control__footer-close" onClick={closePalette} type="button">

@@ -1,5 +1,6 @@
 import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useSound } from '../audio/SoundProvider';
 import './BuilderMode.css';
 
 export type BuilderProjectId = 'nar' | 'trendyol' | 'blaster';
@@ -145,6 +146,7 @@ function ArrowIcon() {
 }
 
 export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderModeHudProps) {
+  const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const sectionKey = activeSection?.toLowerCase() ?? '';
   const accent = sectionKey === 'nar' || sectionKey === 'trendyol' || sectionKey === 'blaster'
@@ -173,7 +175,15 @@ export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderMod
             <span>Inspecting</span>
             <strong>{getSectionLabel(activeSection)}</strong>
           </div>
-          <button aria-label="Turn off Builder mode" className="builder-hud__exit" onClick={onDisable} type="button">
+          <button
+            aria-label="Turn off Builder mode"
+            className="builder-hud__exit"
+            onClick={() => {
+              playSound('toggle-off');
+              onDisable();
+            }}
+            type="button"
+          >
             <span>Exit</span>
             <CloseIcon />
           </button>
@@ -184,6 +194,7 @@ export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderMod
 }
 
 export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
+  const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const detailsId = useId();
@@ -194,6 +205,7 @@ export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
 
   const selectRelativeLayer = (index: number, direction: -1 | 1) => {
     const nextIndex = (index + direction + project.layers.length) % project.layers.length;
+    playSound('select');
     setSelectedIndex(nextIndex);
     document.getElementById(`${detailsId}-tab-${nextIndex}`)?.focus();
   };
@@ -204,7 +216,10 @@ export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
     selectRelativeLayer(index, event.key === 'ArrowDown' || event.key === 'ArrowRight' ? 1 : -1);
   };
 
-  const inspectNext = () => setSelectedIndex((current) => (current + 1) % project.layers.length);
+  const inspectNext = () => {
+    playSound('select');
+    setSelectedIndex((current) => (current + 1) % project.layers.length);
+  };
 
   if (!selectedLayer) return null;
 
@@ -227,7 +242,10 @@ export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
               data-active={selected ? 'true' : 'false'}
               id={`${detailsId}-tab-${index}`}
               key={layer.name}
-              onClick={() => setSelectedIndex(index)}
+              onClick={() => {
+                if (index !== selectedIndex) playSound('select');
+                setSelectedIndex(index);
+              }}
               onKeyDown={(event) => handleLayerKeyDown(event, index)}
               role="tab"
               tabIndex={selected ? 0 : -1}

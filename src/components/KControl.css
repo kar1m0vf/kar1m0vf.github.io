@@ -347,7 +347,8 @@ body.nav-open .k-control__trigger {
   transform: translateX(0.2rem);
 }
 
-.k-control__builder {
+.k-control__setting {
+  --setting-accent: var(--blaster);
   display: grid;
   grid-template-columns: 3.6rem minmax(0, 1fr) auto auto;
   gap: clamp(0.75rem, 3vw, 1.4rem);
@@ -363,6 +364,10 @@ body.nav-open .k-control__trigger {
   cursor: pointer;
 }
 
+.k-control__sound {
+  --setting-accent: var(--blue-bright);
+}
+
 .k-control__builder-icon {
   position: relative;
   display: grid;
@@ -370,6 +375,10 @@ body.nav-open .k-control__trigger {
   width: 3rem;
   aspect-ratio: 1;
   color: var(--blaster);
+}
+
+.k-control__sound-icon {
+  color: var(--blue-bright);
 }
 
 .k-control__builder-icon::before,
@@ -390,13 +399,13 @@ body.nav-open .k-control__trigger {
   width: 2rem;
 }
 
-.k-control__builder > strong {
+.k-control__setting > strong {
   color: #e9e5df;
   font-size: clamp(1.05rem, 4.8vw, 1.45rem);
   font-weight: 560;
 }
 
-.k-control__builder > output {
+.k-control__setting > output {
   color: #8c8e91;
   text-transform: uppercase;
   letter-spacing: 0.14em;
@@ -425,15 +434,15 @@ body.nav-open .k-control__trigger {
   transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1), background 180ms ease;
 }
 
-.k-control__builder[aria-checked='true'] .k-control__switch {
-  border-color: var(--blaster);
-  background: rgb(164 122 255 / 19%);
+.k-control__setting[aria-checked='true'] .k-control__switch {
+  border-color: var(--setting-accent);
+  background: color-mix(in srgb, var(--setting-accent) 19%, transparent);
 }
 
-.k-control__builder[aria-checked='true'] .k-control__switch span {
+.k-control__setting[aria-checked='true'] .k-control__switch span {
   transform: translateX(1.7rem);
-  background: #bda4ff;
-  box-shadow: 0 0 1rem rgb(164 122 255 / 65%);
+  background: var(--setting-accent);
+  box-shadow: 0 0 1rem color-mix(in srgb, var(--setting-accent) 65%, transparent);
 }
 
 .k-control__quick {
@@ -554,7 +563,7 @@ body.nav-open .k-control__trigger {
     font-size: clamp(2.1rem, 4vw, 3rem);
   }
 
-  .k-control__builder {
+  .k-control__setting {
     min-height: 6.5rem;
   }
 
@@ -584,6 +593,114 @@ body.nav-open .k-control__trigger {
     border-radius: 50%;
   }
 
+  html[data-experience-section='top'] .k-control__trigger {
+    position: absolute;
+    top: calc(35.5svh - 1.75rem);
+    right: auto;
+    bottom: auto;
+    left: calc(14.5vw - 1.75rem);
+    display: grid;
+    grid-template-columns: 3.45rem auto auto;
+    gap: 0.28rem;
+    align-items: center;
+    justify-content: start;
+    width: 9.2rem;
+    min-width: 9.2rem;
+    height: 3.5rem;
+    min-height: 3.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    transform: none;
+  }
+
+  html[data-experience-section='top'] .k-control__trigger::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 1.75rem;
+    width: 0.58rem;
+    height: 0.58rem;
+    border: 1px solid var(--blue-bright);
+    border-radius: 50%;
+    background: #07111c;
+    box-shadow:
+      0 0 0 0.28rem rgb(75 156 255 / 10%),
+      0 0 1rem rgb(75 156 255 / 72%);
+    transform: translate(-50%, -50%);
+    animation: k-control-junction-breathe 2.8s ease-in-out infinite;
+  }
+
+  html[data-experience-section='top'] .k-control__trigger::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 2.05rem;
+    width: 1.2rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--blue-bright), rgb(130 191 255 / 18%));
+    box-shadow: 0 0 0.65rem rgb(75 156 255 / 48%);
+    transform: translateY(-50%);
+  }
+
+  html[data-experience-section='top'] .k-control__trigger:hover,
+  html[data-experience-section='top'] .k-control__trigger:focus-visible {
+    border-color: transparent;
+    background: transparent;
+    transform: none;
+  }
+
+  html[data-experience-section='top'] .k-control__trigger:active::before {
+    background: var(--blue-bright);
+    box-shadow:
+      0 0 0 0.42rem rgb(75 156 255 / 14%),
+      0 0 1.5rem rgb(75 156 255 / 92%);
+    transform: translate(-50%, -50%) scale(1.18);
+  }
+
+  html[data-experience-section='top'] .k-control__trigger > span {
+    grid-column: 2;
+    color: var(--blue-bright);
+    font-family: 'Manrope Variable', Manrope, sans-serif;
+    font-size: 0.52rem;
+    font-weight: 760;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-shadow: 0 0 0.75rem rgb(75 156 255 / 44%);
+  }
+
+  html[data-experience-section='top'] .k-control__trigger > span::after {
+    content: '/';
+    margin-left: 0.25rem;
+    color: rgb(233 227 218 / 42%);
+  }
+
+  html[data-experience-section='top'] .k-control__trigger > small {
+    display: block;
+    grid-column: 3;
+    color: rgb(233 227 218 / 68%);
+    font-size: 0.46rem;
+    font-weight: 650;
+    line-height: 1;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  html[data-experience-section='contact'] .k-control__trigger {
+    bottom: max(2.25rem, calc(env(safe-area-inset-bottom) + 2.25rem));
+    width: 2.85rem;
+    min-width: 2.85rem;
+    min-height: 2.85rem;
+  }
+
+  html[data-experience-section='contact'] .k-control__trigger > span {
+    font-size: 1.45rem;
+  }
+
   .k-control__trigger > span {
     font-size: 1.75rem;
   }
@@ -605,12 +722,12 @@ body.nav-open .k-control__trigger {
     font-size: clamp(1.75rem, 8.4vw, 2.45rem);
   }
 
-  .k-control__builder {
+  .k-control__setting {
     grid-template-columns: 3rem minmax(0, 1fr) auto auto;
     min-height: 6.6rem;
   }
 
-  .k-control__builder > output {
+  .k-control__setting > output {
     font-size: 0.63rem;
   }
 
@@ -618,8 +735,23 @@ body.nav-open .k-control__trigger {
     width: 3.45rem;
   }
 
-  .k-control__builder[aria-checked='true'] .k-control__switch span {
+  .k-control__setting[aria-checked='true'] .k-control__switch span {
     transform: translateX(1.25rem);
+  }
+}
+
+@keyframes k-control-junction-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 0.24rem rgb(75 156 255 / 8%),
+      0 0 0.75rem rgb(75 156 255 / 54%);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 0.4rem rgb(75 156 255 / 13%),
+      0 0 1.35rem rgb(75 156 255 / 86%);
   }
 }
 

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
+import { useSound } from '../audio/SoundProvider';
 import { ArrowIcon } from './Icons';
 import { LoopTrace } from './LoopTrace';
 
 const buildRail = ['Map', 'State', 'Test', 'Ship'] as const;
 
 export function Hero() {
+  const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const [activeStep, setActiveStep] = useState(0);
   const reveal = reduceMotion ? false : { opacity: 0, y: 28 };
@@ -43,10 +45,10 @@ export function Hero() {
           </p>
           <p className="hero__role">Software Developer · Interfaces, automation &amp; runtime · Baku</p>
           <div className="hero__actions">
-            <a className="button button--primary" href="#method">
+            <a className="button button--primary" href="#method" onClick={() => playSound('select')}>
               See how I build <ArrowIcon />
             </a>
-            <a className="button button--text" href="#contact">
+            <a className="button button--text" href="#contact" onClick={() => playSound('contact')}>
               Start a conversation <ArrowIcon />
             </a>
           </div>
@@ -65,7 +67,10 @@ export function Hero() {
                 className={`hero__rail-button${activeStep === index ? ' is-active' : ''}`}
                 data-active={activeStep === index || undefined}
                 data-step={index}
-                onClick={() => setActiveStep(index)}
+                onClick={() => {
+                  if (activeStep !== index) playSound('select');
+                  setActiveStep(index);
+                }}
                 onFocus={() => setActiveStep(index)}
                 onPointerEnter={(event) => {
                   if (event.pointerType === 'mouse' || event.pointerType === 'pen') setActiveStep(index);

@@ -8,6 +8,7 @@ import type {
   TrackerHandoffState,
   TrackerSignalResult,
 } from '../types';
+import { useSound } from '../audio/SoundProvider';
 import { ArrowIcon } from './Icons';
 import { PriceObservatory } from './PriceObservatory';
 import { ResponsiveImage } from './ResponsiveImage';
@@ -180,6 +181,7 @@ const narSignalPoints = [
 ] as const;
 
 function NarVisual({ project }: { project: ProjectWorld }) {
+  const { playSound } = useSound();
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const reduceMotion = useReducedMotion();
@@ -193,6 +195,7 @@ function NarVisual({ project }: { project: ProjectWorld }) {
 
   const selectStage = (nextIndex: number, focus = false) => {
     const normalized = (nextIndex + narStages.length) % narStages.length;
+    if (normalized !== activeIndex) playSound('select');
     setActiveIndex(normalized);
     if (focus) tabRefs.current[normalized]?.focus();
   };

@@ -256,6 +256,13 @@ ul {
   align-items: stretch;
   transform: translateY(-50%);
   color: var(--muted);
+  transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+html[data-experience-section='contact'] .experience-rail {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .experience-rail--nar {
@@ -421,7 +428,9 @@ ul {
 
 .hero {
   position: relative;
-  min-height: max(47.5rem, 100svh);
+  height: 100svh;
+  min-height: 0;
+  max-height: 100svh;
   overflow: hidden;
   border-bottom: 1px solid var(--line);
   background:
@@ -449,11 +458,13 @@ ul {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   width: min(100%, 100rem);
-  min-height: max(47.5rem, 100svh);
+  height: 100svh;
+  min-height: 0;
+  max-height: 100svh;
   margin-inline: auto;
-  padding: clamp(8.8rem, 15vh, 10.5rem) var(--gutter) 0;
+  padding: clamp(6.4rem, 12.5svh, 9.25rem) var(--gutter) 0;
 }
 
 .hero__name {
@@ -2279,12 +2290,14 @@ ul {
 
   .hero,
   .hero__inner {
-    min-height: max(45rem, 100svh);
+    height: 100svh;
+    min-height: 0;
+    max-height: 100svh;
   }
 
   .hero__inner {
-    grid-template-rows: auto 1fr auto;
-    padding-top: 7.8rem;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    padding-top: clamp(5.6rem, 14svh, 7.8rem);
   }
 
   .hero__name {
@@ -2729,6 +2742,99 @@ ul {
   .contact__footer {
     grid-template-columns: 1fr;
     gap: 0.5rem;
+  }
+}
+
+@media (max-height: 700px) {
+  .hero__inner {
+    padding-top: clamp(4.75rem, 12svh, 5.5rem);
+  }
+
+  .hero__name {
+    font-size: clamp(4.5rem, 18svh, 8rem);
+  }
+
+  .hero__message {
+    padding-block: 0.65rem 0.85rem;
+  }
+
+  .hero__promise {
+    font-size: clamp(2.65rem, 8svh, 3.65rem);
+  }
+
+  .hero__summary {
+    margin-top: 0.7rem;
+    font-size: 0.94rem;
+    line-height: 1.38;
+  }
+
+  .hero__role {
+    margin-top: 0.75rem;
+    font-size: 0.76rem;
+  }
+
+  .hero__actions {
+    gap: 0.65rem;
+    margin-top: 0.8rem;
+  }
+
+  .hero__actions .button {
+    min-height: 2.9rem;
+    padding-block: 0.55rem;
+  }
+
+  .hero__rail {
+    min-height: 4.75rem;
+  }
+
+  .hero__rail-button {
+    min-height: 3.8rem;
+  }
+}
+
+@media (max-width: 640px) and (max-height: 700px) {
+  .hero__inner {
+    padding-top: clamp(4.75rem, 12svh, 5.5rem);
+  }
+
+  .hero__name {
+    font-size: clamp(3.5rem, 16svh, 4.5rem);
+  }
+
+  .hero__message {
+    padding-block: 0.55rem 0.7rem;
+  }
+
+  .hero__promise {
+    font-size: clamp(2.2rem, 7svh, 2.8rem);
+  }
+
+  .hero__summary {
+    margin-top: 0.55rem;
+    font-size: 0.84rem;
+    line-height: 1.35;
+  }
+
+  .hero__role {
+    margin-top: 0.55rem;
+    font-size: 0.7rem;
+  }
+
+  .hero__actions {
+    gap: 0.5rem;
+    margin-top: 0.65rem;
+  }
+
+  .hero__rail {
+    min-height: 4.25rem;
+  }
+
+  .hero__rail li {
+    font-size: 1.05rem;
+  }
+
+  .hero__rail-button {
+    min-height: 3.5rem;
   }
 }
 

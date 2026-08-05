@@ -11,6 +11,7 @@ import type {
   KeyboardEvent as ReactKeyboardEvent,
   PointerEvent as ReactPointerEvent,
 } from 'react';
+import { useSound } from '../../audio/SoundProvider';
 import { loadMiniBlasterAssets } from './assets';
 import {
   createGameState,
@@ -42,6 +43,7 @@ const formatScore = (score: number) => String(score).padStart(5, '0');
 const formatTime = (milliseconds: number) => `${(milliseconds / 1_000).toFixed(1)}s`;
 
 export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) {
+  const { playSound } = useSound();
   const reducedEffects = Boolean(useReducedMotion());
   const headingId = useId();
   const instructionsId = useId();
@@ -63,6 +65,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
   const loadControllerRef = useRef<AbortController | null>(null);
   const activePointerRef = useRef<number | null>(null);
   const pressedKeysRef = useRef(new Set<string>());
+  const lastHullRef = useRef(MINI_BLASTER_MAX_HULL);
   const [phase, setPhase] = useState<GamePhase>('ready');
   const [hud, setHud] = useState(() => getHudSnapshot(gameRef.current));
   const [announcement, setAnnouncement] = useState('Mini Blaster ready.');
@@ -116,12 +119,16 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
 
     if (time - lastHudAtRef.current >= hudIntervalMs || result) {
       lastHudAtRef.current = time;
-      setHud(getHudSnapshot(gameRef.current));
+      const nextHud = getHudSnapshot(gameRef.current);
+      if (nextHud.hull < lastHullRef.current) playSound('hit');
+      lastHullRef.current = nextHud.hull;
+      setHud(nextHud);
     }
 
     if (result) {
       clearInput();
       setGamePhase(result);
+      playSound(result === 'complete' ? 'complete' : 'hit');
       setAnnouncement(
         result === 'complete'
           ? `Micro run complete. Score ${gameRef.current.score}.`
@@ -143,6 +150,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
     if (!assetsRef.current) return;
     clearInput();
     gameRef.current = createGameState();
+    lastHullRef.current = MINI_BLASTER_MAX_HULL;
     setHud(getHudSnapshot(gameRef.current));
     setLoadError('');
     const shouldHold = document.hidden || !isInViewRef.current;
@@ -162,10 +170,11 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
     }
 
     if (!shouldHold) {
+      playSound('launch');
       beginLoop();
       window.requestAnimationFrame(() => arenaRef.current?.focus({ preventScroll: true }));
     }
-  }, [beginLoop, clearInput, setGamePhase]);
+  }, [beginLoop, clearInput, playSound, setGamePhase]);
 
   const startRun = useCallback(async () => {
     if (phaseRef.current === 'loading') return;
@@ -173,6 +182,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
       launchRun();
       return;
     }
+    playSound('select');
 
     loadControllerRef.current?.abort();
     const controller = new AbortController();
@@ -194,7 +204,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
       setGamePhase('error');
       setAnnouncement('The micro run could not be loaded.');
     }
-  }, [launchRun, setGamePhase]);
+  }, [launchRun, playSound, setGamePhase]);
 
   const pauseRun = useCallback((message = 'Micro run paused.') => {
     if (phaseRef.current !== 'running') return;
@@ -208,10 +218,11 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
     if (phaseRef.current !== 'paused' || !assetsRef.current) return;
     clearInput();
     setGamePhase('running');
+    playSound('select');
     setAnnouncement('Micro run resumed.');
     beginLoop();
     window.requestAnimationFrame(() => arenaRef.current?.focus({ preventScroll: true }));
-  }, [beginLoop, clearInput, setGamePhase]);
+  }, [beginLoop, clearInput, playSound, setGamePhase]);
 
   const restartRun = useCallback(() => {
     if (phaseRef.current === 'loading') return;
@@ -220,9 +231,12 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
   }, [launchRun, startRun]);
 
   const togglePause = useCallback(() => {
-    if (phaseRef.current === 'running') pauseRun();
+    if (phaseRef.current === 'running') {
+      playSound('pause');
+      pauseRun();
+    }
     else if (phaseRef.current === 'paused') resumeRun();
-  }, [pauseRun, resumeRun]);
+  }, [pauseRun, playSound, resumeRun]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
