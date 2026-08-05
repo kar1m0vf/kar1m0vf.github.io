@@ -6,6 +6,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
 import './components/SiteLoader.css';
+import './components/KControl.css';
 import './components/MethodJunction.css';
 import './components/NarWorld.css';
 import './components/NarTrackerHandoff.css';

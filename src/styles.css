@@ -889,6 +889,11 @@ ul {
   grid-area: header;
 }
 
+.project__experience {
+  grid-area: visual;
+  min-width: 0;
+}
+
 .project__kicker {
   color: var(--accent);
   text-transform: uppercase;

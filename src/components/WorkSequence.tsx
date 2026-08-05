@@ -51,7 +51,11 @@ const writeHandoff = (value: TrackerHandoffState) => {
   }
 };
 
-export function WorkSequence() {
+interface WorkSequenceProps {
+  builderMode: boolean;
+}
+
+export function WorkSequence({ builderMode }: WorkSequenceProps) {
   const [handoff, setHandoff] = useState<TrackerHandoffState>(readHandoff);
   const handoffRef = useRef(handoff);
 
@@ -80,6 +84,7 @@ export function WorkSequence() {
     <div className="work" id="work">
       {projectWorlds.map((project) => (
         <ProjectChapter
+          builderMode={builderMode}
           handoff={project.theme === 'nar' ? null : handoff}
           key={project.id}
           onHandoffReset={project.theme === 'trendyol' ? resetHandoff : null}

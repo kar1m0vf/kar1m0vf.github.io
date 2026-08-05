@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import type { CSSProperties, KeyboardEvent, RefObject } from 'react';
+import type { KeyboardEvent, RefObject } from 'react';
 import type {
   ProjectMedia,
   ProjectWorld,
@@ -11,6 +11,8 @@ import type {
 import { ArrowIcon } from './Icons';
 import { PriceObservatory } from './PriceObservatory';
 import { ResponsiveImage } from './ResponsiveImage';
+
+const MiniBlaster = lazy(() => import('./blaster/MiniBlaster'));
 
 interface MediaTriggerProps {
   className?: string;
@@ -317,54 +319,30 @@ function NarVisual({ project }: { project: ProjectWorld }) {
   );
 }
 
-const blasterStages = [
-  {
-    id: 'input',
-    label: 'Input',
-    cue: 'Runtime entry',
-    headline: 'One action enters the loop.',
-    detail: 'The menu owns the entry point, settings, highscores, and the handoff into play.',
-    mediaIndex: 0,
-  },
-  {
-    id: 'state',
-    label: 'State',
-    cue: 'Clean handoff',
-    headline: 'The menu yields to the runtime.',
-    detail: 'A deliberate state boundary moves the application from navigation into the live game loop.',
-    mediaIndex: 0,
-  },
-  {
-    id: 'wave',
-    label: 'Wave',
-    cue: 'Systems update together',
-    headline: 'Combat is a coordinated update.',
-    detail: 'Input, enemies, projectiles, HUD, timing, and collisions stay coherent on one scaled 16:9 surface.',
-    mediaIndex: 1,
-  },
-  {
-    id: 'boss',
-    label: 'Boss',
-    cue: 'Pressure changes',
-    headline: 'The rules hold under pressure.',
-    detail: 'Boss phases raise the intensity without breaking the same controls, state model, or interface logic.',
-    mediaIndex: 2,
-  },
-  {
-    id: 'persist',
-    label: 'Persist',
-    cue: 'The loop closes',
-    headline: 'State survives the run.',
-    detail: 'Settings and highscores return with the player, ready for the next launch instead of disappearing on exit.',
-    mediaIndex: 0,
-  },
-] as const;
-
 const inboundOutcomeLabels = {
   memory: 'Stored decision received',
   held: 'Quiet-hours decision received',
   released: 'Released alert received',
 } as const;
+
+function BlasterPoster({ media, onLoad }: { media: ProjectMedia; onLoad?: () => void }) {
+  return (
+    <div className="blaster-runtime-poster">
+      <ResponsiveImage
+        className="blaster-runtime-poster__image"
+        media={media}
+        sizes="(min-width: 901px) min(82rem, 92vw), 94vw"
+      />
+      <span aria-hidden="true" className="blaster-runtime-poster__grid" />
+      <div className="blaster-runtime-poster__copy">
+        <span>Browser transmission / 03</span>
+        <strong>Runtime standing by.</strong>
+        <p>The playable layer loads only when you reach it.</p>
+        {onLoad ? <button onClick={onLoad} type="button">Initialize micro run</button> : null}
+      </div>
+    </div>
+  );
+}
 
 function BlasterVisual({
   project,
@@ -373,142 +351,73 @@ function BlasterVisual({
   project: ProjectWorld;
   trackerHandoff: TrackerHandoffState | null;
 }) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const reduceMotion = useReducedMotion();
   const openerRef = useRef<HTMLButtonElement | null>(null);
-  const [battle, menu, boss] = project.media;
-  if (!battle || !menu || !boss) return null;
-  const runtimeMedia = [menu, battle, boss] as const;
-  const activeStage = blasterStages[activeIndex];
-  const activeMedia = activeStage ? runtimeMedia[activeStage.mediaIndex] : undefined;
+  const battle = project.media[0];
   const inboundLabel = trackerHandoff && trackerHandoff.status !== 'idle'
     ? inboundOutcomeLabels[trackerHandoff.outcome]
     : null;
 
-  if (!activeStage || !activeMedia) return null;
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || shouldLoad) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setShouldLoad(true);
+      return;
+    }
 
-  const runtimeStyle = {
-    '--runtime-progress': activeIndex / (blasterStages.length - 1),
-  } as CSSProperties;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry?.isIntersecting) return;
+      setShouldLoad(true);
+      observer.disconnect();
+    }, { rootMargin: '420px 0px', threshold: 0.01 });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, [shouldLoad]);
+
+  if (!battle) return null;
 
   return (
     <>
-      <div
-        className="blaster-chamber"
-        data-inbound={inboundLabel ? 'received' : 'idle'}
-        data-stage={activeStage.id}
-        style={runtimeStyle}
-      >
-        <div className="blaster-chamber__heading">
-          <div>
-            <span>Interactive runtime model</span>
-            <strong>Flight recorder</strong>
-          </div>
-          <p>Scrub one input through the system.</p>
-        </div>
+      <div className="blaster-experience" ref={rootRef}>
+        {shouldLoad ? (
+          <Suspense fallback={<BlasterPoster media={battle} />}>
+            <MiniBlaster inboundSignal={inboundLabel} />
+          </Suspense>
+        ) : (
+          <BlasterPoster media={battle} onLoad={() => setShouldLoad(true)} />
+        )}
 
-        <div className="blaster-chamber__stage">
-          <div className="blaster-chamber__screen" id="blaster-runtime-panel">
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                animate={{ clipPath: 'inset(0 0 0 0)', opacity: 1 }}
-                className="blaster-chamber__frame"
-                exit={reduceMotion ? { opacity: 1 } : { clipPath: 'inset(0 0 0 100%)', opacity: 0.45 }}
-                initial={reduceMotion ? false : { clipPath: 'inset(0 100% 0 0)', opacity: 0.45 }}
-                key={activeStage.id}
-                transition={{ duration: reduceMotion ? 0 : 0.44, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <MediaTrigger
-                  className="blaster-chamber__media"
-                  eager={activeIndex > 0}
-                  media={activeMedia}
-                  onOpen={(trigger) => {
-                    openerRef.current = trigger;
-                    setLightboxIndex(activeStage.mediaIndex);
-                  }}
-                  sizes="(min-width: 901px) min(78rem, 108vw), 94vw"
-                />
-              </motion.div>
-            </AnimatePresence>
-
-            <span aria-hidden="true" className="blaster-chamber__scanline" key={`scan-${activeStage.id}`} />
-            <div aria-hidden="true" className="blaster-chamber__frame-count">
-              Frame {String(activeIndex + 1).padStart(2, '0')} / {String(blasterStages.length).padStart(2, '0')}
+        <div className="blaster-evidence">
+          <header className="blaster-evidence__heading">
+            <div>
+              <span>Original application / evidence</span>
+              <strong>The browser run is a doorway, not a replacement.</strong>
             </div>
-
-            {activeStage.id === 'input' ? (
-              <div aria-hidden="true" className="blaster-chamber__awaiting">
-                <span /> {inboundLabel ?? 'Awaiting input'}
-              </div>
-            ) : null}
-
-            {activeStage.id === 'state' ? (
-              <div aria-hidden="true" className="blaster-chamber__handoff">
-                <span>Menu</span><i>→</i><strong>Playing</strong>
-              </div>
-            ) : null}
-
-            {activeStage.id === 'boss' ? <span aria-hidden="true" className="blaster-chamber__boss-ring" /> : null}
-
-            {activeStage.id === 'persist' ? (
-              <div className="blaster-chamber__receipt">
-                <span>State handoff</span>
-                <div><strong>Settings</strong><i>JSON</i></div>
-                <div><strong>Highscores</strong><i>JSON</i></div>
-                <div><strong>Next run</strong><i>Ready</i></div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="blaster-chamber__console">
-          <div aria-live="polite" className="blaster-chamber__readout">
-            <span>{activeStage.cue}</span>
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
-                initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                key={activeStage.id}
-                transition={{ duration: reduceMotion ? 0 : 0.28 }}
-              >
-                <strong>{activeStage.headline}</strong>
-                <p>{activeStage.detail}</p>
-              </motion.div>
-            </AnimatePresence>
-          </div>
-
-          <div className="blaster-chamber__control">
-            <label htmlFor="blaster-runtime-range">Move the ship through the runtime</label>
-            <div className="blaster-chamber__rail">
-              <input
-                aria-controls="blaster-runtime-panel"
-                aria-describedby="blaster-runtime-hint"
-                aria-label="Explore the Blaster runtime"
-                aria-valuetext={`${activeStage.label}: ${activeStage.headline}`}
-                id="blaster-runtime-range"
-                max={blasterStages.length - 1}
-                min="0"
-                onChange={(event) => setActiveIndex(Number(event.currentTarget.value))}
-                step="1"
-                type="range"
-                value={activeIndex}
+            <p>Open the real Pygame frames behind the interaction.</p>
+          </header>
+          <div className="blaster-evidence__grid">
+            {project.media.map((media, index) => (
+              <MediaTrigger
+                className="blaster-evidence__shot"
+                media={media}
+                key={media.src}
+                onOpen={(trigger) => {
+                  openerRef.current = trigger;
+                  setLightboxIndex(index);
+                }}
+                sizes="(min-width: 901px) 30vw, 84vw"
               />
-            </div>
-            <ol aria-hidden="true" className="blaster-chamber__labels">
-              {blasterStages.map((stage, index) => (
-                <li className={index === activeIndex ? 'is-active' : ''} key={stage.id}>{stage.label}</li>
-              ))}
-            </ol>
-            <p id="blaster-runtime-hint">Drag the ship or focus it and use the arrow keys.</p>
+            ))}
           </div>
         </div>
       </div>
 
       <MediaLightbox
         activeIndex={lightboxIndex}
-        media={runtimeMedia}
+        media={project.media}
         onChange={setLightboxIndex}
         returnFocusRef={openerRef}
       />

@@ -1,0 +1,568 @@
+.mini-blaster {
+  --mini-bg: #02050b;
+  --mini-panel: rgb(3 8 16 / 88%);
+  --mini-cyan: #65eff4;
+  --mini-cyan-soft: rgb(101 239 244 / 48%);
+  --mini-violet: #b67cff;
+  --mini-orange: #ff9a4e;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  color: #eafcff;
+  isolation: isolate;
+}
+
+.mini-blaster__heading {
+  display: flex;
+  justify-content: space-between;
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: end;
+  margin-bottom: clamp(1.2rem, 2.6vw, 2rem);
+}
+
+.mini-blaster__heading > div {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.mini-blaster__heading span,
+.mini-blaster__inbound span,
+.mini-blaster__metric > span,
+.mini-blaster__overlay > span:not(.mini-blaster__loading) {
+  color: var(--mini-cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.65rem;
+  font-weight: 720;
+}
+
+.mini-blaster__heading h3 {
+  color: #f7f4ff;
+  font-family: var(--serif, Georgia, serif);
+  font-size: clamp(2.7rem, 6vw, 6.2rem);
+  font-weight: 400;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+}
+
+.mini-blaster__heading h3 i {
+  color: var(--mini-cyan);
+  font-style: normal;
+}
+
+.mini-blaster__heading > p {
+  max-width: 27rem;
+  color: #8e98a6;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: clamp(0.78rem, 1.1vw, 0.94rem);
+  line-height: 1.5;
+}
+
+.mini-blaster__inbound {
+  display: flex;
+  gap: 0.85rem;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 0.85rem auto;
+  padding: 0.45rem 0.65rem;
+  border-left: 1px solid var(--mini-violet);
+  background: linear-gradient(90deg, rgb(182 124 255 / 8%), transparent);
+  color: #a9b5c1;
+}
+
+.mini-blaster__inbound span {
+  flex: 0 0 auto;
+  color: var(--mini-violet);
+  font-size: 0.54rem;
+}
+
+.mini-blaster__inbound strong {
+  overflow: hidden;
+  font-size: 0.7rem;
+  font-weight: 570;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mini-blaster__hud {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.75fr) minmax(13rem, 1.15fr) minmax(7rem, 0.65fr) 4.6rem;
+  align-items: stretch;
+  min-height: clamp(5.2rem, 8vw, 7rem);
+  margin-bottom: -1px;
+  overflow: hidden;
+  border: 1px solid var(--mini-cyan-soft);
+  border-radius: 1rem 1rem 0 0;
+  background:
+    linear-gradient(90deg, rgb(101 239 244 / 5%), transparent 45%, rgb(182 124 255 / 5%)),
+    var(--mini-panel);
+  box-shadow: 0 -0.8rem 3rem rgb(34 192 217 / 4%);
+}
+
+.mini-blaster__metric {
+  position: relative;
+  display: grid;
+  align-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+  padding: 0.75rem clamp(0.8rem, 2.4vw, 1.7rem);
+}
+
+.mini-blaster__metric + .mini-blaster__metric::before,
+.mini-blaster__pause::before {
+  content: '';
+  position: absolute;
+  top: 22%;
+  bottom: 22%;
+  left: 0;
+  width: 1px;
+  background: linear-gradient(transparent, var(--mini-cyan-soft), transparent);
+}
+
+.mini-blaster__metric > span {
+  color: #e4edf3;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.66rem;
+}
+
+.mini-blaster__metric > strong {
+  color: var(--mini-cyan);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: clamp(1.45rem, 3vw, 2.5rem);
+  font-weight: 520;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 1rem rgb(101 239 244 / 28%);
+}
+
+.mini-blaster__metric--hull {
+  grid-template-columns: auto 1fr;
+  column-gap: 0.75rem;
+}
+
+.mini-blaster__metric--hull > span {
+  grid-column: 1 / -1;
+}
+
+.mini-blaster__lives {
+  display: flex;
+  gap: 0.38rem;
+  align-items: center;
+  min-width: 0;
+  font-style: normal;
+}
+
+.mini-blaster__lives b {
+  position: relative;
+  width: clamp(0.8rem, 1.45vw, 1.15rem);
+  aspect-ratio: 0.74;
+  opacity: 0.18;
+  background: #82939f;
+  clip-path: polygon(50% 0, 100% 73%, 68% 61%, 50% 100%, 32% 61%, 0 73%);
+  transition: opacity 180ms ease, filter 180ms ease, background 180ms ease;
+}
+
+.mini-blaster__lives b.is-live {
+  opacity: 1;
+  background: var(--mini-cyan);
+  filter: drop-shadow(0 0 0.45rem rgb(101 239 244 / 72%));
+}
+
+.mini-blaster__pause {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0.7rem;
+  min-width: 3rem;
+  border: 1px solid var(--mini-cyan-soft);
+  border-radius: 0.65rem;
+  background: rgb(2 9 17 / 88%);
+  color: var(--mini-cyan);
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
+}
+
+.mini-blaster__pause span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.mini-blaster__pause:hover:not(:disabled),
+.mini-blaster__pause:focus-visible {
+  border-color: var(--mini-cyan);
+  background: rgb(101 239 244 / 11%);
+}
+
+.mini-blaster__pause:disabled {
+  opacity: 0.28;
+  cursor: default;
+}
+
+.mini-blaster__arena {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--mini-cyan-soft);
+  border-radius: 0 0 1.35rem 1.35rem;
+  outline: none;
+  background:
+    linear-gradient(rgb(67 214 238 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(67 214 238 / 4%) 1px, transparent 1px),
+    radial-gradient(circle at 50% 24%, rgb(167 73 202 / 16%), transparent 38%),
+    var(--mini-bg);
+  background-size: 3.5rem 3.5rem, 3.5rem 3.5rem, auto, auto;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mini-blaster[data-phase='running'] .mini-blaster__arena {
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.mini-blaster__arena:focus-visible {
+  outline: 2px solid var(--mini-cyan);
+  outline-offset: 0.25rem;
+}
+
+.mini-blaster__canvas,
+.mini-blaster__scanlines {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.mini-blaster__canvas {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.mini-blaster__scanlines {
+  z-index: 3;
+  opacity: 0.17;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0 3px,
+    rgb(116 241 255 / 12%) 3px 4px
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.mini-blaster__wave {
+  position: absolute;
+  z-index: 4;
+  top: 0.7rem;
+  left: 50%;
+  min-width: 8.4rem;
+  padding: 0.38rem 0.75rem;
+  transform: translateX(-50%);
+  border: 1px solid rgb(101 239 244 / 34%);
+  background: rgb(2 6 13 / 74%);
+  color: #eafcff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.61rem;
+  pointer-events: none;
+}
+
+.mini-blaster__overlay {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at 50% 48%, rgb(20 74 93 / 24%), transparent 22rem),
+    rgb(2 5 11 / 76%);
+  text-align: center;
+  backdrop-filter: blur(0.22rem);
+}
+
+.mini-blaster__overlay strong {
+  max-width: 34rem;
+  color: #f7f4ff;
+  font-family: var(--serif, Georgia, serif);
+  font-size: clamp(2.2rem, 5vw, 4.8rem);
+  font-weight: 400;
+  line-height: 0.95;
+}
+
+.mini-blaster__overlay p {
+  max-width: 29rem;
+  color: #9da9b4;
+  font-size: clamp(0.82rem, 1.2vw, 0.98rem);
+  line-height: 1.5;
+}
+
+.mini-blaster__overlay button {
+  min-height: 3rem;
+  margin-top: 0.45rem;
+  padding: 0.75rem 1.15rem;
+  border: 1px solid var(--mini-cyan);
+  border-radius: 0.2rem;
+  background: var(--mini-cyan);
+  color: #031016;
+  font-size: 0.78rem;
+  font-weight: 760;
+  cursor: pointer;
+}
+
+.mini-blaster__overlay button:hover,
+.mini-blaster__overlay button:focus-visible {
+  background: #b5fbff;
+}
+
+.mini-blaster__loading {
+  width: 2.6rem;
+  aspect-ratio: 1;
+  border: 1px solid rgb(101 239 244 / 22%);
+  border-top-color: var(--mini-cyan);
+  border-radius: 50%;
+  animation: mini-blaster-spin 760ms linear infinite;
+}
+
+.mini-blaster__instructions {
+  display: flex;
+  justify-content: center;
+  gap: 0.65rem;
+  align-items: center;
+  min-height: 4.6rem;
+  color: var(--mini-cyan);
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: clamp(0.7rem, 1.15vw, 0.88rem);
+  letter-spacing: 0.035em;
+}
+
+.mini-blaster__instructions > span {
+  font-size: 1.5rem;
+}
+
+.mini-blaster__instructions i {
+  color: #5a6f79;
+  font-style: normal;
+}
+
+.mini-blaster__controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mini-blaster__controls button {
+  display: flex;
+  justify-content: center;
+  gap: 0.85rem;
+  align-items: center;
+  min-height: clamp(3.5rem, 7vw, 5.2rem);
+  border: 1px solid var(--mini-cyan-soft);
+  border-radius: 0.85rem;
+  background: linear-gradient(100deg, rgb(101 239 244 / 8%), rgb(2 8 15 / 84%));
+  color: var(--mini-cyan);
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: clamp(0.82rem, 1.4vw, 1.05rem);
+  cursor: pointer;
+  transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.mini-blaster__controls button:hover:not(:disabled),
+.mini-blaster__controls button:focus-visible {
+  transform: translateY(-2px);
+  border-color: var(--mini-cyan);
+  background: rgb(101 239 244 / 12%);
+}
+
+.mini-blaster__controls button:disabled {
+  opacity: 0.32;
+  cursor: default;
+}
+
+.mini-blaster__controls button span {
+  min-width: 1.2rem;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.mini-blaster__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  min-height: 4rem;
+  color: #65717c;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 0.67rem;
+}
+
+.mini-blaster__footer strong {
+  color: var(--mini-violet);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.56rem;
+}
+
+.mini-blaster__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes mini-blaster-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 700px) {
+  .mini-blaster__heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .mini-blaster__heading h3 {
+    font-size: clamp(2.8rem, 14vw, 4.5rem);
+  }
+
+  .mini-blaster__inbound {
+    margin-left: 0;
+  }
+
+  .mini-blaster__hud {
+    grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr) minmax(0, 0.72fr) 3.75rem;
+    min-height: 4.8rem;
+    border-radius: 0.75rem 0.75rem 0 0;
+  }
+
+  .mini-blaster__metric {
+    padding: 0.65rem 0.62rem;
+  }
+
+  .mini-blaster__metric > span {
+    font-size: 0.52rem;
+    letter-spacing: 0.11em;
+  }
+
+  .mini-blaster__metric > strong {
+    font-size: clamp(1.2rem, 6vw, 1.7rem);
+  }
+
+  .mini-blaster__metric--hull {
+    grid-template-columns: auto 1fr;
+    column-gap: 0.35rem;
+  }
+
+  .mini-blaster__lives {
+    gap: 0.22rem;
+  }
+
+  .mini-blaster__pause {
+    margin: 0.55rem;
+  }
+
+  .mini-blaster__arena {
+    aspect-ratio: 4 / 3;
+    border-radius: 0 0 0.85rem 0.85rem;
+  }
+
+  .mini-blaster__overlay {
+    padding: 1.4rem;
+  }
+
+  .mini-blaster__overlay strong {
+    font-size: clamp(2rem, 10vw, 3rem);
+  }
+
+  .mini-blaster__wave {
+    top: 0.45rem;
+    min-width: 6.8rem;
+    font-size: 0.52rem;
+  }
+
+  .mini-blaster__instructions {
+    flex-wrap: wrap;
+    gap: 0.35rem 0.55rem;
+    min-height: 4.2rem;
+    padding: 0.65rem 0;
+    font-size: 0.68rem;
+  }
+
+  .mini-blaster__instructions > span {
+    display: none;
+  }
+
+  .mini-blaster__controls {
+    gap: 0.65rem;
+  }
+
+  .mini-blaster__controls button {
+    min-height: 3.75rem;
+    border-radius: 0.65rem;
+    font-size: 0.76rem;
+  }
+
+  .mini-blaster__footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding-block: 1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .mini-blaster__heading > p {
+    max-width: 19rem;
+  }
+
+  .mini-blaster__metric--hull > strong {
+    display: none;
+  }
+
+  .mini-blaster__metric--hull {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-blaster__lives b {
+    width: 0.73rem;
+  }
+
+  .mini-blaster__controls button {
+    gap: 0.45rem;
+  }
+
+  .mini-blaster__controls button span {
+    font-size: 1.15rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mini-blaster *,
+  .mini-blaster *::before,
+  .mini-blaster *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .mini-blaster__scanlines {
+    opacity: 0.08;
+  }
+}
+

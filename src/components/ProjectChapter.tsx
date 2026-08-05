@@ -1,12 +1,14 @@
 import { memo, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { ProjectWorld, TrackerHandoffState, TrackerSignalResult } from '../types';
+import { BuilderLayerPanel } from './BuilderMode';
 import { ArrowIcon, ArrowRightIcon, GitHubIcon, TelegramIcon } from './Icons';
 import { LoopTrace } from './LoopTrace';
 import { NarTrackerHandoff } from './NarTrackerHandoff';
 import { ProjectVisual } from './ProjectVisuals';
 
 interface ProjectChapterProps {
+  builderMode: boolean;
   handoff: TrackerHandoffState | null;
   onHandoffReset: (() => void) | null;
   onHandoffResolved: ((result: TrackerSignalResult) => void) | null;
@@ -14,6 +16,7 @@ interface ProjectChapterProps {
 }
 
 function ProjectChapterComponent({
+  builderMode,
   handoff,
   onHandoffReset,
   onHandoffResolved,
@@ -26,7 +29,12 @@ function ProjectChapterComponent({
   ).current;
 
   return (
-    <section className={`project project--${project.theme}`} id={project.id} ref={sectionRef}>
+    <section
+      className={`project project--${project.theme}`}
+      data-builder-world={project.id}
+      id={project.id}
+      ref={sectionRef}
+    >
       <LoopTrace variant={project.theme} />
       {project.theme === 'trendyol' && !reduceMotion && !initialDeepLink ? (
         <NarTrackerHandoff targetRef={sectionRef} />
@@ -57,12 +65,16 @@ function ProjectChapterComponent({
           ))}
         </ol>
 
-        <ProjectVisual
-          onHandoffReset={onHandoffReset}
-          onHandoffResolved={onHandoffResolved}
-          project={project}
-          trackerHandoff={handoff}
-        />
+        <div className="project__experience">
+          <ProjectVisual
+            onHandoffReset={onHandoffReset}
+            onHandoffResolved={onHandoffResolved}
+            project={project}
+            trackerHandoff={handoff}
+          />
+
+          {builderMode ? <BuilderLayerPanel projectId={project.id} /> : null}
+        </div>
 
         <div className="project__notes">
           <div className="project__decision">
