@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, SVGProps } from 'react';
-import { ArrowIcon, ArrowRightIcon, GitHubIcon, TelegramIcon } from './Icons';
+import { ArrowIcon, ArrowRightIcon, GitHubIcon, LinkedInIcon, TelegramIcon } from './Icons';
 import {
   kControlSections,
   resolveKControlSection,
@@ -35,6 +35,12 @@ const quickActions = [
     href: 'https://github.com/kar1m0vf',
     icon: GitHubIcon,
     label: 'GitHub',
+  },
+  {
+    external: true,
+    href: 'https://www.linkedin.com/in/kamil-kerimov',
+    icon: LinkedInIcon,
+    label: 'LinkedIn',
   },
 ] as const;
 
@@ -312,15 +318,20 @@ export function KControl({
             aria-checked={builderMode}
             className="k-control__builder k-control__setting"
             onClick={() => {
-              playSound(builderMode ? 'toggle-off' : 'toggle-on');
-              onBuilderModeChange(!builderMode);
+              const nextBuilderMode = !builderMode;
+              playSound(nextBuilderMode ? 'toggle-on' : 'toggle-off');
+              onBuilderModeChange(nextBuilderMode);
+              if (nextBuilderMode) setIsOpen(false);
             }}
             ref={registerCommand(kControlSections.length)}
             role="switch"
             type="button"
           >
             <span aria-hidden="true" className="k-control__builder-icon"><BuilderCubeIcon /></span>
-            <strong>Builder Mode</strong>
+            <span className="k-control__setting-copy">
+              <strong>Builder Mode</strong>
+              <small>Reveal how each project works</small>
+            </span>
             <output>{builderMode ? 'On' : 'Off'}</output>
             <i aria-hidden="true" className="k-control__switch"><span /></i>
           </button>
@@ -336,7 +347,10 @@ export function KControl({
             <span aria-hidden="true" className="k-control__builder-icon k-control__sound-icon">
               <SoundIcon enabled={soundEnabled} />
             </span>
-            <strong>Interface Sound</strong>
+            <span className="k-control__setting-copy">
+              <strong>Interface Sound</strong>
+              <small>Feedback for actions and states</small>
+            </span>
             <output>{soundEnabled ? 'On' : 'Off'}</output>
             <i aria-hidden="true" className="k-control__switch"><span /></i>
           </button>

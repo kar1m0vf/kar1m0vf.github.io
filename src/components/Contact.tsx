@@ -2,12 +2,22 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useSound } from '../audio/SoundProvider';
-import { ArrowIcon } from './Icons';
+import { ArrowIcon, ArrowUpIcon, GitHubIcon, LinkedInIcon } from './Icons';
 import './ContactFinale.css';
 
-const socialLinks = [
-  { label: 'GitHub', href: 'https://github.com/kar1m0vf' },
-  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/kamil-kerimov' },
+const profileLinks = [
+  {
+    caption: 'Code & repositories',
+    href: 'https://github.com/kar1m0vf',
+    icon: GitHubIcon,
+    label: 'GitHub',
+  },
+  {
+    caption: 'Professional profile',
+    href: 'https://www.linkedin.com/in/kamil-kerimov',
+    icon: LinkedInIcon,
+    label: 'LinkedIn',
+  },
 ] as const;
 
 const desktopSignal = {
@@ -217,27 +227,49 @@ export function Contact() {
             <span>Start the next loop</span>
             <ArrowIcon />
           </a>
-          <a
-            className="contact__telegram"
-            href="https://t.me/kar1m0vf"
-            onClick={() => playSound('select')}
-            rel="noreferrer"
-            target="_blank"
-          >
-            <span>Telegram</span>
-            <ArrowIcon />
-          </a>
+          <div className="contact__channels">
+            <nav aria-label="Professional profiles" className="contact__profiles">
+              {profileLinks.map((profile) => {
+                const Icon = profile.icon;
+
+                return (
+                  <a
+                    className="contact__profile"
+                    href={profile.href}
+                    key={profile.href}
+                    onClick={() => playSound('select')}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Icon className="contact__profile-icon" />
+                    <span>
+                      <small>{profile.caption}</small>
+                      <strong>{profile.label}</strong>
+                    </span>
+                    <ArrowIcon />
+                  </a>
+                );
+              })}
+            </nav>
+            <a
+              className="contact__telegram"
+              href="https://t.me/kar1m0vf"
+              onClick={() => playSound('select')}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <span>Prefer a quick message? Telegram</span>
+              <ArrowIcon />
+            </a>
+          </div>
         </motion.div>
 
         <nav aria-label="Footer links and location" className="contact__footer">
           <a className="wordmark" href="#top" onClick={() => playSound('select')}>Kamil Kerimov</a>
           <span>Baku · UTC+4</span>
-          {socialLinks.map((link) => (
-            <a href={link.href} key={link.href} onClick={() => playSound('select')} rel="noreferrer" target="_blank">
-              {link.label}<ArrowIcon />
-            </a>
-          ))}
-          <a href="#top" onClick={() => playSound('select')}>Back to top<ArrowIcon /></a>
+          <a className="contact__back-top" href="#top" onClick={() => playSound('select')}>
+            Back to top<ArrowUpIcon />
+          </a>
         </nav>
       </div>
     </footer>

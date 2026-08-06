@@ -640,6 +640,7 @@ html[data-experience-section='contact'] .experience-rail {
   border-radius: 50%;
   background: var(--blue);
   box-shadow: 0 0 0.8rem var(--blue);
+  transform: translateY(-50%);
 }
 
 .hero__rail-button span {
@@ -2097,29 +2098,41 @@ html[data-experience-section='contact'] .experience-rail {
     position: relative;
     z-index: 3;
     display: grid;
-    gap: 0.35rem;
     width: 2.6rem;
     height: 2.6rem;
-    padding: 0.75rem;
+    padding: 0;
+    overflow: visible;
     border: 1px solid var(--line);
     background: rgb(7 9 11 / 70%);
     cursor: pointer;
   }
 
   .menu-button span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     display: block;
-    width: 100%;
+    width: 1.25rem;
     height: 1px;
     background: var(--ink);
+    transform-origin: center;
     transition: transform 180ms ease;
   }
 
+  .menu-button span:first-child {
+    transform: translate(-50%, -0.25rem);
+  }
+
+  .menu-button span:last-child {
+    transform: translate(-50%, 0.25rem);
+  }
+
   .site-header.is-open .menu-button span:first-child {
-    transform: translateY(0.2rem) rotate(45deg);
+    transform: translate(-50%, -50%) rotate(45deg);
   }
 
   .site-header.is-open .menu-button span:last-child {
-    transform: translateY(-0.2rem) rotate(-45deg);
+    transform: translate(-50%, -50%) rotate(-45deg);
   }
 
   .site-nav {
@@ -2340,9 +2353,16 @@ html[data-experience-section='contact'] .experience-rail {
   }
 
   .hero__rail-button {
+    align-items: center;
     gap: 0.25rem;
     min-height: 4.5rem;
     padding-inline: 0.2rem;
+    line-height: 1;
+  }
+
+  .hero__rail-button:hover,
+  .hero__rail-button.is-active {
+    transform: none;
   }
 
   .hero__rail-button span {

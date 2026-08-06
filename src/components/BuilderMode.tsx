@@ -12,6 +12,7 @@ export interface BuilderModeHudProps {
 }
 
 export interface BuilderLayerPanelProps {
+  onLayerChange?: (index: number) => void;
   projectId: BuilderProjectId;
 }
 
@@ -20,6 +21,7 @@ interface BuilderLayer {
   index: string;
   label: string;
   name: string;
+  proof: string;
   stack: readonly string[];
 }
 
@@ -39,6 +41,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '01',
         label: 'Search · Filter · Route',
         name: 'Discover',
+        proof: 'One route connects search, filters, catalog, and product detail.',
         stack: ['React', 'React Router', 'CSS'],
       },
       {
@@ -46,6 +49,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '02',
         label: 'Favourite · Cart · Quantity',
         name: 'State',
+        proof: 'Favourites and cart quantities stay coherent between views.',
         stack: ['React state', 'JavaScript', 'Components'],
       },
       {
@@ -53,6 +57,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '03',
         label: 'Save · Restore · Continue',
         name: 'Persist',
+        proof: 'Cart and favourites restore after a reload.',
         stack: ['localStorage', 'Vite', 'Responsive UI'],
       },
     ],
@@ -66,6 +71,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '01',
         label: 'Schedule · Check · Remember',
         name: 'Observe',
+        proof: 'Successful checks become a usable price-history trail.',
         stack: ['Python', 'APScheduler', 'SQLite'],
       },
       {
@@ -73,6 +79,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '02',
         label: 'Rules · Target · Quiet hours',
         name: 'Decide',
+        proof: 'Targets and quiet hours can stop an alert before delivery.',
         stack: ['Python', 'SQL', 'Rule engine'],
       },
       {
@@ -80,6 +87,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '03',
         label: 'Group · Localize · Alert',
         name: 'Deliver',
+        proof: 'Qualified changes are grouped and localized for Telegram.',
         stack: ['aiogram 3', 'Telegram', 'Diagnostics'],
       },
     ],
@@ -93,6 +101,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '01',
         label: 'Move · Fire · Navigate',
         name: 'Input',
+        proof: 'Desktop controls feed one consistently scaled 16:9 surface.',
         stack: ['Python 3.11', 'Pygame', '16:9 surface'],
       },
       {
@@ -100,6 +109,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '02',
         label: 'State · Collision · Boss',
         name: 'Runtime',
+        proof: 'Waves, collisions, boss phases, and retry share one runtime state.',
         stack: ['Pygame', 'JSON', 'pytest'],
       },
       {
@@ -107,6 +117,7 @@ const projects: Record<BuilderProjectId, BuilderProject> = {
         index: '03',
         label: 'Test · Package · Verify',
         name: 'Release',
+        proof: 'The Windows package ships with a SHA256 checksum.',
         stack: ['PowerShell', 'PyInstaller', 'SHA256'],
       },
     ],
@@ -149,7 +160,8 @@ export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderMod
   const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const sectionKey = activeSection?.toLowerCase() ?? '';
-  const accent = sectionKey === 'nar' || sectionKey === 'trendyol' || sectionKey === 'blaster'
+  const isProjectSection = sectionKey === 'nar' || sectionKey === 'trendyol' || sectionKey === 'blaster';
+  const accent = isProjectSection
     ? sectionKey
     : 'system';
 
@@ -172,8 +184,8 @@ export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderMod
             <strong>On</strong>
           </div>
           <div aria-live="polite" className="builder-hud__context">
-            <span>Inspecting</span>
-            <strong>{getSectionLabel(activeSection)}</strong>
+            <span>{isProjectSection ? 'Inspecting' : 'Lens ready'}</span>
+            <strong>{isProjectSection ? getSectionLabel(activeSection) : 'Three project systems'}</strong>
           </div>
           <button
             aria-label="Turn off Builder mode"
@@ -193,15 +205,18 @@ export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderMod
   );
 }
 
-export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
+export function BuilderLayerPanel({ onLayerChange, projectId }: BuilderLayerPanelProps) {
   const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const detailsId = useId();
   const project = projects[projectId];
   const selectedLayer = project.layers[selectedIndex] ?? project.layers[0];
+  const nextIndex = (selectedIndex + 1) % project.layers.length;
+  const nextLayer = project.layers[nextIndex] ?? project.layers[0];
 
   useEffect(() => setSelectedIndex(0), [projectId]);
+  useEffect(() => onLayerChange?.(selectedIndex), [onLayerChange, selectedIndex]);
 
   const selectRelativeLayer = (index: number, direction: -1 | 1) => {
     const nextIndex = (index + direction + project.layers.length) % project.layers.length;
@@ -218,10 +233,10 @@ export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
 
   const inspectNext = () => {
     playSound('select');
-    setSelectedIndex((current) => (current + 1) % project.layers.length);
+    setSelectedIndex(nextIndex);
   };
 
-  if (!selectedLayer) return null;
+  if (!selectedLayer || !nextLayer) return null;
 
   return (
     <section className="builder-layer-panel" data-project={projectId} aria-labelledby={`${detailsId}-title`}>
@@ -230,7 +245,7 @@ export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
         <h3 id={`${detailsId}-title`}>{project.title}</h3>
       </header>
 
-      <div aria-label={`${project.eyebrow} system layers`} className="builder-layer-panel__layers" role="tablist" aria-orientation="vertical">
+      <div aria-label={`${project.eyebrow} system layers`} className="builder-layer-panel__layers" role="tablist">
         <span aria-hidden="true" className="builder-layer-panel__spine" />
         {project.layers.map((layer, index) => {
           const selected = index === selectedIndex;
@@ -275,14 +290,19 @@ export function BuilderLayerPanel({ projectId }: BuilderLayerPanelProps) {
         transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="builder-layer-panel__detail-copy">
-          <span>{selectedLayer.name} layer</span>
+          <span>{selectedLayer.name} layer · {String(selectedIndex + 1).padStart(2, '0')} / {String(project.layers.length).padStart(2, '0')}</span>
           <p>{selectedLayer.detail}</p>
         </div>
+        <p className="builder-layer-panel__proof">
+          <span>Proof</span>
+          <strong>{selectedLayer.proof}</strong>
+        </p>
         <ul aria-label="Technologies and system concerns">
           {selectedLayer.stack.map((item) => <li key={item}>{item}</li>)}
         </ul>
         <button className="builder-layer-panel__next" onClick={inspectNext} type="button">
-          <span>Inspect next layer</span>
+          <span>Next · {nextLayer.name}</span>
+          <small>{String(nextIndex + 1).padStart(2, '0')} / {String(project.layers.length).padStart(2, '0')}</small>
           <ArrowIcon />
         </button>
       </motion.div>

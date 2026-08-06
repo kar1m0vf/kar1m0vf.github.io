@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react';
+import { memo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { ProjectWorld, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { BuilderLayerPanel } from './BuilderMode';
@@ -24,6 +24,7 @@ function ProjectChapterComponent({
 }: ProjectChapterProps) {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement | null>(null);
+  const [builderLayer, setBuilderLayer] = useState(0);
   const initialDeepLink = useRef(
     typeof window !== 'undefined' && window.location.hash === `#${project.id}`,
   ).current;
@@ -31,6 +32,7 @@ function ProjectChapterComponent({
   return (
     <section
       className={`project project--${project.theme}`}
+      data-builder-layer={builderMode ? builderLayer : undefined}
       data-builder-world={project.id}
       id={project.id}
       ref={sectionRef}
@@ -56,7 +58,7 @@ function ProjectChapterComponent({
           </div>
         </motion.header>
 
-        <ol aria-label={`${project.title} loop`} className="project__flow">
+        <ol aria-label={`${project.title} loop`} className="project__flow" data-builder-zone="flow">
           {project.flow.map((step, index) => (
             <li key={step}>
               <span>{step}</span>
@@ -66,17 +68,19 @@ function ProjectChapterComponent({
         </ol>
 
         <div className="project__experience">
-          <ProjectVisual
-            onHandoffReset={onHandoffReset}
-            onHandoffResolved={onHandoffResolved}
-            project={project}
-            trackerHandoff={handoff}
-          />
+          <div className="project__visual-focus" data-builder-zone="system">
+            <ProjectVisual
+              onHandoffReset={onHandoffReset}
+              onHandoffResolved={onHandoffResolved}
+              project={project}
+              trackerHandoff={handoff}
+            />
+          </div>
 
-          {builderMode ? <BuilderLayerPanel projectId={project.id} /> : null}
+          {builderMode ? <BuilderLayerPanel onLayerChange={setBuilderLayer} projectId={project.id} /> : null}
         </div>
 
-        <div className="project__notes">
+        <div className="project__notes" data-builder-zone="output">
           <div className="project__decision">
             <span>Builder’s note</span>
             <blockquote>{project.decision}</blockquote>
