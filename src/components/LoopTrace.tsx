@@ -75,7 +75,6 @@ function createTraceSamples(paths: readonly SVGPathElement[]): TraceSample[] {
     });
   });
 }
-
 function distanceSquared(
   a: Pick<TracePoint, 'x' | 'y'>,
   b: Pick<TracePoint, 'x' | 'y'>,
