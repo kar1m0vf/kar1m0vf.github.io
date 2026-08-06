@@ -1,5 +1,22 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
+
+async function expectLoadedAndContained(image: Locator) {
+  await image.scrollIntoViewIfNeeded();
+  await expect(image).toBeVisible();
+  await expect.poll(
+    () => image.evaluate((node) => {
+      const value = node as HTMLImageElement;
+      return value.complete && value.naturalWidth > 0 && value.naturalHeight > 0;
+    }),
+    { message: 'project capture should finish loading' },
+  ).toBe(true);
+  await expect(image).toHaveCSS('object-fit', 'contain');
+
+  const box = await image.boundingBox();
+  expect(box?.width ?? 0).toBeGreaterThan(0);
+  expect(box?.height ?? 0).toBeGreaterThan(0);
+}
 
 test.describe('The Whole Loop portfolio', () => {
   test('renders the complete story and follows in-page navigation', async ({ page }) => {
@@ -19,9 +36,13 @@ test.describe('The Whole Loop portfolio', () => {
 
     const menuButton = page.getByRole('button', { name: 'Open navigation' });
     if (await menuButton.isVisible()) await menuButton.click();
-    await page.getByRole('link', { name: 'Journey', exact: true }).click();
+    const primaryNav = page.getByRole('navigation', { name: 'Primary navigation' });
+    await primaryNav.getByRole('link', { name: 'Journey', exact: true }).click();
     await expect(page).toHaveURL(/#journey$/);
-    await expect(page.getByRole('heading', { name: /Map.*Build.*Break.*Test.*Ship/i })).toBeInViewport();
+    const journey = page.locator('#journey');
+    await expect(journey).toBeInViewport();
+    await expect(journey.getByRole('heading', { level: 2, name: /Kamil Kerimov’s software journey/i })).toBeAttached();
+    await expect(journey.getByText('A software path, built from Baku.', { exact: true })).toBeVisible();
 
     expect(consoleErrors).toEqual([]);
   });
@@ -32,7 +53,8 @@ test.describe('The Whole Loop portfolio', () => {
     await expect(page.getByAltText('Nar Patisserie home page').first()).toBeVisible();
     await expect(page.getByRole('link', { name: /View live demo/ })).toHaveAttribute('target', '_blank');
     await expect(page.getByRole('link', { name: /Open live bot/ })).toHaveAttribute('href', 'https://t.me/trendyolpw_bot');
-    await expect(page.getByRole('link', { name: /Email me/ })).toHaveAttribute('href', 'mailto:kamil16092006@gmail.com');
+    await expect(page.locator('#contact').getByRole('link', { name: /Email Kamil Kerimov/i }))
+      .toHaveAttribute('href', 'mailto:kamil16092006@gmail.com');
 
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);
@@ -40,43 +62,55 @@ test.describe('The Whole Loop portfolio', () => {
 
   test('keeps project captures uncropped and opens the full-view gallery', async ({ page }) => {
     await page.goto('/#nar');
+    await expect(page.locator('.site-loader')).toHaveCount(0, { timeout: 20_000 });
 
-    const captures = page.locator('#nar .media-shot img, #blaster .media-shot img');
-    await captures.first().scrollIntoViewIfNeeded();
-    await captures.evaluateAll((images) => Promise.all((images as HTMLImageElement[]).map((image) => image.decode())));
-
-    const ratios = await captures.evaluateAll((images) => (images as HTMLImageElement[]).map((image) => {
-      const bounds = image.getBoundingClientRect();
-      return {
-        displayed: bounds.width / bounds.height,
-        natural: image.naturalWidth / image.naturalHeight,
-      };
-    }));
-
-    for (const ratio of ratios) {
-      expect(Math.abs(ratio.displayed - ratio.natural)).toBeLessThan(0.01);
-    }
+    const narCapture = page.locator('#nar .media-shot img').first();
+    await expectLoadedAndContained(narCapture);
 
     await page.locator('#nar .media-shot').first().click();
-    await expect(page.getByRole('dialog', { name: /image viewer/i })).toBeVisible();
+    const lightbox = page.getByRole('dialog', { name: /image viewer/i });
+    await expect(lightbox).toBeVisible();
+    await expectLoadedAndContained(lightbox.locator('img'));
     await page.getByRole('button', { name: /close/i }).click();
-    await expect(page.getByRole('dialog', { name: /image viewer/i })).toHaveCount(0);
+    await expect(lightbox).toHaveCount(0);
+
+    const blasterCaptures = page.locator('#blaster .blaster-evidence__shot img');
+    await expect(blasterCaptures).toHaveCount(3);
+    for (let index = 0; index < await blasterCaptures.count(); index += 1) {
+      await expectLoadedAndContained(blasterCaptures.nth(index));
+    }
   });
 
-  test('keeps the complete story with reduced motion and without canvas', async ({ page }) => {
+  test('keeps the complete story with reduced motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    await expect(page.locator('canvas')).toHaveCount(0);
-    await expect(page.getByText('When the happy path works, I ask what breaks next.').first()).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Blaster', exact: true })).toBeAttached();
+    await expect.poll(() => page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+    await expect(page.getByRole('heading', { level: 1, name: 'Kamil Kerimov' })).toBeVisible();
+    await expect(page.locator('#method').getByRole('heading', {
+      level: 2,
+      name: /The junction.*One signal.*Three ways to build/i,
+    })).toBeAttached();
+
+    const blaster = page.locator('#blaster');
+    await expect(blaster.getByRole('heading', { name: 'Blaster', exact: true })).toBeAttached();
+    await blaster.scrollIntoViewIfNeeded();
+    const miniBlaster = blaster.locator('.mini-blaster');
+    await expect(miniBlaster).toHaveAttribute('data-reduced-effects', 'true');
+    await expect(miniBlaster.getByText('Reduced visual effects', { exact: true })).toBeVisible();
+    await expect(page.locator('canvas:not([aria-hidden="true"])')).toHaveCount(0);
   });
 
   test('remains understandable without the decorative K trace', async ({ page }) => {
     await page.goto('/');
-    await page.addStyleTag({ content: '.loop-trace, .contact__signature { display: none !important; }' });
+    await page.addStyleTag({ content: '.loop-trace, .contact__signal-canvas { display: none !important; }' });
     await expect(page.getByRole('heading', { level: 1, name: 'Kamil Kerimov' })).toBeVisible();
-    await expect(page.getByText('React interfaces people use. Python workflows they don’t see. Tests that keep both honest.')).toBeVisible();
-    await expect(page.getByRole('link', { name: /Email me/ })).toBeAttached();
+    await expect(page.locator('#top').getByText(
+      /React interfaces\.\s*Python systems\.\s*Tests and releases that keep both honest\./i,
+    )).toBeVisible();
+    await expect(page.locator('#method').getByRole('heading', {
+      name: /The junction.*One signal.*Three ways to build/i,
+    })).toBeAttached();
+    await expect(page.locator('#contact').getByRole('link', { name: /Email Kamil Kerimov/i })).toBeAttached();
   });
 });
 
