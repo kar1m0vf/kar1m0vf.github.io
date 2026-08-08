@@ -16,5 +16,5 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["node", "vitest/globals", "vite/client"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "vitest.config.ts", "vite.config.ts", "playwright.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts", "vite.config.ts"]
 }
