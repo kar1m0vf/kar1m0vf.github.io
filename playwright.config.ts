@@ -33,11 +33,13 @@ export default defineConfig({
   },
   outputDir: 'test-results/playwright-artifacts',
   webServer: {
-    command: `npm run build && npm run preview -- --port ${PORT}`,
-    url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  command: process.env.CI
+    ? `npm run preview -- --port ${PORT}`
+    : `npm run build && npm run preview -- --port ${PORT}`,
+  url: BASE_URL,
+  reuseExistingServer: !process.env.CI,
+  timeout: 120_000,
+},
   projects: [
     {
       name: 'chromium-desktop',
