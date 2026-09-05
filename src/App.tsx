@@ -54,7 +54,7 @@ export default function App() {
           onDisable={() => setBuilderMode(false)}
         />
         <main id="main-content">
-          <Hero />
+          <Hero ready={!isLoading} />
           <Method />
           <WorkSequence builderMode={builderMode} />
           <div className="finale">

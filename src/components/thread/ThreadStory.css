@@ -1,0 +1,80 @@
+.thread-story { position: relative; height: 340svh; background: #050709; isolation: isolate; }
+.thread-story__sticky { position: sticky; top: 0; height: 100svh; overflow: clip; background: radial-gradient(ellipse at 73% 48%, #0b1623 0%, #060b12 32%, #050709 70%); }
+.thread-sculpture, .thread-sculpture__canvas { position: absolute; inset: 0; pointer-events: none; }
+.thread-sculpture { z-index: 1; }
+.thread-sculpture canvas { display: block; width: 100%; height: 100%; }
+.thread-sculpture__canvas { opacity: 0; transition: opacity 800ms ease; }
+.thread-sculpture[data-renderer='ready'] .thread-sculpture__canvas { opacity: 1; }
+.thread-sculpture__fallback { position: absolute; top: 4%; left: 43%; width: 62%; height: 86%; overflow: visible; transition: opacity 700ms ease; }
+.thread-sculpture[data-renderer='ready'] .thread-sculpture__fallback { opacity: 0; }
+.thread-story__intro { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; height: calc(100svh - 6rem); width: min(100%, 100rem); padding: clamp(6.5rem, 13svh, 9.25rem) var(--gutter) clamp(1.5rem, 4svh, 3.5rem); margin-inline: auto; transform-origin: 0 30%; pointer-events: none; }
+.thread-story .hero__name { font-size: clamp(5rem, 11.4vw, 11.7rem); }
+.thread-story .hero__message { align-self: start; width: min(36rem, 46vw); padding: 2rem 0 0; }
+.thread-story .hero__promise { font-size: clamp(2.6rem, 4.5vw, 4.5rem); }
+.thread-story .hero__summary { font-size: clamp(1rem, 1.14vw, 1.16rem); color: #c0c5ce; max-width: 31rem; }
+.thread-story .hero__role { color: #a2acb9; margin-top: 1.05rem; }
+.thread-story .hero__actions { pointer-events: auto; }
+.thread-story .button { gap: 1rem; }
+.thread-story__perspective, .thread-story__closing { position: absolute; z-index: 2; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5rem var(--gutter) 7rem; text-align: center; pointer-events: none; }
+.thread-story__perspective h2, .thread-story__closing h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(4.2rem, 9.7vw, 9.5rem); line-height: .92; letter-spacing: -.04em; color: var(--ink-bright); text-shadow: 0 2px 35px #050709; }
+.thread-story__perspective h2 em, .thread-story__closing h2 em { color: #8fc8ff; font-weight: 400; }
+.thread-story__chapter-label { color: #aebdcf; margin-bottom: 1.7rem; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
+.thread-story__personal { margin-top: 2rem; color: #d0d6df; font-size: clamp(1rem, 1.35vw, 1.35rem); line-height: 1.6; }
+.thread-story__personal--secondary { margin-top: .65rem; color: #a2b0c3; font-size: .95rem; }
+.thread-story__closing { align-items: flex-start; padding-left: 13%; text-align: left; }
+.thread-story__closing > p:not(.thread-story__chapter-label) { margin-top: 1.75rem; font-size: 1.1rem; color: #c0cbd8; }
+.thread-story__work-link { display: inline-flex; align-items: center; gap: 1.75rem; margin-top: 1.5rem; padding: .8rem 0; border-bottom: 1px solid #58789d; pointer-events: auto; }
+.thread-story__work-link svg { width: 1rem; }
+.thread-story__navigation { position: absolute; z-index: 4; bottom: 0; left: var(--gutter); right: var(--gutter); display: flex; justify-content: space-between; align-items: center; height: 5.8rem; border-top: 1px solid rgb(160 190 220 / 18%); font-size: .78rem; color: #a9b8c9; }
+.thread-story__scroll-cue { display: flex; align-items: center; gap: .9rem; padding-left: 5rem; }
+.thread-story__scroll-cue > span { display: block; color: #90c9ff; font-size: 1.4rem; animation: thread-scroll-cue 2.8s ease-in-out infinite; }
+.thread-story__chapters { display: flex; gap: clamp(1rem, 3vw, 3rem); }
+.thread-story__chapters button { display: flex; align-items: center; gap: .6rem; background: none; border: 0; padding: 1rem .2rem; color: #8694a5; font-size: .78rem; cursor: pointer; transition: color 200ms ease; }
+.thread-story__chapters button > span:first-child { color: #5b8bb9; font-size: .68rem; }
+.thread-story__chapters button[aria-pressed='true'] { color: #eef6ff; }
+.thread-story__skip { padding-block: 1rem; color: #c3cfdd; }
+.thread-story__skip > span { margin-left: .7rem; }
+.thread-story__progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; }
+.thread-story__progress span { display: block; height: 100%; background: #7abaff; box-shadow: 0 0 12px #448eff; }
+@keyframes thread-scroll-cue { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
+@media (max-width: 767px) {
+  .thread-story { height: 300svh; }
+  .thread-story__intro { height: calc(100svh - 5rem); padding-top: 6.5rem; padding-bottom: 1.3rem; }
+  .thread-story .hero__name { font-size: clamp(4.1rem, 18.6vw, 8rem); }
+  .thread-story .hero__message { width: 100%; padding-top: 1rem; background: linear-gradient(0deg, rgb(5 7 9 / 88%) 60%, transparent); }
+  .thread-story .hero__promise { font-size: clamp(2.2rem, 8.8vw, 3.5rem); }
+  .thread-story .hero__summary { margin-top: .9rem; font-size: .95rem; max-width: 26rem; }
+  .thread-story .hero__role { margin-top: .7rem; font-size: .8rem; }
+  .thread-story .hero__actions { gap: .6rem; margin-top: 1rem; }
+  .thread-story .button { font-size: .76rem; padding: .7rem .85rem; min-height: 3.1rem; }
+  .thread-story .button svg { width: .8rem; }
+  .thread-story__navigation { height: 4.8rem; }
+  .thread-story__chapters { gap: .8rem; }
+  .thread-story__chapters button { min-width: 2.6rem; justify-content: center; }
+  .thread-story__chapters button > span:first-child { font-size: .8rem; }
+  .thread-story__chapters button > span:last-child { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .thread-story__scroll-cue { font-size: .7rem; gap: .5rem; padding-left: 0; }
+  .thread-story__skip { font-size: .7rem; }
+  .thread-story__perspective, .thread-story__closing { padding: 5rem var(--gutter) 6rem; }
+  .thread-story__perspective h2, .thread-story__closing h2 { font-size: clamp(3.7rem, 15.3vw, 6rem); }
+  .thread-story__chapter-label { font-size: .72rem; margin-bottom: 1.5rem; }
+  .thread-story__personal { font-size: 1rem; }
+  .thread-story__personal--secondary { max-width: 19rem; font-size: .88rem; }
+  .thread-story__closing { justify-content: center; }
+  .thread-sculpture__fallback { left: 0; top: 14%; width: 100%; height: 64%; }
+}
+@media (max-height: 650px) and (min-width: 768px) {
+  .thread-story .hero__name { font-size: 17svh; }
+  .thread-story .hero__message { padding-top: 1rem; }
+  .thread-story .hero__promise { font-size: 7svh; }
+  .thread-story .hero__summary { margin-top: .7rem; }
+  .thread-story .hero__actions { margin-top: .7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .thread-story { height: auto; }
+  .thread-story__sticky { position: relative; height: auto; }
+  .thread-story__intro { min-height: 100svh; height: auto; gap: 5rem; padding-bottom: 4rem; }
+  .thread-story__perspective, .thread-story__closing { position: relative; min-height: 70svh; padding-block: 5rem; opacity: 1; transform: none; }
+  .thread-sculpture { height: 100svh; }
+  .thread-story__perspective { background: #050709; }
+}

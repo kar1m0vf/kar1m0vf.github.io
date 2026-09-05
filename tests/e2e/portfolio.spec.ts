@@ -100,12 +100,12 @@ test.describe('The Whole Loop portfolio', () => {
     await expect(page.locator('canvas:not([aria-hidden="true"])')).toHaveCount(0);
   });
 
-  test('remains understandable without the decorative K trace', async ({ page }) => {
+  test('remains understandable without the decorative thread', async ({ page }) => {
     await page.goto('/');
-    await page.addStyleTag({ content: '.loop-trace, .contact__signal-canvas { display: none !important; }' });
+    await page.addStyleTag({ content: '.thread-sculpture, .loop-trace, .contact__signal-canvas { display: none !important; }' });
     await expect(page.getByRole('heading', { level: 1, name: 'Kamil Kerimov' })).toBeVisible();
     await expect(page.locator('#top').getByText(
-      /React interfaces\.\s*Python systems\.\s*Tests and releases that keep both honest\./i,
+      /I turn ideas into useful experiences\. Curious about people, design, and what technology can make possible\./i,
     )).toBeVisible();
     await expect(page.locator('#method').getByRole('heading', {
       name: /The junction.*One signal.*Three ways to build/i,

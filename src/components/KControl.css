@@ -616,10 +616,10 @@ body.nav-open .k-control__trigger {
 
   html[data-experience-section='top'] .k-control__trigger {
     position: absolute;
-    top: calc(35.5svh - 1.75rem);
-    right: auto;
+    top: 0.7rem;
+    right: 4.75rem;
     bottom: auto;
-    left: calc(14.5vw - 1.75rem);
+    left: auto;
     display: grid;
     grid-template-columns: 3.45rem auto auto;
     gap: 0.28rem;

@@ -27,6 +27,7 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     colorScheme: 'dark',
+    launchOptions: { args: ['--enable-unsafe-swiftshader'] },
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
