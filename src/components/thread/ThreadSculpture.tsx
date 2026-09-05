@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useTransform, type MotionValue } from 'motion/react';
 
 interface ThreadSculptureProps {
-  onReady?: () => void;
+  onReady?: (() => void) | undefined;
   progress: MotionValue<number>;
   reduced: boolean;
 }
