@@ -2,34 +2,79 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useTransform, type MotionValue } from 'motion/react';
 
 interface ThreadSculptureProps {
-  enabled: boolean;
+  onReady?: () => void;
   progress: MotionValue<number>;
   reduced: boolean;
 }
 
-/** The HTML story never waits for, or depends on, its WebGL layer. */
-export function ThreadSculpture({ enabled, progress, reduced }: ThreadSculptureProps) {
+/** The story mounts beneath the loader so WebGL can prepare before the reveal. */
+export function ThreadSculpture({ onReady, progress, reduced }: ThreadSculptureProps) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const onReadyRef = useRef(onReady);
   const [status, setStatus] = useState<'loading' | 'ready' | 'fallback'>('loading');
   const rotate = useTransform(progress, [0, 0.5, 1], [-22, 100, 190]);
   const scale = useTransform(progress, [0, 0.5, 1], [1, 1.4, 2.4]);
 
   useEffect(() => {
-    if (!enabled || !hostRef.current) return;
+    onReadyRef.current = onReady;
+  }, [onReady]);
+
+  useEffect(() => {
+    if (!hostRef.current) return;
     const host = hostRef.current;
     let cancelled = false;
+    let failed = false;
+    let readyReported = false;
+    let readyFrame = 0;
     let dispose: (() => void) | undefined;
+
+    setStatus('loading');
+
+    const reportReady = () => {
+      if (cancelled || readyReported) return;
+      readyReported = true;
+      onReadyRef.current?.();
+    };
+
+    const useFallback = () => {
+      if (cancelled) return;
+      failed = true;
+      window.cancelAnimationFrame(readyFrame);
+      setStatus('fallback');
+      reportReady();
+    };
+
     void import('./createThreadScene').then(({ createThreadScene }) => {
       if (cancelled) return;
       const scene = createThreadScene(host, {
-        getProgress: () => reduced ? 0 : progress.get(), reduced,
-        onUnavailable: () => { if (!cancelled) setStatus('fallback'); },
+        getProgress: () => reduced ? 0 : progress.get(),
+        reduced,
+        onUnavailable: useFallback,
       });
-      if (scene) { dispose = scene; setStatus('ready'); }
-      else setStatus('fallback');
-    }).catch(() => { if (!cancelled) setStatus('fallback'); });
-    return () => { cancelled = true; dispose?.(); };
-  }, [enabled, progress, reduced]);
+
+      if (!scene) {
+        useFallback();
+        return;
+      }
+
+      dispose = scene;
+      // createThreadScene schedules its first render before returning. Waiting two
+      // animation frames keeps the loader up until WebGL has actually painted.
+      readyFrame = window.requestAnimationFrame(() => {
+        readyFrame = window.requestAnimationFrame(() => {
+          if (cancelled || failed) return;
+          setStatus('ready');
+          reportReady();
+        });
+      });
+    }).catch(useFallback);
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(readyFrame);
+      dispose?.();
+    };
+  }, [progress, reduced]);
 
   return (
     <div aria-hidden="true" className="thread-sculpture" data-renderer={status}>

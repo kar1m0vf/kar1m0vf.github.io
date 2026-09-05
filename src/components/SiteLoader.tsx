@@ -7,6 +7,7 @@ import { projectWorlds } from '../data/projects';
 const minimumVisibleTime = 2000;
 const maximumWaitTime = 15000;
 const fontAssetId = 'portfolio-fonts';
+const heroSceneAssetId = 'hero-thread-scene';
 
 interface LoaderMedia {
   id: string;
@@ -15,6 +16,7 @@ interface LoaderMedia {
 }
 
 interface SiteLoaderProps {
+  heroReady: boolean;
   onComplete: () => void;
 }
 
@@ -47,9 +49,9 @@ const loaderMedia: readonly LoaderMedia[] = [
   },
 ] as const;
 
-const totalAssetCount = loaderMedia.length + 1;
+const totalAssetCount = loaderMedia.length + 2;
 
-export function SiteLoader({ onComplete }: SiteLoaderProps) {
+export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
   const reduceMotion = useReducedMotion();
   const startedAtRef = useRef(performance.now());
   const completedAssetsRef = useRef(new Set<string>());
@@ -125,6 +127,10 @@ export function SiteLoader({ onComplete }: SiteLoaderProps) {
       cancelled = true;
     };
   }, [markAssetReady]);
+
+  useEffect(() => {
+    if (heroReady) markAssetReady(heroSceneAssetId);
+  }, [heroReady, markAssetReady]);
 
   useEffect(() => {
     if (isExiting) return;

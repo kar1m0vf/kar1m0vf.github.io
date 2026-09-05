@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { BuilderModeHud } from './components/BuilderMode';
 import { Contact } from './components/Contact';
 import { ExperienceRail } from './components/ExperienceRail';
@@ -15,9 +15,11 @@ import { useActiveSection } from './hooks/useActiveSection';
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [heroReady, setHeroReady] = useState(false);
   const [builderMode, setBuilderMode] = useState(false);
   const activeSectionId = useActiveSection(isLoading);
   const activeSection = siteSections.find((section) => section.id === activeSectionId) ?? siteSections[0];
+  const handleHeroReady = useCallback(() => setHeroReady(true), []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -38,7 +40,7 @@ export default function App() {
 
   return (
     <>
-      {isLoading ? <SiteLoader onComplete={() => setIsLoading(false)} /> : null}
+      {isLoading ? <SiteLoader heroReady={heroReady} onComplete={() => setIsLoading(false)} /> : null}
       <div aria-busy={isLoading} aria-hidden={isLoading} className="site" inert={isLoading ? true : undefined}>
         <Header />
         <ExperienceRail activeId={activeSectionId} />
@@ -54,7 +56,7 @@ export default function App() {
           onDisable={() => setBuilderMode(false)}
         />
         <main id="main-content">
-          <Hero ready={!isLoading} />
+          <Hero onReady={handleHeroReady} />
           <Method />
           <WorkSequence builderMode={builderMode} />
           <div className="finale">

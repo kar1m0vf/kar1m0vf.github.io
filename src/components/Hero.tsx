@@ -8,7 +8,7 @@ import './thread/ThreadStory.css';
 const chapters = ['Meet me', 'My perspective', 'Selected work'] as const;
 const chapterPositions = [0, 0.46, 0.87] as const;
 
-export function Hero({ ready = true }: { ready?: boolean }) {
+export function Hero({ onReady }: { onReady?: () => void }) {
   const sectionRef = useRef<HTMLElement>(null);
   const { playSound } = useSound();
   const reduced = Boolean(useReducedMotion());
@@ -41,7 +41,7 @@ export function Hero({ ready = true }: { ready?: boolean }) {
   return (
     <section className="thread-story" data-chapter={chapter} data-reduced-motion={reduced} id="top" ref={sectionRef}>
       <div className="thread-story__sticky">
-        <ThreadSculpture enabled={ready} progress={progress} reduced={reduced} />
+        <ThreadSculpture onReady={onReady} progress={progress} reduced={reduced} />
         <div aria-hidden="true" className="hero__grain" />
         <motion.div aria-hidden={!reduced && chapter !== 0} className="thread-story__intro" inert={!reduced && chapter !== 0 ? true : undefined} style={reduced ? {} : { opacity: introOpacity, y: introY, scale: introScale }}>
           <h1 aria-label="Kamil Kerimov" className="hero__name"><span>Kamil</span><span>Kerimov</span></h1>
