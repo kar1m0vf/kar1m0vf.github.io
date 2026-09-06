@@ -22,10 +22,10 @@ export const projectWorlds: readonly ProjectWorld[] = [
     id: 'nar',
     index: '01',
     title: 'Nar Patisserie',
-    loopLabel: 'THE USER LOOP',
-    statement: 'From “I want cake” to a cart that survives refresh.',
+    loopLabel: 'A little attention to detail',
+    statement: 'Something sweet. A little easier to find.',
     description:
-      'A responsive React storefront built around one continuous shopping flow: discovery, search, filtering, product detail, favourites, and cart.',
+      'A patisserie storefront for discovering a favourite, finding the right cake, and picking up where you left off.',
     flow: ['Discover', 'Narrow', 'Choose', 'Save', 'Return'],
     decision:
       'State should follow intent. Favourites and cart quantities persist, so route changes and reloads do not erase the customer’s choices.',
@@ -47,10 +47,10 @@ export const projectWorlds: readonly ProjectWorld[] = [
     id: 'trendyol',
     index: '02',
     title: 'Trendyol Price Tracker',
-    loopLabel: 'THE SIGNAL LOOP',
-    statement: 'A product link goes in. A decision comes back.',
+    loopLabel: 'A little less busywork',
+    statement: 'Let the price come to you.',
     description:
-      'A Python service that remembers prices and decides when a change deserves attention.',
+      'Send a product link, choose a price, and let a Telegram bot keep an eye on it. Useful updates, with quiet hours when you need them.',
     flow: ['Link', 'Normalize', 'Remember', 'Check', 'Decide', 'Deliver'],
     decision:
       'I separated observation from interruption: background checks collect data; personal rules decide when the system should speak.',
@@ -68,9 +68,9 @@ export const projectWorlds: readonly ProjectWorld[] = [
       responsiveMedia('trendyol/logo', [560, 960], 'Price Tracker for Trendyol project logo', 'Project identity', 960, 960),
     ],
     observatory: {
-      title: 'The Signal Path',
-      instruction: 'Change the price. Watch the decision.',
-      sampleLabel: 'Illustrative check · real rules',
+      title: 'Try a price check',
+      instruction: 'Set your target. See what happens.',
+      sampleLabel: 'Interactive demo · illustrative prices',
       simulation: {
         currentPrice: 1099,
         previousPrice: 1159,
@@ -96,10 +96,10 @@ export const projectWorlds: readonly ProjectWorld[] = [
     id: 'blaster',
     index: '03',
     title: 'Blaster',
-    loopLabel: 'THE RUNTIME LOOP',
-    statement: 'The game was the fun part. Shipping it like software was the challenge.',
+    loopLabel: 'Blaster · A little room to play',
+    statement: 'I made a game. Your turn to play.',
     description:
-      'A Python/Pygame desktop application with menus, gameplay state, waves, boss phases, settings, persistence, tests, and a Windows release.',
+      'Dodge, shoot, and see how long you last. This short browser version is inspired by my original desktop game.',
     flow: ['Input', 'State', 'Wave', 'Boss', 'Retry', 'Persist'],
     decision:
       'One scaled 16:9 game surface keeps controls and layout consistent across desktop resolutions, while settings and highscores survive between runs.',

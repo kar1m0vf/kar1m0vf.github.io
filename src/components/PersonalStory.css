@@ -1,0 +1,41 @@
+.story-label { color: var(--blue-bright); font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; }
+.story-link { display: inline-flex; align-items: center; gap: 1rem; padding-block: .7rem; border-bottom: 1px solid var(--line-strong); font-size: .86rem; }
+.story-link svg { width: .85rem; height: .85rem; color: var(--blue-bright); transition: transform .25s; }
+.story-link:hover svg { transform: translate(3px,-3px); }
+.personal-intro { position: relative; overflow-x: clip; background: #07090b; }
+.personal-intro__sticky { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(2rem,5vw,5rem); padding-block: 5rem; }
+.personal-intro h2 { margin: 1.8rem 0; font: 400 clamp(3.8rem,6.5vw,7.5rem)/.96 var(--serif); letter-spacing: -.035em; color: var(--ink-bright); }
+.personal-intro h2 em { font-weight: 400; }
+.personal-intro__lead { max-width: 35rem; color: #b4b6b9; font-size: clamp(.95rem,1.35vw,1.15rem); }
+.perspectives { margin-top: clamp(2rem,4vw,4rem); }
+.perspectives button { display: flex; align-items: center; gap: 1.3rem; width: 100%; padding: 1.1rem 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: #8e969f; text-align: left; cursor: pointer; transition: color .3s,border-color .3s; }
+.perspectives button[aria-selected='true'],.perspectives button:hover { color: var(--ink-bright); border-color: #c0c6ce; }
+.perspectives button > span { font: 400 1.6rem var(--serif); }
+.perspectives strong { font: 400 clamp(1.5rem,2.6vw,2.6rem)/1.2 var(--serif); }
+.perspectives svg { margin-left: auto; flex-shrink: 0; width: 1rem; height: 1rem; }
+.personal-intro__scene { position: relative; min-width: 0; }
+.perspective-art { position: relative; height: clamp(20rem,37vw,36rem); perspective: 1000px; }
+.perspective-panel { position: relative; min-height: 12rem; padding: 2rem 1rem 0 12%; }
+.perspective-panel h3 { margin-bottom: .7rem; font: 400 clamp(1.4rem,2vw,2rem)/1.1 var(--serif); color: var(--ink-bright); }
+.perspective-panel p { max-width: 30rem; color: #abb1b9; font-size: .88rem; line-height: 1.65; }
+.perspective-panel .story-link { margin-top: 1rem; }
+@media (min-width:960px) and (min-height:650px) and (prefers-reduced-motion:no-preference) {
+  .personal-intro { height: 185svh; }
+  .personal-intro .personal-intro__sticky { position: sticky; top: 0; min-height: 100svh; padding-block: 3rem; }
+}
+@media(max-width:959px) {
+  .personal-intro__sticky { grid-template-columns: 1fr; gap: 2rem; }
+  .personal-intro__lead { max-width: 38rem; }
+  .personal-intro h2 { font-size: clamp(3.8rem,9vw,6rem); }
+  .perspectives strong { font-size: 2rem; }
+  .perspective-art { max-width: 34rem; height: 24rem; margin-inline: auto; }
+  .perspective-panel { padding: 1rem 0 0; min-height: 12rem; }
+  .perspective-panel p { max-width: 40rem; }
+}
+@media(max-width:540px) {
+  .personal-intro__sticky { padding-block: 4rem; }
+  .personal-intro h2 { font-size: 3.55rem; }
+  .perspectives strong { font-size: 1.65rem; }
+  .perspectives button { gap: 1rem; min-height: 66px; }
+  .perspective-art { height: 20rem; }
+}

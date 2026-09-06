@@ -183,6 +183,14 @@ const narSignalPoints = [
 function NarVisual({ project }: { project: ProjectWorld }) {
   const { playSound } = useSound();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [savedCake, setSavedCake] = useState(() => {
+    try { return localStorage.getItem('portfolio:nar-favourite:v1') === 'chocolate'; } catch { return false; }
+  });
+  const toggleCake = () => {
+    const next = !savedCake;
+    setSavedCake(next);
+    try { if (next) localStorage.setItem('portfolio:nar-favourite:v1', 'chocolate'); else localStorage.removeItem('portfolio:nar-favourite:v1'); } catch { /* The demo also works without storage. */ }
+  };
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const reduceMotion = useReducedMotion();
   const openerRef = useRef<HTMLButtonElement | null>(null);
@@ -223,8 +231,8 @@ function NarVisual({ project }: { project: ProjectWorld }) {
     <>
       <div className="nar-world" data-step={activeIndex}>
         <div className="nar-world__heading">
-          <span>The returning choice</span>
-          <i>Move through one real shopping flow</i>
+          <span>From first look to favourite</span>
+          <i>Explore the three screens</i>
         </div>
 
         <div className="nar-world__stage">
@@ -240,7 +248,7 @@ function NarVisual({ project }: { project: ProjectWorld }) {
           </svg>
 
           <div className="nar-world__story" aria-live="polite">
-            <span>Route {String(activeIndex + 1).padStart(2, '0')}</span>
+            <span>Step {String(activeIndex + 1).padStart(2, '0')}</span>
             <AnimatePresence initial={false} mode="wait">
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
@@ -307,8 +315,8 @@ function NarVisual({ project }: { project: ProjectWorld }) {
         </div>
 
         <div className="nar-world__truth">
-          <strong>A choice should survive the route.</strong>
-          <p>The interface changes. The visitor’s intent does not.</p>
+          <div><strong>Found a favourite?</strong><p>This small demo remembers your choice when you refresh.</p></div>
+          <button aria-pressed={savedCake} className="nar-save-choice" onClick={toggleCake} type="button"><span aria-hidden="true">{savedCake ? '♥' : '♡'}</span>{savedCake ? 'Chocolate cake saved' : 'Save chocolate cake'}</button>
         </div>
       </div>
 
@@ -338,10 +346,10 @@ function BlasterPoster({ media, onLoad }: { media: ProjectMedia; onLoad?: () => 
       />
       <span aria-hidden="true" className="blaster-runtime-poster__grid" />
       <div className="blaster-runtime-poster__copy">
-        <span>Browser transmission / 03</span>
-        <strong>Runtime standing by.</strong>
-        <p>The playable layer loads only when you reach it.</p>
-        {onLoad ? <button onClick={onLoad} type="button">Initialize micro run</button> : null}
+        <span>Play right here</span>
+        <strong>Ready when you are.</strong>
+        <p>A quick arcade break, inspired by Blaster.</p>
+        {onLoad ? <button onClick={onLoad} type="button">Load the game</button> : null}
       </div>
     </div>
   );
@@ -396,10 +404,10 @@ function BlasterVisual({
         <div className="blaster-evidence">
           <header className="blaster-evidence__heading">
             <div>
-              <span>Original application / evidence</span>
-              <strong>The browser run is a doorway, not a replacement.</strong>
+              <span>The original Blaster</span>
+              <strong>There’s a bigger game behind this one.</strong>
             </div>
-            <p>Open the real Pygame frames behind the interaction.</p>
+            <p>Explore the original desktop game: waves, bosses, and a Windows release.</p>
           </header>
           <div className="blaster-evidence__grid">
             {project.media.map((media, index) => (

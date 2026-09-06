@@ -6,8 +6,8 @@ test.describe('The living blue thread', () => {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto('/');
     await expect(page.locator('.site-loader')).toHaveCount(0, { timeout: 20_000 });
-    await expect(page.locator('.thread-sculpture')).toHaveAttribute('data-renderer', 'ready');
-    const canvas = page.locator('.thread-sculpture canvas');
+    await expect(page.locator('#top .thread-sculpture')).toHaveAttribute('data-renderer', 'ready');
+    const canvas = page.locator('#top .thread-sculpture canvas');
     await expect(canvas).toHaveAttribute('data-phase', 'knot');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
 
@@ -40,8 +40,8 @@ test.describe('The living blue thread', () => {
       } as typeof original;
     });
     await page.goto('/');
-    await expect(page.locator('.thread-sculpture')).toHaveAttribute('data-renderer', 'fallback', { timeout: 20_000 });
-    await expect(page.locator('.thread-sculpture__fallback')).toBeVisible();
+    await expect(page.locator('#top .thread-sculpture')).toHaveAttribute('data-renderer', 'fallback', { timeout: 20_000 });
+    await expect(page.locator('#top .thread-sculpture__fallback')).toBeVisible();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.getByRole('button', { name: 'My perspective' }).click();
     await expect(page.getByRole('heading', { name: /More than one dimension/ })).toBeVisible();

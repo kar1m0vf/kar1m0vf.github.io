@@ -1,0 +1,29 @@
+.life-story { display: grid; grid-template-columns: 1fr 1fr; position: relative; background: #06090d; }
+.life-story__place { position: sticky; top: 0; height: 100svh; min-height: 40rem; overflow: hidden; }
+.life-story__place picture { position: absolute; inset: -6% 0; width: 100%; height: 112%; }
+.life-story__place img { width: 100%; height: 100%; object-fit: cover; object-position: 43% center; }
+.life-story__place::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg,#06090d 0%,#06090d00 40%,#06090dba 90%),linear-gradient(90deg,transparent 70%,#06090d); }
+.life-story__title { position: relative; z-index: 1; padding: clamp(4rem,7vw,7rem) var(--gutter); }
+.life-story h2 { margin: 2rem 0; font: 400 clamp(3.5rem,5.6vw,6rem)/.97 var(--serif); letter-spacing: -.04em; color: var(--ink-bright); }
+.life-story__title > p:last-child { color: #c0c9d7; font-size: .95rem; }
+.life-story__location { position: absolute; z-index: 1; bottom: 3rem; left: var(--gutter); color: #a8bdd5; font-size: .62rem; letter-spacing: .13em; text-transform: uppercase; }
+.life-story__moments { padding: 6rem var(--gutter) 6rem clamp(2.5rem,5vw,5rem); }
+.life-story__moments ol { border-left: 1px solid #4297ff80; }
+.life-story__moments li { position: relative; padding: 0 0 3rem 2rem; margin-bottom: 2rem; }
+.life-story__moments li::before { content: ''; position: absolute; left: -4px; top: .45rem; width: 7px; height: 7px; border-radius: 50%; background: #5aa7ff; box-shadow: 0 0 18px #5aa7ff; }
+.life-story__number { display: block; color: var(--blue-bright); font-size: .75rem; margin-bottom: .85rem; }
+.life-story__moments h3 { font: 400 clamp(2rem,3vw,3.2rem)/1.05 var(--serif); letter-spacing: -.025em; margin-bottom: 1.2rem; color: var(--ink-bright); }
+.life-story__moments p { color: #b5becb; font-size: .97rem; line-height: 1.7; max-width: 31rem; }
+.life-story__moments small { display: block; margin-top: 1.6rem; padding-top: 1rem; border-top: 1px solid var(--line); color: #8694a6; font-size: .7rem; }
+.life-story__note { padding-left: 2rem; }
+.life-story__note > span { color: var(--blue-bright); font-size: .68rem; letter-spacing: .14em; text-transform: uppercase; }
+.life-story__note p { margin: 1rem 0; }
+@media(max-width:959px) {
+  .life-story { grid-template-columns: 1fr; }
+  .life-story__place { position: relative; min-height: 32rem; height: 75svh; }
+  .life-story h2 { font-size: clamp(3.8rem,9vw,6rem); }
+  .life-story__moments { padding: 2rem var(--gutter) 4rem; }
+  .life-story__moments li { padding-left: 1.5rem; }
+  .life-story__moments h3 { font-size: 2.6rem; }
+  .life-story__note { padding-left: 1.5rem; }
+}

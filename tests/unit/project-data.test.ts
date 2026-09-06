@@ -4,11 +4,7 @@ describe('portfolio project data', () => {
   it('keeps the three product loops in their approved order', () => {
     expect(projectWorlds.map((project) => project.id)).toEqual(['nar', 'trendyol', 'blaster']);
     expect(projectWorlds.map((project) => project.index)).toEqual(['01', '02', '03']);
-    expect(projectWorlds.map((project) => project.loopLabel)).toEqual([
-      'THE USER LOOP',
-      'THE SIGNAL LOOP',
-      'THE RUNTIME LOOP',
-    ]);
+
   });
 
   it('provides real media, technologies, and external destinations for every project', () => {

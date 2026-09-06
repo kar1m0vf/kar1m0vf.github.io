@@ -8,12 +8,12 @@ import { SoundProvider } from './audio/SoundProvider';
 import './styles.css';
 import './components/SiteLoader.css';
 import './components/KControl.css';
-import './components/MethodJunction.css';
 import './components/NarWorld.css';
-import './components/NarTrackerHandoff.css';
 import './components/PriceObservatory.css';
 import './components/BlasterWorld.css';
 import './components/SignalIdentity.css';
+import './components/PortfolioEvolution.css';
+import './components/thread/ContinuousStory.css';
 import { cleanupLegacyRuntime } from './utils/legacyRuntime';
 
 const root = document.getElementById('root');

@@ -3,8 +3,6 @@ import { motion, useReducedMotion } from 'motion/react';
 import type { ProjectWorld, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { BuilderLayerPanel } from './BuilderMode';
 import { ArrowIcon, ArrowRightIcon, GitHubIcon, TelegramIcon } from './Icons';
-import { LoopTrace } from './LoopTrace';
-import { NarTrackerHandoff } from './NarTrackerHandoff';
 import { ProjectVisual } from './ProjectVisuals';
 
 interface ProjectChapterProps {
@@ -25,9 +23,6 @@ function ProjectChapterComponent({
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement | null>(null);
   const [builderLayer, setBuilderLayer] = useState(0);
-  const initialDeepLink = useRef(
-    typeof window !== 'undefined' && window.location.hash === `#${project.id}`,
-  ).current;
 
   return (
     <section
@@ -37,10 +32,6 @@ function ProjectChapterComponent({
       id={project.id}
       ref={sectionRef}
     >
-      <LoopTrace variant={project.theme} />
-      {project.theme === 'trendyol' && !reduceMotion && !initialDeepLink ? (
-        <NarTrackerHandoff targetRef={sectionRef} />
-      ) : null}
       <div className="section-shell project__inner">
         <motion.header
           className="project__header"
@@ -50,22 +41,14 @@ function ProjectChapterComponent({
         >
           <div className="project__identity">
             <p className="project__kicker">{project.index} · {project.loopLabel}</p>
-            <h2>{project.title}</h2>
+            <h2 className={project.theme === 'blaster' ? 'sr-only' : undefined}>{project.title}</h2>
+            {project.theme === 'blaster' ? <p className="arcade-headline">A little less<br /><em>serious.</em></p> : null}
           </div>
           <div className="project__thesis">
             <p className="project__statement">{project.statement}</p>
             <p className="project__description">{project.description}</p>
           </div>
         </motion.header>
-
-        <ol aria-label={`${project.title} loop`} className="project__flow" data-builder-zone="flow">
-          {project.flow.map((step, index) => (
-            <li key={step}>
-              <span>{step}</span>
-              {index < project.flow.length - 1 ? <ArrowRightIcon /> : null}
-            </li>
-          ))}
-        </ol>
 
         <div className="project__experience">
           <div className="project__visual-focus" data-builder-zone="system">
@@ -80,35 +63,47 @@ function ProjectChapterComponent({
           {builderMode ? <BuilderLayerPanel onLayerChange={setBuilderLayer} projectId={project.id} /> : null}
         </div>
 
-        <div className="project__notes" data-builder-zone="output">
-          <div className="project__decision">
-            <span>Builder’s note</span>
-            <blockquote>{project.decision}</blockquote>
-            {project.releaseNote ? <p>{project.releaseNote}</p> : null}
+        <div className="project__after">
+          <div className="project__actions">
+            {project.links.map((link) => (
+              <a
+                className={`project-link project-link--${link.kind}`}
+                href={link.href}
+                key={link.href}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {project.theme === 'trendyol' && link.label.includes('bot') ? <TelegramIcon /> : null}
+                {link.label.includes('repository') ? <GitHubIcon /> : null}
+                <span>{link.label}</span>
+                <ArrowIcon />
+              </a>
+            ))}
           </div>
-          <div className="project__meta">
-            <dl>
-              <div><dt>Ownership</dt><dd>{project.role}</dd></div>
-              <div><dt>Timeline</dt><dd>{project.year}</dd></div>
-              <div><dt>Built with</dt><dd>{project.stack.join(' · ')}</dd></div>
-            </dl>
-            <div className="project__actions">
-              {project.links.map((link) => (
-                <a
-                  className={`project-link project-link--${link.kind}`}
-                  href={link.href}
-                  key={link.href}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {project.theme === 'trendyol' && link.label.includes('bot') ? <TelegramIcon /> : null}
-                  {link.label.includes('repository') ? <GitHubIcon /> : null}
-                  <span>{link.label}</span>
-                  <ArrowIcon />
-                </a>
+          <details className="project-details" open={builderMode || undefined}>
+            <summary>See how I built it<span aria-hidden="true">+</span></summary>
+            <ol aria-label={`${project.title} loop`} className="project__flow" data-builder-zone="flow">
+              {project.flow.map((step, index) => (
+                <li key={step}>
+                  <span>{step}</span>
+                  {index < project.flow.length - 1 ? <ArrowRightIcon /> : null}
+                </li>
               ))}
+            </ol>
+            <div className="project__notes" data-builder-zone="output">
+              <div className="project__decision">
+                <span>A decision that mattered</span>
+                <blockquote>{project.decision}</blockquote>
+                {project.releaseNote ? <p>{project.releaseNote}</p> : null}
+              </div>
+              <div className="project__meta">
+                <dl>
+                  <div><dt>My part</dt><dd>{project.role}</dd></div>
+                  <div><dt>Built with</dt><dd>{project.stack.join(' · ')}</dd></div>
+                </dl>
+              </div>
             </div>
-          </div>
+          </details>
         </div>
       </div>
     </section>

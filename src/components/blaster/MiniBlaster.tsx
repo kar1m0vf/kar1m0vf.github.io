@@ -66,6 +66,13 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
   const activePointerRef = useRef<number | null>(null);
   const pressedKeysRef = useRef(new Set<string>());
   const lastHullRef = useRef(MINI_BLASTER_MAX_HULL);
+  const [bestScore, setBestScore] = useState(() => {
+    try {
+      const saved = Number(localStorage.getItem('portfolio:blaster-best:v1'));
+      return Number.isSafeInteger(saved) && saved > 0 ? saved : 0;
+    } catch { return 0; }
+  });
+  const bestScoreRef = useRef(bestScore);
   const [phase, setPhase] = useState<GamePhase>('ready');
   const [hud, setHud] = useState(() => getHudSnapshot(gameRef.current));
   const [announcement, setAnnouncement] = useState('Mini Blaster ready.');
@@ -126,6 +133,11 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
     }
 
     if (result) {
+      if (gameRef.current.score > bestScoreRef.current) {
+        bestScoreRef.current = gameRef.current.score;
+        setBestScore(gameRef.current.score);
+        try { localStorage.setItem('portfolio:blaster-best:v1', String(gameRef.current.score)); } catch { /* Keep the best score for this visit. */ }
+      }
       clearInput();
       setGamePhase(result);
       playSound(result === 'complete' ? 'complete' : 'hit');
@@ -221,7 +233,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
     playSound('select');
     setAnnouncement('Micro run resumed.');
     beginLoop();
-    window.requestAnimationFrame(() => arenaRef.current?.focus({ preventScroll: true }));
+    arenaRef.current?.focus({ preventScroll: true });
   }, [beginLoop, clearInput, playSound, setGamePhase]);
 
   const restartRun = useCallback(() => {
@@ -398,15 +410,14 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
     >
       <header className="mini-blaster__heading">
         <div>
-          <span>Browser transmission / 03</span>
+          <span>Play right here</span>
           <h3 id={headingId}>Blaster <i>/</i> Micro run</h3>
         </div>
-        <p>15 seconds. One input. The whole runtime.</p>
       </header>
 
       {showInbound ? (
         <p className="mini-blaster__inbound">
-          <span>Inbound signal</span>
+          <span>Your last price check</span>
           <strong>{inboundSignal}</strong>
         </p>
       ) : null}
@@ -416,6 +427,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
           <span>Score</span>
           <strong>{formatScore(hud.score)}</strong>
         </div>
+        <div className="mini-blaster__metric mini-blaster__metric--best"><span>Best</span><strong>{formatScore(bestScore)}</strong></div>
         <div className="mini-blaster__metric mini-blaster__metric--hull">
           <span>Hull</span>
           <strong aria-label={`${hud.hull} of ${MINI_BLASTER_MAX_HULL} hull points`}>{hud.hull}</strong>
@@ -456,6 +468,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
         tabIndex={0}
       >
         <canvas aria-hidden="true" className="mini-blaster__canvas" ref={canvasRef} />
+        {phase === 'ready' ? <div aria-hidden="true" className="mini-blaster__attract"><div /><svg fill="none" viewBox="0 0 1000 500" preserveAspectRatio="none"><path d="M-40 -30C60 210 200 80 420 210C520 270 560 220 500 260" /></svg><img alt="" src="/media/blaster/mini/player.webp" /></div> : null}
         <span aria-hidden="true" className="mini-blaster__scanlines" />
         <span aria-hidden="true" className="mini-blaster__wave">{hud.wave}</span>
 
@@ -463,22 +476,22 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
           <div className="mini-blaster__overlay">
             {phase === 'ready' ? (
               <>
-                <span>Runtime ready</span>
-                <strong>Survive the signal.</strong>
+                <span>15 seconds. Your best shot.</span>
+                <strong>Ready when you are.</strong>
                 <p>Drag or use WASD. Your weapon fires automatically.</p>
-                <button onClick={() => void startRun()} type="button">Launch run</button>
+                <button onClick={() => void startRun()} type="button">Play 15 seconds</button>
               </>
             ) : null}
             {phase === 'loading' ? (
               <>
                 <span className="mini-blaster__loading" />
-                <strong>Loading runtime</strong>
-                <p>Preparing the real game-inspired assets.</p>
+                <strong>Loading the game</strong>
+                <p>Getting the ship ready.</p>
               </>
             ) : null}
             {phase === 'paused' ? (
               <>
-                <span>Runtime held</span>
+                <span>Take your time</span>
                 <strong>Paused.</strong>
                 <p>Your position and score are preserved.</p>
                 <button onClick={resumeRun} type="button">Resume</button>
@@ -488,7 +501,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
               <>
                 <span>Run complete</span>
                 <strong>{formatScore(hud.score)} points.</strong>
-                <p>The input survived every state in the loop.</p>
+                <p>Nicely done. Think you can beat that?</p>
                 <button onClick={restartRun} type="button">Run again</button>
               </>
             ) : null}
@@ -496,14 +509,14 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
               <>
                 <span>Signal lost</span>
                 <strong>Ship down.</strong>
-                <p>The runtime is ready for another attempt.</p>
+                <p>One more try?</p>
                 <button onClick={restartRun} type="button">Retry</button>
               </>
             ) : null}
             {phase === 'error' ? (
               <>
-                <span>Runtime unavailable</span>
-                <strong>Assets did not arrive.</strong>
+                <span>Couldn’t load the game</span>
+                <strong>Let’s try that again.</strong>
                 <p>{loadError}</p>
                 <button onClick={() => void startRun()} type="button">Try again</button>
               </>
@@ -529,7 +542,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
       </div>
 
       <footer className="mini-blaster__footer">
-        <span>Browser run inspired by the real Pygame systems.</span>
+        <span>A short browser game inspired by my original Blaster.</span>
         {reducedEffects ? <strong>Reduced visual effects</strong> : null}
       </footer>
 

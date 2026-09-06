@@ -2148,12 +2148,14 @@ html[data-experience-section='contact'] .experience-rail {
     visibility: hidden;
     opacity: 0;
     background: rgb(5 7 9 / 97%);
+    pointer-events: none;
     transition: opacity 200ms ease, visibility 200ms ease;
   }
 
   .site-header.is-open .site-nav {
     visibility: visible;
     opacity: 1;
+    pointer-events: auto;
   }
 
   .site-nav a {

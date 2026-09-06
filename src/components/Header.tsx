@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowIcon } from './Icons';
 
 const navigation = [
+  { label: 'About', href: '#method' },
   { label: 'Work', href: '#work' },
-  { label: 'Junction', href: '#method' },
   { label: 'Journey', href: '#journey' },
   { label: 'Contact', href: '#contact' },
 ] as const;

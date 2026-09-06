@@ -1,0 +1,27 @@
+.closing-story { position: relative; isolation: isolate; overflow: clip; background: #050709; }
+.closing-story__sculpture { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.closing-story__inner { padding-top: clamp(4rem,8vw,8rem); padding-bottom: 2rem; min-height: 100svh; }
+.closing-story h2 { margin: 3rem 0 2rem; font: 400 clamp(4rem,7.5vw,8.5rem)/.94 var(--serif); letter-spacing: -.04em; color: var(--ink-bright); }
+.closing-story h2 em { color: #a5cdff; }
+.closing-story__invitation { color: #b3bdcb; line-height: 1.7; }
+.closing-story__actions { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: center; margin-top: 2.2rem; }
+.closing-story__primary { display: inline-flex; align-items: center; justify-content: space-between; gap: 3rem; padding: 1.1rem 1.5rem; background: #4b9cff; color: #061225; font-weight: 700; }
+.closing-story__primary svg { width: 1rem; height: 1rem; }
+.closing-story__primary:hover { background: #8bbfff; }
+.closing-story__profiles { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 4rem; }
+.closing-story__profiles a { display: inline-flex; align-items: center; gap: .65rem; font-size: .8rem; color: #b9c7d8; padding-block: .6rem; }
+.closing-story__profiles svg { width: 1rem; height: 1rem; }
+.closing-story__profiles a > svg:last-child { width: .7rem; }
+.closing-story__foot { display: flex; justify-content: space-between; gap: 1rem; margin-top: 5rem; padding-top: 1.5rem; border-top: 1px solid #47617d60; font-size: .7rem; color: #9babbe; }
+.closing-story__foot a { display: inline-flex; align-items: center; gap: .6rem; }
+.closing-story__foot svg { width: .7rem; }
+.closing-story .thread-sculpture { height: 100%; }
+@media(max-width:767px) {
+  .closing-story__sculpture { inset: 0 0 auto; height: 24rem; mask-image: linear-gradient(to bottom,transparent,#000 12%,#000 82%,transparent); }
+  .closing-story .thread-sculpture__fallback { top: 0; height: 100%; }
+  .closing-story__inner { padding-top: 23rem; min-height: auto; }
+  .closing-story h2 { margin-top: 1.5rem; font-size: clamp(3.7rem,12vw,6rem); }
+  .closing-story__profiles { gap: 1.2rem; margin-top: 3rem; }
+  .closing-story__foot { margin-top: 3rem; padding-bottom: 4rem; flex-wrap: wrap; }
+  html[data-experience-section='contact'] .k-control__trigger { left: auto; right: var(--gutter); }
+}

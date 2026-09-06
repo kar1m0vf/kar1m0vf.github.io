@@ -1,7 +1,8 @@
-import { useCallback, useRef, useState } from 'react';
+import { Fragment, useCallback, useRef, useState } from 'react';
 import type { TrackerHandoffState, TrackerSignalResult } from '../types';
 import { projectWorlds } from '../data/projects';
 import { ProjectChapter } from './ProjectChapter';
+import { ThreadPassage } from './thread/ThreadPassage';
 
 const handoffStorageKey = 'portfolio:tracker-blaster:v1';
 const idleHandoff: TrackerHandoffState = { status: 'idle' };
@@ -82,15 +83,18 @@ export function WorkSequence({ builderMode }: WorkSequenceProps) {
 
   return (
     <div className="work" id="work">
+      <div className="work-intro section-shell"><p>A few things I’ve put into the world.</p><span>Selected work · 01—03</span></div>
       {projectWorlds.map((project) => (
+        <Fragment key={project.id}>
+        {project.id === 'trendyol' ? <ThreadPassage /> : null}
         <ProjectChapter
           builderMode={builderMode}
           handoff={project.theme === 'nar' ? null : handoff}
-          key={project.id}
           onHandoffReset={project.theme === 'trendyol' ? resetHandoff : null}
           onHandoffResolved={project.theme === 'trendyol' ? storeHandoff : null}
           project={project}
         />
+        </Fragment>
       ))}
     </div>
   );

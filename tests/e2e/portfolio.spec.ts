@@ -41,8 +41,8 @@ test.describe('The Whole Loop portfolio', () => {
     await expect(page).toHaveURL(/#journey$/);
     const journey = page.locator('#journey');
     await expect(journey).toBeInViewport();
-    await expect(journey.getByRole('heading', { level: 2, name: /Kamil Kerimov’s software journey/i })).toBeAttached();
-    await expect(journey.getByText('A software path, built from Baku.', { exact: true })).toBeVisible();
+    await expect(journey.getByRole('heading', { level: 2, name: /Built in Baku.*Still becoming/i })).toBeAttached();
+    await expect(journey.getByRole('heading', { name: /Built in Baku/ })).toBeVisible();
 
     expect(consoleErrors).toEqual([]);
   });
@@ -88,7 +88,7 @@ test.describe('The Whole Loop portfolio', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Kamil Kerimov' })).toBeVisible();
     await expect(page.locator('#method').getByRole('heading', {
       level: 2,
-      name: /The junction.*One signal.*Three ways to build/i,
+      name: /Curiosity takes.*many shapes/i,
     })).toBeAttached();
 
     const blaster = page.locator('#blaster');
@@ -108,7 +108,7 @@ test.describe('The Whole Loop portfolio', () => {
       /I turn ideas into useful experiences\. Curious about people, design, and what technology can make possible\./i,
     )).toBeVisible();
     await expect(page.locator('#method').getByRole('heading', {
-      name: /The junction.*One signal.*Three ways to build/i,
+      name: /Curiosity takes.*many shapes/i,
     })).toBeAttached();
     await expect(page.locator('#contact').getByRole('link', { name: /Email Kamil Kerimov/i })).toBeAttached();
   });

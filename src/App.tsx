@@ -6,10 +6,10 @@ import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { Journey } from './components/Journey';
 import { KControl } from './components/KControl';
-import { LoopTrace } from './components/LoopTrace';
 import { Method } from './components/Method';
 import { SiteLoader } from './components/SiteLoader';
 import { WorkSequence } from './components/WorkSequence';
+import { MiddleThread } from './components/thread/MiddleThread';
 import { siteSections } from './data/siteSections';
 import { useActiveSection } from './hooks/useActiveSection';
 
@@ -20,6 +20,15 @@ export default function App() {
   const activeSectionId = useActiveSection(isLoading);
   const activeSection = siteSections.find((section) => section.id === activeSectionId) ?? siteSections[0];
   const handleHeroReady = useCallback(() => setHeroReady(true), []);
+
+  useEffect(() => {
+    if (isLoading || !window.location.hash) return;
+    // The initial fragment may be resolved before React mounts or while the page is inert.
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [isLoading]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -57,28 +66,12 @@ export default function App() {
         />
         <main id="main-content">
           <Hero onReady={handleHeroReady} />
-          <Method />
-          <WorkSequence builderMode={builderMode} />
-          <div className="finale">
-            <LoopTrace className="finale__trace" variant="finale" />
-            <picture aria-hidden="true" className="finale__backdrop">
-              <source
-                srcSet="/media/journey/baku-1280.avif 1280w, /media/journey/baku-1920.avif 1672w"
-                type="image/avif"
-              />
-              <img
-                alt=""
-                decoding="async"
-                height="941"
-                loading="lazy"
-                src="/media/journey/baku-1920.webp"
-                srcSet="/media/journey/baku-1280.webp 1280w, /media/journey/baku-1920.webp 1672w"
-                width="1672"
-              />
-            </picture>
+          <MiddleThread>
+            <Method />
+            <WorkSequence builderMode={builderMode} />
             <Journey />
-            <Contact />
-          </div>
+          </MiddleThread>
+          <Contact />
         </main>
       </div>
     </>

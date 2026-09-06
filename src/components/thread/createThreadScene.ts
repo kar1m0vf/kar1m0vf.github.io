@@ -1,6 +1,6 @@
 import {
   AdditiveBlending, BufferGeometry, Color, Curve, Float32BufferAttribute, Group,
-  Mesh, MeshBasicMaterial, MeshPhysicalMaterial, PerspectiveCamera, PMREMGenerator,
+  Mesh, MeshBasicMaterial, PerspectiveCamera, PMREMGenerator,
   PointLight, Points, PointsMaterial, Scene, SphereGeometry, TubeGeometry, Vector2,
   Vector3, WebGLRenderer,
 } from 'three';
@@ -9,8 +9,10 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { createThreadCore, createThreadGlass } from './threadMaterial';
 
 interface SceneOptions {
+  framing: 'intro' | 'closing';
   getProgress: () => number;
   reduced: boolean;
   onUnavailable: () => void;
@@ -87,18 +89,13 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   const group = new Group();
   scene.add(group);
   const cable = createCable(0.145, mobile() ? 220 : 320, 16);
-  const glass = new MeshPhysicalMaterial({
-    color: new Color('#1665bf'), metalness: 0.48, roughness: 0.115,
-    clearcoat: 1, clearcoatRoughness: 0.06, transmission: 0.2,
-    thickness: 0.55, ior: 1.46, envMapIntensity: 3.1,
-    emissive: new Color('#0642ad'), emissiveIntensity: 0.27,
-  });
+  const glass = createThreadGlass();
   const shell = new Mesh(cable.geometry, glass);
   shell.frustumCulled = false;
   group.add(shell);
 
   const core = createCable(0.022, mobile() ? 220 : 320, 8);
-  const coreMaterial = new MeshBasicMaterial({ color: new Color('#6ebeff').multiplyScalar(3.4), toneMapped: false });
+  const coreMaterial = createThreadCore();
   const filament = new Mesh(core.geometry, coreMaterial);
   filament.frustumCulled = false;
   group.add(filament);
@@ -175,8 +172,9 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     const phone = width < 768;
     const viewWidth = 2 * 9.3 * Math.tan(19 * Math.PI / 180) * camera.aspect;
     const initialX = phone ? 0.05 : viewWidth * 0.245;
-    group.position.set(mix(initialX, 0, open) + unspool * 1.2, mix(phone ? 0.45 : 0.1, 0.12, open) - unspool * 1.2, 0);
-    const initialScale = phone ? 0.5 : Math.min(1.55, viewWidth * 0.092);
+    const closingPhone = phone && options.framing === 'closing';
+    group.position.set(mix(initialX, 0, open) + unspool * 1.2, mix(closingPhone ? 0 : phone ? 0.45 : 0.1, 0.12, open) - unspool * 1.2, 0);
+    const initialScale = phone ? (closingPhone ? 0.9 : 0.5) : Math.min(1.55, viewWidth * 0.092);
     const scale = mix(initialScale, phone ? 1.02 : 1.3, open) + approach * 0.58 - unspool * 0.12;
     group.scale.setScalar(scale);
     group.rotation.set(
@@ -231,7 +229,12 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   };
   const pointerMove = (event: PointerEvent) => {
     if (event.pointerType !== 'mouse' || options.reduced) return;
-    pointer.set((event.clientX / width - 0.5) * 2, (event.clientY / height - 0.5) * 2);
+    const bounds = host.getBoundingClientRect();
+    if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
+      pointer.set(0, 0);
+      return;
+    }
+    pointer.set(((event.clientX - bounds.left) / width - 0.5) * 2, ((event.clientY - bounds.top) / height - 0.5) * 2);
   };
   const pointerLeave = () => pointer.set(0, 0);
   const visibility = () => {

@@ -40,8 +40,8 @@ export const siteSections = [
     href: '#method',
     id: 'method',
     index: '02',
-    keywords: ['method', 'junction', 'whole loop'],
-    label: 'Junction',
+    keywords: ['about', 'method', 'curiosity', 'kamil'],
+    label: 'About',
     theme: 'blue',
   },
   {

@@ -23,12 +23,13 @@ export function PriceObservatory({
   const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const [currentPrice, setCurrentPrice] = useState(config.simulation.currentPrice);
+  const [targetPrice, setTargetPrice] = useState(config.simulation.targetPrice);
   const [quietHours, setQuietHours] = useState(true);
   const [position, setPosition] = useState(2);
   const [selectedGate, setSelectedGate] = useState(2);
   const [running, setRunning] = useState(false);
 
-  const targetMatched = currentPrice <= config.simulation.targetPrice;
+  const targetMatched = currentPrice <= targetPrice;
   const stopPosition = targetMatched ? (quietHours ? 2 : 3) : 1;
   const outcomeKey: TrackerSignalResult['outcome'] = !targetMatched
     ? 'memory'
@@ -73,19 +74,19 @@ export function PriceObservatory({
   const outcome = !targetMatched
     ? {
         key: 'memory',
-        title: 'Stored, not sent.',
-        reason: `${formatPrice(currentPrice)} is still above your ${formatPrice(config.simulation.targetPrice)} target.`,
+        title: 'Still waiting for your price.',
+        reason: `${formatPrice(currentPrice)} is still above your ${formatPrice(targetPrice)} target.`,
       }
     : quietHours
       ? {
           key: 'held',
-          title: 'Matched. Held until 07:00.',
+          title: 'Good price. We’ll tell you at 07:00.',
           reason: `The target is crossed at ${config.simulation.time}, inside quiet hours.`,
         }
       : {
           key: 'released',
-          title: 'Matched. One useful alert.',
-          reason: 'The rule is true and the attention gate is open.',
+          title: 'Your price is here.',
+          reason: 'You would receive one price alert in Telegram.',
         };
 
   const runSignal = () => {
@@ -141,18 +142,18 @@ export function PriceObservatory({
             <span aria-hidden="true" className="signal-world__beacon" />
             <p>
               <small>{config.sampleLabel}</small>
-              <strong>One check. Three decisions.</strong>
+              <strong>A better price. Without checking all day.</strong>
             </p>
           </div>
           <button disabled={running || handoffStatus === 'pending'} onClick={runSignal} type="button">
             <span>
               {running
-                ? 'Signal moving'
+                ? 'Checking…'
                 : handoffStatus === 'pending'
-                  ? 'Decision armed'
+                  ? 'Ready'
                   : handoffStatus === 'settled'
-                    ? 'Run another signal'
-                    : 'Run signal'}
+                    ? 'Check again'
+                    : 'Try this price'}
             </span>
             <ArrowRightIcon />
           </button>
@@ -177,10 +178,11 @@ export function PriceObservatory({
             />
           </label>
 
-          <div className="signal-world__target">
-            <span>Your target</span>
-            <strong>{formatPrice(config.simulation.targetPrice)}</strong>
-          </div>
+          <label className="signal-world__target price-target-control">
+            <span>Your target <strong>{formatPrice(targetPrice)}</strong></span>
+            <input aria-label="Your target price" disabled={running} max={config.simulation.max} min={config.simulation.min} step={config.simulation.step} type="range" value={targetPrice}
+              onChange={(event) => { setTargetPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1); }} />
+          </label>
 
           <button
             aria-pressed={quietHours}
@@ -199,6 +201,14 @@ export function PriceObservatory({
           </button>
         </div>
 
+        <div className="price-history-preview">
+          <div><span>Illustrative price history</span><strong>{formatPrice(currentPrice)}</strong></div>
+          <svg aria-label="Illustrative prices over seven checks" role="img" viewBox="0 0 700 140" preserveAspectRatio="none">
+            <title>Illustrative prices over seven checks</title>
+            <path className="price-history-preview__target" d={`M0 ${130 - (targetPrice - config.simulation.min) / (config.simulation.max - config.simulation.min) * 120}H700`} />
+            <motion.path animate={{ d: [1250, 1210, 1260, 1170, 1190, config.simulation.previousPrice, currentPrice].map((price, index) => `${index ? 'L' : 'M'}${index * 116.66},${130 - (price - config.simulation.min) / (config.simulation.max - config.simulation.min) * 120}`).join(' ') }} transition={{ duration: reduceMotion ? 0 : .25 }} />
+          </svg><span className="price-history-preview__caption">The dashed line is your target.</span>
+        </div>
         <div className="signal-world__corridor">
           <div aria-hidden="true" className="signal-world__track" />
           <div className="signal-world__input">
@@ -228,7 +238,7 @@ export function PriceObservatory({
                 <p>{gate.detail}</p>
                 <em>
                   {gate.id === 'memory' ? 'History +1' : null}
-                  {gate.id === 'rule' ? `${formatPrice(currentPrice)} ${targetMatched ? '≤' : '>'} ${formatPrice(config.simulation.targetPrice)}` : null}
+                  {gate.id === 'rule' ? `${formatPrice(currentPrice)} ${targetMatched ? '≤' : '>'} ${formatPrice(targetPrice)}` : null}
                   {gate.id === 'attention' ? `${config.simulation.time} · ${quietHours ? 'wait' : 'open'}` : null}
                 </em>
               </li>
@@ -270,6 +280,7 @@ export function PriceObservatory({
             initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             key={`${outcome.key}-${currentPrice}-${quietHours}`}
           >
+            <span className="price-notice-label">Telegram preview · no real message is sent</span>
             <strong>{outcome.title}</strong>
             <p>{outcome.reason}</p>
             {handoffStatus === 'pending' ? (
