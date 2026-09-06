@@ -174,12 +174,6 @@ const narStages = [
   },
 ] as const;
 
-const narSignalPoints = [
-  { x: 116, y: 88 },
-  { x: 500, y: 74 },
-  { x: 884, y: 88 },
-] as const;
-
 function NarVisual({ project }: { project: ProjectWorld }) {
   const { playSound } = useSound();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -197,9 +191,7 @@ function NarVisual({ project }: { project: ProjectWorld }) {
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const activeMedia = project.media[activeIndex];
   const activeStage = narStages[activeIndex];
-  const signalPoint = narSignalPoints[activeIndex];
-
-  if (!activeMedia || !activeStage || !signalPoint || project.media.length < narStages.length) return null;
+  if (!activeMedia || !activeStage || project.media.length < narStages.length) return null;
 
   const selectStage = (nextIndex: number, focus = false) => {
     const normalized = (nextIndex + narStages.length) % narStages.length;
@@ -229,51 +221,16 @@ function NarVisual({ project }: { project: ProjectWorld }) {
 
   return (
     <>
-      <div className="nar-world" data-step={activeIndex}>
-        <div className="nar-world__heading">
-          <span>From first look to favourite</span>
-          <i>Explore the three screens</i>
-        </div>
-
+      <div className="nar-world" data-saved={savedCake} data-step={activeIndex}>
         <div className="nar-world__stage">
-          <svg aria-hidden="true" className="nar-world__ribbon" preserveAspectRatio="none" viewBox="0 0 1000 180">
-            <path d="M-24 126 C154 18 286 154 480 80 C666 8 798 34 1024 126" pathLength="1" />
-            <motion.g
-              animate={{ x: signalPoint.x, y: signalPoint.y }}
-              initial={{ x: narSignalPoints[0].x, y: narSignalPoints[0].y }}
-              transition={{ duration: reduceMotion ? 0 : 0.58, ease: [0.22, 1, 0.36, 1] }}
-            >
-              <circle cx="0" cy="0" r="7" />
-            </motion.g>
-          </svg>
-
-          <div className="nar-world__story" aria-live="polite">
-            <span>Step {String(activeIndex + 1).padStart(2, '0')}</span>
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -10 }}
-                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                key={activeStage.label}
-              >
-                <strong>{activeStage.headline}</strong>
-                <p>{activeStage.detail}</p>
-              </motion.div>
-            </AnimatePresence>
-            <div className="nar-world__memory" aria-label="State retained across routes">
-              <span><i aria-hidden="true">♥</i> Favourites kept</span>
-              <span><i aria-hidden="true">＋</i> Cart kept</span>
-            </div>
-          </div>
-
           <div className="nar-world__screen">
             <AnimatePresence initial={false} mode="wait">
               <motion.div
-                animate={{ clipPath: 'inset(0 0 0 0)', opacity: 1, x: 0 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
                 aria-labelledby={`nar-route-tab-${activeIndex}`}
-                exit={reduceMotion ? { opacity: 1 } : { clipPath: 'inset(0 0 0 100%)', opacity: 0, x: 18 }}
+                exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -12, scale: 0.97 }}
                 id="nar-route-panel"
-                initial={reduceMotion ? false : { clipPath: 'inset(0 100% 0 0)', opacity: 0, x: -18 }}
+                initial={reduceMotion ? false : { opacity: 0, y: 18, scale: 0.97 }}
                 key={activeMedia.src}
                 role="tabpanel"
                 transition={{ duration: reduceMotion ? 0 : 0.52, ease: [0.22, 1, 0.36, 1] }}
@@ -286,12 +243,12 @@ function NarVisual({ project }: { project: ProjectWorld }) {
                     openerRef.current = trigger;
                     setLightboxIndex(activeIndex);
                   }}
-                  sizes="(min-width: 1100px) 68vw, 94vw"
+                  sizes="(min-width: 960px) 36vw, 86vw"
                 />
               </motion.div>
             </AnimatePresence>
           </div>
-
+        </div>
           <div aria-label="Nar shopping route" className="nar-world__route" role="tablist">
             {narStages.map((stage, index) => (
               <button
@@ -312,8 +269,15 @@ function NarVisual({ project }: { project: ProjectWorld }) {
               </button>
             ))}
           </div>
+        <div className="nar-world__story" aria-live="polite">
+          <AnimatePresence initial={false} mode="wait">
+            <motion.div animate={{ opacity: 1, y: 0 }} exit={{ opacity: reduceMotion ? 1 : 0 }}
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }} key={activeStage.label}>
+              <strong>{activeStage.headline}</strong>
+              <p>{activeStage.detail}</p>
+            </motion.div>
+          </AnimatePresence>
         </div>
-
         <div className="nar-world__truth">
           <div><strong>Found a favourite?</strong><p>This small demo remembers your choice when you refresh.</p></div>
           <button aria-pressed={savedCake} className="nar-save-choice" onClick={toggleCake} type="button"><span aria-hidden="true">{savedCake ? '♥' : '♡'}</span>{savedCake ? 'Chocolate cake saved' : 'Save chocolate cake'}</button>

@@ -1,5 +1,5 @@
 import {
-  CatmullRomCurve3, Color, Curve, Group, Mesh, MeshBasicMaterial, PerspectiveCamera,
+  CatmullRomCurve3, Color, Curve, Fog, Group, Mesh, MeshBasicMaterial, PerspectiveCamera,
   PMREMGenerator, PointLight, Scene, SphereGeometry, TubeGeometry, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -8,9 +8,10 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createThreadCore, createThreadGlass } from './threadMaterial';
+import { passageTrajectory } from './passageTrajectory';
 
 interface Options { reduced: boolean; onReady: () => void; onUnavailable: () => void }
-interface Pose { shape: number; x: number; y: number; scale: number; angle: number; camera: number }
+interface Pose { shape: number; x: number; y: number; scale: number; angle: number; camera: number; visibility: number }
 interface Stop { at: number; pose: Pose; phase: string }
 const TAU = Math.PI * 2;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
@@ -35,16 +36,18 @@ function createCurves() {
     [1.8, -1.3, 0.2], [0.4, -2, 0.3], [-0.7, -0.3, 0.9], [0.6, 0.3, 0.1], [3.2, -2.2, -0.4], [4.8, -3.7, -1],
   ]);
   const frame = curve([
-    [0, 5, -1], [-2, 2, -0.4], [-2.3, -1.4, 0], [0, -2.1, 0.1], [2.6, -0.8, 0.5],
-    [2.4, 1.6, 0], [0, 2, -0.5], [-1.9, 0.9, -0.9], [-1.5, -1.4, -1], [1, -3, -0.5], [5, -4, 0],
+    [-1.8, 5, -1.2], [-2.2, 2.6, -.6], [-1.3, .3, -.7], [1.4, -.9, -.9], [2.6, .2, -.6],
+    [2, 2, -.4], [-.2, 2.2, 0], [-2, .6, .8], [-1.8, -1.7, .6], [1, -2.4, .3],
+    [2.7, -.8, .2], [2.4, 1.5, -.3], [0, 2.1, -.8], [-2.3, -1.5, -1], [-4, -4.2, .3], [-7, -4.2, .5], [-9, -6.7, -.5],
   ]);
   const signal = curve([
-    [5, 5, -1], [3.5, 2.2, 0], [0, 1.8, -0.5], [-3.5, 1.2, 0], [-4, -1, 0.5],
-    [-1, -1.6, 0], [1, -1, 0.8], [2.2, -2.2, 0], [4.5, -1.6, -0.4], [6, -4, -1],
+    [-7, -.4, -.8], [-5.4, 1.6, .1], [-3.9, 1.9, .4], [-2.7, .6, .2], [-1.5, -1.4, -.3],
+    [.2, -1.9, -.2], [1.7, .4, .3], [2.9, 2.4, -.5], [5.5, 2.3, -.6], [6, 1, -.3],
+    [5, -.5, .4], [3, -.7, .5], [2.1, .4, 0], [2.7, 1.8, -.7], [5.7, -.8, -.5], [8, -3.5, -.5],
   ]);
   const arcade = curve([
-    [-1, 5, -1], [0.5, 2.2, 0], [2.3, 1.5, 0.3], [2.6, -0.7, 0.6], [1, -1.9, 0],
-    [-1.7, -2, -0.2], [-2.6, -0.5, -0.4], [-1.8, 1.5, -0.8], [0.5, 1.4, -1], [2.2, -3.5, -0.6],
+    [-1, 5, -1], [0.5, 2.2, 0], [2.3, 1.5, 0.3], [2.6, -0.7, 0.6], [1, -1.5, 0],
+    [-1.7, -1.6, -0.2], [-2.6, -0.5, -0.4], [-1.8, 1.5, -0.8], [0.5, 1.4, -1], [2.2, -3.5, -0.6], [5, -5, -.8], [7, -7, -1],
   ]);
   return [strand, loop, frame, new Helix(), signal, arcade, strand];
 }
@@ -73,6 +76,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   renderer.setClearColor(0x050709, 0);
   renderer.toneMappingExposure = 1.05;
   const scene = new Scene();
+  scene.fog = new Fog(0x050709, 22, 82);
   const camera = new PerspectiveCamera(38, 1, 0.1, 90);
   camera.position.z = 9.3;
   const pmrem = new PMREMGenerator(renderer);
@@ -101,7 +105,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   const beadMaterial = new MeshBasicMaterial({ color: new Color('#c9eeff').multiplyScalar(5), toneMapped: false });
   const beads = Array.from({ length: 3 }, () => { const bead = new Mesh(beadGeometry, beadMaterial); group.add(bead); return bead; });
   const focalPoint = new Mesh(beadGeometry, beadMaterial);
-  focalPoint.position.set(0, 0, -52);
+  focalPoint.position.set(0, 0, -68);
   group.add(focalPoint);
   const composer = new EffectComposer(renderer);
   const bloom = new UnrealBloomPass(new Vector2(1, 1), 0.3, 0.55, 1.05);
@@ -119,7 +123,14 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   let unavailable = false;
   let disposed = false;
   let playing = false;
-  let target: Pose = { shape: 1, x: 0.74, y: 0.4, scale: 1, angle: 0, camera: 9.3 };
+  let inPassageField = false;
+  let signalPosition = 2;
+  let signalRunning = false;
+  let signalPulse = .56;
+  let narSaved = false;
+  const passageElement = root.querySelector<HTMLElement>('#connections');
+  const narElement = root.querySelector<HTMLElement>('.nar-world');
+  let target: Pose = { shape: 1, x: 0.74, y: 0.4, scale: 1, angle: 0, camera: 9.3, visibility: 1 };
   let current = { ...target };
   let firstMeasure = true;
   let firstRender = true;
@@ -144,22 +155,26 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     const journey = bounds('#journey');
     if (!method || !nar || !passage || !tracker || !blaster || !journey) return;
     const worldHeight = 2 * 9.3 * Math.tan(19 * Math.PI / 180);
-    const anchored = (selector: string, shape: number, size = 1): Pose => {
+    const anchored = (selector: string, shape: number, size = 1, span = 4.6): Pose => {
       const rect = bounds(selector);
-      if (!rect) return { shape, x: 0.72, y: 0.5, scale: 1, angle: 0, camera: 9.3 };
+      if (!rect) return { shape, x: 0.72, y: 0.5, scale: 1, angle: 0, camera: 9.3, visibility: 1 };
       return { shape, x: (rect.left + rect.width / 2) / width, y: (rect.top + rect.height / 2) / height,
-        scale: rect.width / width * worldHeight * camera.aspect / 4.6 * size, angle: 0, camera: 9.3 };
+        scale: rect.width / width * worldHeight * camera.aspect / span * size, angle: 0, camera: 9.3, visibility: 1 };
     };
     const about = anchored('.perspective-art', 1, phone ? 0.82 : 0.94);
     about.y -= phone ? 0 : 0.025;
     const selected = root.querySelector<HTMLElement>('[data-perspective]')?.dataset.perspective;
     about.angle = selected === 'think' ? 0.2 : selected === 'people' ? -0.2 : -0.06;
-    const windowFrame = anchored('.nar-world__screen', 2, 1.08);
-    const signal = anchored('.signal-world__surface', 4, 0.64);
-    const arcade = anchored('.mini-blaster__arena, .blaster-runtime-poster', 5, 1.12);
+    const windowFrame = anchored('.nar-world__stage', 2, phone ? .98 : .86);
+    windowFrame.y -= phone ? .03 : .05;
+    windowFrame.angle = [-.12, .06, .18][Number(narElement?.dataset.step) || 0]!;
+    const signal = anchored('.signal-world__constellation', 4, phone ? 1.15 : 1, 12);
+    if (phone) { signal.angle = -.95; signal.scale *= 2; }
+    const arcade = anchored('.mini-blaster__arena, .blaster-runtime-poster', 5, 1.02);
+    if (!phone) arcade.y -= .025;
     const passageSticky = bounds('.thread-passage__sticky');
-    const helix: Pose = { shape: 3, x: phone ? 0.54 : 0.72, y: phone ? 0.7 : 0.52,
-      scale: phone ? 0.48 : Math.min(1.2, width / height * 0.7), angle: 0, camera: 9.3 };
+    const helix: Pose = { shape: 3, x: phone ? .54 : .72, y: phone ? .72 : .52,
+      scale: phone ? .5 : Math.min(1.14, width / height * .7), angle: 0, camera: 9.3, visibility: 1 };
     helix.y += (passageSticky?.top ?? 0) / height;
     const exit = anchored('.life-story__place', 6, 0.8);
     // Journey has a quieter trailing strand at the outside edge of the composition.
@@ -174,7 +189,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
       { at: top(nar) + height * 0.04, pose: windowFrame, phase: 'frame' },
       { at: top(passage) - height * 0.8, pose: windowFrame, phase: 'frame' },
       { at: top(passage), pose: helix, phase: 'connections' },
-      { at: top(passage) + travel * 0.78, pose: { ...helix, angle: -0.55, camera: options.reduced ? 9.3 : phone ? 7.6 : 2.8 }, phase: 'through' },
+      { at: top(passage) + travel, pose: signal, phase: 'signal' },
       { at: top(tracker) + height * 0.08, pose: signal, phase: 'signal' },
       { at: top(blaster) - height * 0.8, pose: signal, phase: 'signal' },
       { at: top(blaster) + height * 0.06, pose: arcade, phase: 'play' },
@@ -187,14 +202,43 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     const t = ease((scroll - prev.at) / Math.max(1, next.at - prev.at));
     target = { shape: mix(prev.pose.shape, next.pose.shape, t), x: mix(prev.pose.x, next.pose.x, t),
       y: mix(prev.pose.y, next.pose.y, t), scale: mix(prev.pose.scale, next.pose.scale, t),
-      angle: mix(prev.pose.angle, next.pose.angle, t), camera: mix(prev.pose.camera, next.pose.camera, t) };
+      angle: mix(prev.pose.angle, next.pose.angle, t), camera: mix(prev.pose.camera, next.pose.camera, t), visibility: 1 };
+    let phase = t < 0.5 ? prev.phase : next.phase;
+    const passageProgress = clamp((scroll - top(passage)) / Math.max(1, travel));
+    // A distinct traversal, never an interpolation from a half-entered helix into the next pose.
+    const animatedPassage = !options.reduced && height >= 650 && travel > 1;
+    const traversing = animatedPassage && scroll >= top(passage) && scroll < top(passage) + travel;
+    root.style.setProperty('--tracker-reveal', String(animatedPassage ? ease((passageProgress - .9) / .1) : 1));
+    root.style.setProperty('--tracker-events', animatedPassage && passageProgress < .9 ? 'none' : 'auto');
+    passageElement?.style.setProperty('--passage-skip', String(animatedPassage ? 1 - ease((passageProgress - .88) / .12) : 1));
+    if (traversing) {
+      const trip = passageTrajectory(passageProgress, helix.scale);
+      target = trip.field ? { ...signal, visibility: trip.visibility } : {
+        ...helix, x: mix(helix.x, .5, trip.centered), y: mix(helix.y, .5, trip.centered),
+        angle: -.2 * trip.centered, camera: trip.camera, visibility: trip.visibility,
+      };
+      // The two camera coordinate systems switch only while nothing is visible.
+      if (inPassageField !== trip.field) current = { ...target, visibility: 0 };
+      inPassageField = trip.field;
+      phase = trip.phase;
+      passageElement?.style.setProperty('--passage-copy', String(trip.copy));
+    } else {
+      inPassageField = false;
+      passageElement?.style.setProperty('--passage-copy', animatedPassage && scroll > top(passage) ? '0' : '1');
+    }
+    if (narElement) {
+      narElement.style.setProperty('--nar-drift', String(clamp((height - nar.top) / (height + nar.height)) - .5));
+      narSaved = narElement.dataset.saved === 'true';
+    }
+    const signalElement = root.querySelector<HTMLElement>('.signal-world');
+    signalPosition = Number(signalElement?.dataset.signalPosition ?? 2);
+    signalRunning = signalElement?.classList.contains('is-running') ?? false;
     if (options.reduced) { target.shape = Math.round(target.shape); target.camera = 9.3; }
     // Direct anchor navigation should land in its final composition immediately.
     if (firstMeasure || options.reduced || Math.abs(scroll - lastScroll) > height * 0.75) {
       current = { ...target }; firstMeasure = false;
     }
     lastScroll = scroll;
-    const phase = t < 0.5 ? prev.phase : next.phase;
     if (canvas.dataset.phase !== phase) canvas.dataset.phase = phase;
     playing = Boolean(root.querySelector('.mini-blaster[data-phase="running"]'));
     schedule();
@@ -223,16 +267,28 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
       if (upper > 0) weights[upper - 1] = (weights[upper - 1] ?? 0) + blend;
     }
     camera.position.set(0, 0, current.camera);
-    const viewHeight = 2 * current.camera * Math.tan(19 * Math.PI / 180);
+    const viewHeight = 2 * 9.3 * Math.tan(19 * Math.PI / 180);
     group.position.set((current.x - 0.5) * viewHeight * camera.aspect, (0.5 - current.y) * viewHeight, 0);
     group.scale.setScalar(current.scale);
     const tunnel = Math.max(0, 1 - Math.abs(current.shape - 3));
     focalPoint.visible = tunnel > 0.01;
-    focalPoint.scale.setScalar(7 * tunnel);
+    focalPoint.scale.setScalar(4.5 * tunnel * Math.max(.04, (68 * current.scale + current.camera) / (68 * current.scale + 9.3)));
+    const opacity = current.visibility.toFixed(3);
+    const depth = current.camera.toFixed(2);
+    if (canvas.style.opacity !== opacity) canvas.style.opacity = opacity;
+    if (canvas.dataset.cameraZ !== depth) canvas.dataset.cameraZ = depth;
+    // Keep illumination with the viewer inside the long tube.
+    key.position.z = mix(6, current.camera + 2, tunnel);
+    blue.position.z = mix(3, current.camera - 2, tunnel);
     group.rotation.set(pointerSoft.y * 0.06 * (1 - tunnel), pointerSoft.x * 0.1 * (1 - tunnel),
       current.angle + (options.reduced ? 0 : Math.sin(elapsed * 0.24) * 0.025 * (1 - tunnel)));
+    const signalWeight = Math.max(0, 1 - Math.abs(current.shape - 4));
+    const pulseTarget = [.04, .14, .38, .42, .72][Math.max(0, Math.min(4, signalPosition + 1))]!;
+    signalPulse = mix(signalPulse, pulseTarget, options.reduced ? 1 : 1 - Math.exp(-dt * 6));
     beads.forEach((bead, index) => {
-      const t = (elapsed * 0.04 + index / 3 + 0.08) % 1;
+      const t = signalWeight > .98 ? (index === 0 ? signalPulse : index === 1 ? .17 : .64)
+        : (elapsed * 0.04 + index / 3 + 0.08) % 1;
+      bead.scale.setScalar(signalWeight > .98 ? (index === 0 ? (signalRunning ? 2.8 : 1.8) : .6) : narSaved && lower === 2 ? 1.6 : 1);
       paths[lower]!.getPointAt(t, a); paths[upper]!.getPointAt(t, b);
       bead.position.copy(a).lerp(b, blend);
     });
@@ -277,7 +333,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   });
   observer.observe(root);
   const mutations = new MutationObserver(requestMeasure);
-  mutations.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-phase', 'data-perspective', 'data-step'] });
+  mutations.observe(root, { subtree: true, attributes: true, attributeFilter: ['data-phase', 'data-perspective', 'data-step', 'data-saved', 'data-signal-position', 'data-outcome', 'data-handoff'] });
   root.addEventListener('pointermove', move, { passive: true }); root.addEventListener('pointerleave', leave);
   window.addEventListener('scroll', requestMeasure, { passive: true });
   document.addEventListener('visibilitychange', visibility);

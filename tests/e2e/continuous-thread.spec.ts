@@ -13,8 +13,16 @@ test('one middle canvas follows project anchors and a reversible scroll passage'
     window.scrollTo({ top: el.getBoundingClientRect().top + scrollY + (el.offsetHeight - innerHeight) * 0.75, behavior: 'instant' });
   });
   await expect(canvas).toHaveAttribute('data-phase', 'through');
+  // The promised entrance is an actual camera traversal, not a shrinking or dropping spiral.
+  await expect.poll(async () => Number(await canvas.getAttribute('data-camera-z'))).toBeLessThan(-20);
+  await page.evaluate(() => {
+    const el = document.getElementById('connections')!;
+    window.scrollTo({ top: el.getBoundingClientRect().top + scrollY + (el.offsetHeight - innerHeight) * 0.88, behavior: 'instant' });
+  });
+  await expect(canvas).toHaveAttribute('data-phase', 'clearing');
   await page.evaluate(() => document.getElementById('connections')!.scrollIntoView({ behavior: 'instant' }));
   await expect(canvas).toHaveAttribute('data-phase', 'connections');
+  await expect.poll(async () => Number(await canvas.getAttribute('data-camera-z'))).toBeGreaterThan(9);
   await page.getByRole('link', { name: 'Next · Trendyol Price Tracker' }).click();
   await expect(page).toHaveURL(/#trendyol$/);
   await expect(page.getByRole('slider', { name: 'Your target price', exact: true })).toBeAttached();

@@ -8,8 +8,8 @@ export function ThreadPassage() {
         <div className="thread-passage__copy">
           <h2 id="connections-heading">Small details.<br /><em>Real connections.</em></h2>
           <p>An idea becomes a product<br />when the pieces work together.</p>
-          <a className="story-link" href="#trendyol">Next · Trendyol Price Tracker<ArrowIcon /></a>
         </div>
+        <a className="story-link thread-passage__skip" href="#trendyol">Next · Trendyol Price Tracker<ArrowIcon /></a>
       </div>
     </section>
   );
