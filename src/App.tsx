@@ -53,7 +53,7 @@ export default function App() {
       {isLoading ? <SiteLoader heroReady={heroReady} onComplete={() => setIsLoading(false)} /> : null}
       <SceneNavigation />
       <div aria-busy={isLoading} aria-hidden={isLoading} className="site" inert={isLoading ? true : undefined}>
-        <Header />
+        <Header activeSection={activeSectionId} />
         <ExperienceRail activeId={activeSectionId} />
         <KControl
           activeSection={activeSectionId}

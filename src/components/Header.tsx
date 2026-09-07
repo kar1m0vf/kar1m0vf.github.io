@@ -1,4 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import type { SiteSectionId } from '../data/siteSections';
 import { ArrowIcon } from './Icons';
 
 const navigation = [
@@ -7,6 +9,16 @@ const navigation = [
   { label: 'Journey', href: '#journey' },
   { label: 'Contact', href: '#contact' },
 ] as const;
+
+const navigationBySection: Record<SiteSectionId, (typeof navigation)[number]['href'] | null> = {
+  top: null,
+  method: '#method',
+  nar: '#work',
+  trendyol: '#work',
+  blaster: '#work',
+  journey: '#journey',
+  contact: '#contact',
+};
 
 function ContrastText({ children }: { children: string }) {
   const maskId = `nav-text-${useId().replace(/:/g, '')}`;
@@ -30,8 +42,10 @@ function ContrastText({ children }: { children: string }) {
   );
 }
 
-export function Header() {
+export function Header({ activeSection }: { activeSection: SiteSectionId }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const activeHref = navigationBySection[activeSection];
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const navigationRef = useRef<HTMLElement>(null);
 
@@ -103,8 +117,22 @@ export function Header() {
       </button>
       <nav aria-label="Primary navigation" className="site-nav" id="primary-navigation" ref={navigationRef}>
         {navigation.map((item) => (
-          <a href={item.href} key={item.href} onClick={() => setMenuOpen(false)}>
+          <a
+            aria-current={activeHref === item.href ? 'location' : undefined}
+            href={item.href}
+            key={item.href}
+            onClick={() => setMenuOpen(false)}
+          >
             <ContrastText>{item.label}</ContrastText>
+            {activeHref === item.href ? (
+              <motion.span
+                aria-hidden="true"
+                className="site-nav__active-line"
+                initial={false}
+                layoutId="primary-navigation-active-line"
+                transition={{ duration: reducedMotion ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }}
+              />
+            ) : null}
           </a>
         ))}
       </nav>

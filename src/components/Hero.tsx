@@ -62,7 +62,7 @@ export function Hero({ onReady }: { onReady?: () => void }) {
             <p className="hero__summary">I turn ideas into useful experiences. Curious about people, design, and what technology can make possible.</p>
             <p className="hero__role">Software Developer · Baku, Azerbaijan</p>
             <div className="hero__actions">
-              <a className="button button--primary" href="#method" onClick={() => playSound('select')}>Explore my work <ArrowIcon /></a>
+              <a className="button button--primary" href="#work" onClick={() => playSound('select')}>Explore my work <ArrowIcon /></a>
               <a className="button button--text" href="#contact" onClick={() => playSound('contact')}>Start a conversation <ArrowIcon /></a>
             </div>
           </div>
@@ -77,7 +77,7 @@ export function Hero({ onReady }: { onReady?: () => void }) {
           <p className="thread-story__chapter-label">From curiosity to creation</p>
           <h2>Follow<br /><em>the thread.</em></h2>
           <p>A few things I’ve made along the way.</p>
-          <a className="thread-story__work-link" href="#method">Discover the work <ArrowIcon /></a>
+          <a className="thread-story__work-link" href="#work">Discover the work <ArrowIcon /></a>
         </motion.div>
         {!reduced ? (
           <div className="thread-story__navigation">

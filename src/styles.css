@@ -265,6 +265,16 @@ ul {
   padding: 0.55rem 0;
 }
 
+.site-nav__active-line {
+  position: absolute;
+  bottom: 0;
+  left: calc(50% - 0.7rem);
+  width: 1.4rem;
+  height: 1px;
+  background: currentColor;
+  pointer-events: none;
+}
+
 .header-cta {
   display: inline-flex;
   gap: 0.6rem;
@@ -291,7 +301,7 @@ ul {
   transition: transform 240ms ease;
 }
 
-.site-nav a:hover::after,
+.site-nav a:not([aria-current]):hover::after,
 .header-cta:hover::after {
   transform: scaleX(1);
   transform-origin: left;
