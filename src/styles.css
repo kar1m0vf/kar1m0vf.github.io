@@ -28,7 +28,12 @@
 html {
   background: var(--bg);
   scroll-behavior: auto;
-  scroll-padding-top: 5rem;
+  scroll-padding-top: 6.5rem;
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -166,7 +171,7 @@ ul {
 /* Header */
 
 .site-header {
-  position: absolute;
+  position: fixed;
   z-index: 60;
   top: 0;
   left: 0;
@@ -177,6 +182,66 @@ ul {
   min-height: 5.5rem;
   padding: 0 var(--gutter);
   color: var(--ink-bright);
+}
+
+.nav-contrast {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.nav-contrast__mask {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.nav-contrast__mask text {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+}
+
+.nav-contrast__ink {
+  display: none;
+}
+
+@supports ((backdrop-filter: grayscale(1) invert(1)) or (-webkit-backdrop-filter: grayscale(1) invert(1))) and (mask-image: url('#mask')) {
+  .nav-contrast__label {
+    color: transparent;
+  }
+
+  .nav-contrast__ink {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+    /* Filter only the glyphs: blue scenery never produces yellow lettering. */
+    -webkit-backdrop-filter: grayscale(1) invert(1);
+    backdrop-filter: grayscale(1) invert(1);
+    mask-repeat: no-repeat;
+  }
+}
+
+/* The expanded menu has its own opaque backdrop; keep its labels steady. */
+.site-header.is-open .nav-contrast__label {
+  color: inherit;
+}
+
+.site-header.is-open .nav-contrast__ink {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  .nav-contrast__label {
+    color: LinkText;
+  }
+
+  .nav-contrast__ink {
+    display: none;
+  }
 }
 
 .wordmark {
@@ -206,7 +271,7 @@ ul {
   align-items: center;
 }
 
-.header-cta svg {
+.header-cta > svg {
   width: 0.85rem;
   height: 0.85rem;
   color: var(--blue);
@@ -2296,7 +2361,7 @@ html[data-experience-section='contact'] .experience-rail {
   }
 
   html {
-    scroll-padding-top: 4.5rem;
+    scroll-padding-top: 5.8rem;
   }
 
   .section-label i {
