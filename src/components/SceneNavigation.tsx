@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { controlOverlayEvent } from '../utils/controlOverlay';
-import { destinationTop, focusScene, jumpToScene, sceneFrameEvent, sceneNavigationEvent, type SceneDestination } from '../utils/sceneNavigation';
+import { destinationTop, focusScene, jumpToScene, sceneNavigationEvent, type SceneDestination } from '../utils/sceneNavigation';
 import './SceneNavigation.css';
+
+const fadeDuration = 380;
+const fadeEasing = 'cubic-bezier(.45,0,.55,1)';
 
 /** Only the veil animates during a chapter jump; scrolling itself is instantaneous. */
 export function SceneNavigation() {
@@ -20,9 +23,9 @@ export function SceneNavigation() {
     let previousInert = false;
     let watchdog = 0;
     let visitId = 0;
-    let frameListener: ((event: Event) => void) | null = null;
     const animations = new Set<Animation>();
     const timers = new Set<number>();
+    const paintWaits = new Set<() => void>();
 
     const later = (callback: () => void, delay: number) => {
       const id = window.setTimeout(() => { timers.delete(id); callback(); }, delay);
@@ -34,31 +37,44 @@ export function SceneNavigation() {
       else delete root.dataset.sceneTransition;
       window.dispatchEvent(new Event(controlOverlayEvent));
     };
-    const animateVeil = (from: number, to: number, duration: number) => new Promise<void>((resolve) => {
+    const animateVeil = (from: number, to: number) => new Promise<void>((resolve) => {
       const animation = veil.animate([{ opacity: from }, { opacity: to }], {
-        duration, easing: 'cubic-bezier(.22,1,.36,1)', fill: 'forwards',
+        duration: fadeDuration, easing: fadeEasing, fill: 'both',
       });
       animations.add(animation);
-      void animation.finished.catch(() => undefined).then(() => resolve());
-      later(resolve, duration + 150);
-    });
-    const prepareDestination = (destination: SceneDestination) => new Promise<void>((resolve) => {
-      const scene = destination.element.closest('.continuous-story')
-        ?? destination.element.querySelector('.thread-sculpture');
+      let finished = false;
       const complete = () => {
-        window.removeEventListener(sceneFrameEvent, onFrame);
-        if (frameListener === onFrame) frameListener = null;
+        if (finished) return;
+        finished = true;
+        window.clearTimeout(timeout);
+        timers.delete(timeout);
+        // Persist the endpoint even if the animation completion event is delayed.
+        // The jump must happen under an opaque veil.
+        if (!disposed) veil.style.opacity = String(to);
+        animations.delete(animation);
+        animation.cancel();
         resolve();
       };
-      const onFrame = (event: Event) => {
-        if (scene?.contains((event as CustomEvent<HTMLElement>).detail)) complete();
+      void animation.finished.catch(() => undefined).then(complete);
+      const timeout = later(complete, fadeDuration + 150);
+    });
+    const waitForPaint = (align: () => void) => new Promise<void>((resolve) => {
+      let frame = 0;
+      const complete = () => {
+        window.cancelAnimationFrame(frame);
+        window.clearTimeout(timeout);
+        timers.delete(timeout);
+        paintWaits.delete(complete);
+        resolve();
       };
-      window.addEventListener(sceneFrameEvent, onFrame);
-      frameListener = onFrame;
-      // A missing WebGL context uses the existing SVG. A slow lazy import never
-      // turns navigation into a second loading screen.
-      later(complete, scene && scene.getAttribute('data-renderer') !== 'fallback' ? 450 : 60);
-      phase('settling');
+      const timeout = later(complete, 96);
+      paintWaits.add(complete);
+      // Let React, scroll-linked styles, and the canvas paint the new position
+      // before uncovering it. The timeout also handles background tabs.
+      frame = window.requestAnimationFrame(() => {
+        align();
+        frame = window.requestAnimationFrame(complete);
+      });
     });
     const release = () => {
       window.clearTimeout(watchdog);
@@ -95,27 +111,29 @@ export function SceneNavigation() {
         site.setAttribute('aria-busy', 'true');
         phase('covering');
         // Keep the page recoverable if a browser suspends an animation or frame.
-        watchdog = later(() => { if (!disposed && active) { commit(); release(); focusScene(destination); } }, 1800);
+        watchdog = later(() => { if (!disposed && active) { commit(); release(); focusScene(destination); } }, 1600);
         if (!immediate) {
+          veil.style.opacity = '0';
           veil.hidden = false;
-          await animateVeil(0, 1, 210);
+          await animateVeil(0, 1);
         }
         if (disposed || !active || token !== visitId) return;
         phase('jumping');
         commit();
-        await prepareDestination(destination);
-        if (disposed || !active || token !== visitId) return;
-        // A nearby lazy component can change the chapter's offset while the veil
-        // is closed. Align once more before exposing the destination.
-        const limit = Math.max(0, document.documentElement.scrollHeight - innerHeight);
-        if (Math.abs(window.scrollY - Math.max(0, Math.min(limit, destinationTop(destination)))) > 1) {
-          phase('jumping');
-          jumpToScene(destination);
-          await prepareDestination(destination);
+        phase('settling');
+        if (!immediate) {
+          // One bounded paint window, independent of lazy WebGL readiness.
+          // Existing SVG fallbacks keep slow scenes visible during the reveal.
+          await waitForPaint(() => {
+            const limit = Math.max(0, root.scrollHeight - innerHeight);
+            if (Math.abs(window.scrollY - Math.max(0, Math.min(limit, destinationTop(destination)))) > 1) {
+              jumpToScene(destination);
+            }
+          });
         }
         if (disposed || !active || token !== visitId) return;
         phase('revealing');
-        if (!immediate) await animateVeil(1, 0, 420);
+        if (!immediate) await animateVeil(1, 0);
       } finally {
         if (!disposed && active && token === visitId) {
           release();
@@ -159,16 +177,11 @@ export function SceneNavigation() {
       window.removeEventListener(sceneNavigationEvent, onRequest);
       window.removeEventListener('popstate', onPopState);
       timers.forEach((id) => window.clearTimeout(id));
-      if (frameListener) window.removeEventListener(sceneFrameEvent, frameListener);
+      paintWaits.forEach((complete) => complete());
       if (active) release();
       window.history.scrollRestoration = previousRestoration;
     };
   }, []);
 
-  return <div aria-hidden="true" className="scene-transition" hidden ref={veilRef}>
-    <div className="scene-transition__haze" />
-    <div className="scene-transition__thread">
-      <svg fill="none" viewBox="0 0 300 90"><path d="M207 18C118 9 12 24 12 45S137 82 250 63S234 17 207 18" /></svg>
-    </div>
-  </div>;
+  return <div aria-hidden="true" className="scene-transition" hidden ref={veilRef} />;
 }

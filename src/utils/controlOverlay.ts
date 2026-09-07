@@ -11,7 +11,8 @@ export function isSceneTransitionActive() {
 
 export function isSceneRenderingSuspended() {
   const phase = document.documentElement.dataset.sceneTransition;
-  return isControlOverlayOpen() || phase === 'covering' || phase === 'jumping';
+  // Keep the outgoing scene moving while it is still visible through the fade.
+  return isControlOverlayOpen() || phase === 'jumping';
 }
 
 export function setControlOverlayOpen(open: boolean) {
