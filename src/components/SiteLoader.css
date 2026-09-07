@@ -3,7 +3,8 @@ html[data-site-loading='true'] .skip-link { visibility: hidden; }
 .site-loader { position: fixed; z-index: 300; inset: 0; display: grid; place-items: center; padding: 2rem; overflow: clip; background: #050709; color: #f3f1ed; }
 .site-loader__scope { display: contents; }
 .site-loader__identity { width: min(100%, 19rem); text-align: center; }
-.site-loader__name { display: flex; justify-content: center; white-space: nowrap; margin: 0; font: 400 clamp(2.4rem, 5vw, 3rem)/1.1 var(--serif); letter-spacing: -.025em; }
+.site-loader__name { display: flex; justify-content: center; margin: 0; font-size: clamp(2.4rem, 5vw, 3rem); line-height: 1.1; }
+.site-loader__name img { display: block; width: auto; height: 1.1em; }
 .site-loader__thread { display: block; width: 100%; height: auto; margin: 2.4rem auto 1.7rem; overflow: visible; stroke-linecap: round; stroke-linejoin: round; }
 .site-loader__thread-base { stroke: #17324f; stroke-width: 1.4; }
 .site-loader__thread-live { stroke: #8ad4ff; stroke-width: 1.8; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--loader-progress, 0)); filter: drop-shadow(0 0 3px #3f9fff) drop-shadow(0 0 12px #2779c9); transition: stroke-dashoffset 140ms linear; }

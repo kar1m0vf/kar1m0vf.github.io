@@ -5,6 +5,9 @@ import type { ProjectMedia } from '../types';
 import { projectWorlds } from '../data/projects';
 import { beginEntryHandoff, finishEntryHandoff } from '../utils/entryHandoff';
 import { jumpToScene } from '../utils/sceneNavigation';
+import loaderWordmarkSvg from '../assets/loader-wordmark.svg?raw';
+
+const loaderWordmark = `data:image/svg+xml,${encodeURIComponent(loaderWordmarkSvg)}`;
 
 const minimumVisibleTime = 2000;
 const maximumWaitTime = 15000;
@@ -222,7 +225,9 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
           {isExiting ? 'Portfolio ready.' : usedFallback ? 'Loading portfolio with available media.' : 'Loading portfolio.'}
         </span>
         <div aria-hidden="true" className="site-loader__identity">
-          <p className="site-loader__name">Kamil Kerimov</p>
+          <p className="site-loader__name">
+            <img alt="Kamil Kerimov" src={loaderWordmark} width="4812" height="1100" />
+          </p>
           <svg className="site-loader__thread" fill="none" ref={threadRef} viewBox="0 0 300 90">
             <path className="site-loader__thread-base" d="M207 18C118 9 12 24 12 45S137 82 250 63S234 17 207 18" />
             <path className="site-loader__thread-live" d="M207 18C118 9 12 24 12 45S137 82 250 63S234 17 207 18" pathLength="1" />
