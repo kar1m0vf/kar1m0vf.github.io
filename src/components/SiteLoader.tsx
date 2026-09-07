@@ -58,7 +58,6 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
   const completionReportedRef = useRef(false);
   const completedCountRef = useRef(0);
   const [completedCount, setCompletedCount] = useState(0);
-  const [completedMediaCount, setCompletedMediaCount] = useState(0);
   const [displayProgress, setDisplayProgress] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
   const [usedFallback, setUsedFallback] = useState(false);
@@ -70,10 +69,6 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
     completedAssets.add(id);
     completedCountRef.current = completedAssets.size;
     setCompletedCount(completedAssets.size);
-    setCompletedMediaCount(loaderMedia.reduce(
-      (count, asset) => count + (completedAssets.has(asset.id) ? 1 : 0),
-      0,
-    ));
   }, []);
 
   const decodeImage = useCallback((id: string, image: HTMLImageElement) => {
@@ -182,7 +177,6 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
 
   const loaderStyle = {
     '--loader-progress': displayProgress / 100,
-    '--loader-progress-width': `${displayProgress}%`,
   } as CSSProperties;
 
   return (
@@ -194,56 +188,25 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
       onAnimationComplete={completeLoader}
       role="status"
       transition={{
-        delay: reduceMotion ? 0 : 0.28,
-        duration: reduceMotion ? 0 : 0.52,
+        delay: reduceMotion ? 0 : 0.12,
+        duration: reduceMotion ? 0 : 0.44,
         ease: [0.22, 1, 0.36, 1],
       }}
     >
       <div className="site-loader__scope" style={loaderStyle}>
         <span className="sr-only">
-          {isExiting
-            ? 'Portfolio ready.'
-            : `Preparing portfolio media. ${completedMediaCount} of ${loaderMedia.length} images decoded.`}
+          {isExiting ? 'Portfolio ready.' : usedFallback ? 'Loading portfolio with available media.' : 'Loading portfolio.'}
         </span>
-        <div aria-hidden="true" className="site-loader__panel site-loader__panel--left" />
-        <div aria-hidden="true" className="site-loader__panel site-loader__panel--right" />
-        <div aria-hidden="true" className="site-loader__topline">
-          <span>KK / SYSTEM ENTRY</span>
-          <span>BAKU · UTC+4</span>
-        </div>
-
-        <div aria-hidden="true" className="site-loader__mark">
-          <svg preserveAspectRatio="xMidYMid meet" viewBox="0 0 800 800">
-            <g className="site-loader__threads site-loader__threads--base">
-              <path d="M244 58 C304 212 204 326 271 400 C336 474 218 608 278 744" />
-              <path d="M712 82 C568 158 462 292 271 400" />
-              <path d="M271 400 C432 472 540 620 716 742" />
-            </g>
-            <g className="site-loader__threads site-loader__threads--live">
-              <path d="M244 58 C304 212 204 326 271 400 C336 474 218 608 278 744" pathLength="1" />
-              <path d="M712 82 C568 158 462 292 271 400" pathLength="1" />
-              <path d="M271 400 C432 472 540 620 716 742" pathLength="1" />
-            </g>
-            <g className="site-loader__nodes">
-              <circle className={displayProgress >= 18 ? 'is-ready' : ''} cx="244" cy="58" r="5" />
-              <circle className={displayProgress >= 42 ? 'is-ready' : ''} cx="271" cy="400" r="7" />
-              <circle className={displayProgress >= 68 ? 'is-ready' : ''} cx="712" cy="82" r="5" />
-              <circle className={displayProgress >= 88 ? 'is-ready' : ''} cx="716" cy="742" r="5" />
-            </g>
+        <div aria-hidden="true" className="site-loader__identity">
+          <p className="site-loader__name">Kamil Kerimov</p>
+          <svg className="site-loader__thread" fill="none" viewBox="0 0 300 90">
+            <path className="site-loader__thread-base" d="M207 18C118 9 12 24 12 45S137 82 250 63S234 17 207 18" />
+            <path className="site-loader__thread-live" d="M207 18C118 9 12 24 12 45S137 82 250 63S234 17 207 18" pathLength="1" />
           </svg>
-        </div>
-
-        <div aria-hidden="true" className="site-loader__readout">
-          <div>
-            <span>{usedFallback ? 'CONTINUING WITH AVAILABLE MEDIA' : 'PREPARING VISUAL WORLDS'}</span>
+          <div className="site-loader__readout">
+            <span>{isExiting ? 'Ready to explore' : 'Loading portfolio'}</span>
             <output>{String(displayProgress).padStart(2, '0')}%</output>
           </div>
-          <div aria-hidden="true" className="site-loader__rail"><i /></div>
-          <p>
-            {completedMediaCount < loaderMedia.length
-              ? `${String(completedMediaCount).padStart(2, '0')} / ${String(loaderMedia.length).padStart(2, '0')} MEDIA DECODED`
-              : 'MEDIA DECODED · TYPE ALIGNED'}
-          </p>
         </div>
 
         <div aria-hidden="true" className="site-loader__preloads">

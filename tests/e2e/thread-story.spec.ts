@@ -24,7 +24,9 @@ test.describe('The living blue thread', () => {
     await chapters.getByRole('button', { name: 'Meet me' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(canvas).toHaveAttribute('data-phase', 'knot');
-    await page.getByRole('link', { name: /Skip intro/ }).click();
+    await expect(page.getByText('Skip intro', { exact: false })).toHaveCount(0);
+    await chapters.getByRole('button', { name: 'Selected work' }).click();
+    await page.getByRole('link', { name: /Discover the work/ }).click();
     await expect(page).toHaveURL(/#method$/);
     await expect(page.locator('#method')).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
@@ -45,7 +47,8 @@ test.describe('The living blue thread', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await page.getByRole('button', { name: 'My perspective' }).click();
     await expect(page.getByRole('heading', { name: /More than one dimension/ })).toBeVisible();
-    await page.getByRole('link', { name: /Skip intro/ }).click();
+    await page.getByRole('button', { name: 'Selected work' }).click();
+    await page.getByRole('link', { name: /Discover the work/ }).click();
     await expect(page.locator('#method')).toBeInViewport();
   });
 

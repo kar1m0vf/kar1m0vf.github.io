@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { PriceObservatoryConfig, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { useSound } from '../audio/SoundProvider';
-import { ArrowRightIcon, TelegramIcon } from './Icons';
+import { ArrowRightIcon, DisclosureIcon, TelegramIcon } from './Icons';
 
 interface PriceObservatoryProps {
   config: PriceObservatoryConfig;
@@ -187,7 +187,7 @@ export function PriceObservatory({
 
       <div className="signal-world__caption"><span aria-hidden="true" className="signal-world__beacon" />{config.sampleLabel}</div>
       <details className="signal-world__details">
-        <summary><span>Under the hood</span><strong>Three engineering choices</strong></summary>
+        <summary><span>Under the hood</span><strong>Three engineering choices</strong><DisclosureIcon /></summary>
         <ol aria-label="Price signal decisions" className="signal-world__stations">
           {config.gates.map((gate, index) => (
             <li className={selectedGate === index ? 'is-selected' : ''} data-status={gateStatus(index)} key={gate.id}>

@@ -37,6 +37,7 @@ export const siteSections = [
     theme: 'blue',
   },
   {
+    control: { accent: 'neutral', index: '02', label: 'About' },
     href: '#method',
     id: 'method',
     index: '02',
@@ -45,7 +46,7 @@ export const siteSections = [
     theme: 'blue',
   },
   {
-    control: { accent: 'nar', index: '02', label: 'Nar Patisserie' },
+    control: { accent: 'nar', index: '03', label: 'Nar Patisserie' },
     href: '#nar',
     id: 'nar',
     index: '03',
@@ -54,7 +55,7 @@ export const siteSections = [
     theme: 'nar',
   },
   {
-    control: { accent: 'tracker', index: '03', label: 'Price Tracker' },
+    control: { accent: 'tracker', index: '04', label: 'Price Tracker' },
     href: '#trendyol',
     id: 'trendyol',
     index: '04',
@@ -63,7 +64,7 @@ export const siteSections = [
     theme: 'trendyol',
   },
   {
-    control: { accent: 'blaster', index: '04', label: 'Blaster' },
+    control: { accent: 'blaster', index: '05', label: 'Blaster' },
     href: '#blaster',
     id: 'blaster',
     index: '05',
@@ -72,7 +73,7 @@ export const siteSections = [
     theme: 'blaster',
   },
   {
-    control: { accent: 'neutral', index: '05', label: 'Journey' },
+    control: { accent: 'neutral', index: '06', label: 'Journey' },
     href: '#journey',
     id: 'journey',
     index: '06',
@@ -81,6 +82,7 @@ export const siteSections = [
     theme: 'blue',
   },
   {
+    control: { accent: 'neutral', index: '07', label: 'Contact' },
     href: '#contact',
     id: 'contact',
     index: '07',
@@ -97,7 +99,5 @@ export const kControlSections = siteSections.filter(
 );
 
 export function resolveKControlSection(activeSection: SiteSectionId): SiteSectionId {
-  if (activeSection === 'method') return 'top';
-  if (activeSection === 'contact') return 'journey';
   return activeSection;
 }

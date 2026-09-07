@@ -43,8 +43,8 @@
 .signal-world__details summary::-webkit-details-marker { display: none; }
 .signal-world__details summary span { font-size: .82rem; }
 .signal-world__details summary strong { color: #8ea5c0; font-weight: 400; font-size: .7rem; }
-.signal-world__details > summary::after { content: '+'; margin-left: auto; color: #91caff; font-size: 1.1rem; }
-.signal-world__details[open] > summary::after { content: '−'; }
+.signal-world__details > summary > svg { margin-left: auto; flex: 0 0 auto; width: 1.1rem; height: 1.1rem; color: #91caff; }
+.signal-world__details[open] > summary .disclosure-icon__vertical { display: none; }
 .signal-world__details[open] { background: #050709e8; border-radius: 1.5rem; padding: 0 1.5rem 1rem; margin-inline: -1.5rem; }
 .signal-world__stations,.signal-world__details ul { display: grid; grid-template-columns: repeat(3,1fr); gap: 2rem; padding: 1.5rem 0; }
 .signal-world__stations { border-block: 1px solid #91b8e535; }

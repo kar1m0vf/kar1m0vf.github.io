@@ -1,5 +1,6 @@
 import { motion, useScroll, useTransform } from 'motion/react';
 import type { RefObject } from 'react';
+import { HeartIcon } from './Icons';
 
 interface NarTrackerHandoffProps {
   targetRef: RefObject<HTMLElement | null>;
@@ -100,7 +101,7 @@ export function NarTrackerHandoff({ targetRef }: NarTrackerHandoffProps) {
               width="1440"
             />
           </picture>
-          <span className="world-handoff__heart">♥</span>
+          <span className="world-handoff__heart"><HeartIcon filled /></span>
           <motion.span className="world-handoff__beacon" style={{ opacity: trackerStateOpacity }} />
         </div>
 

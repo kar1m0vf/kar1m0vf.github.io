@@ -1,5 +1,37 @@
 import type { SVGProps } from 'react';
 
+export function CloseIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>;
+}
+
+export function DisclosureIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="M5 12h14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><path className="disclosure-icon__vertical" d="M12 5v14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>;
+}
+
+export function HeartIcon({ filled = false, ...props }: SVGProps<SVGSVGElement> & { filled?: boolean }) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="M20.3 5.4a5 5 0 0 0-7.1 0L12 6.6l-1.2-1.2a5 5 0 0 0-7.1 7.1L12 21l8.3-8.5a5 5 0 0 0 0-7.1Z" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>;
+}
+
+export function PauseIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="M6.5 4.5h3v15h-3zM14.5 4.5h3v15h-3z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>;
+}
+
+export function PlayIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="m8 4.5 12 7.5L8 19.5Z" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" /></svg>;
+}
+
+export function RestartIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="M4 10a8 8 0 1 1 1 6M4 4v6h6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
+export function ArrowDownIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="M12 4v16m-6-6 6 6 6-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
+export function SteerIcon(props: SVGProps<SVGSVGElement>) {
+  return <svg aria-hidden="true" viewBox="0 0 24 24" {...props}><path d="M9 12V5a2 2 0 0 1 4 0v5l5 1.5a2 2 0 0 1 1.4 2.3l-.7 4.1a3 3 0 0 1-3 2.6h-3.8a3 3 0 0 1-2.4-1.2L5 13.5a1.5 1.5 0 0 1 2.2-2L9 13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
+}
+
 export function ArrowIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>

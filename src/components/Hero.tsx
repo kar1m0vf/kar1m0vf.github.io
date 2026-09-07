@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react';
 import { useSound } from '../audio/SoundProvider';
-import { ArrowIcon } from './Icons';
+import { ArrowDownIcon, ArrowIcon } from './Icons';
 import { ThreadSculpture } from './thread/ThreadSculpture';
 import './thread/ThreadStory.css';
 
@@ -69,11 +69,10 @@ export function Hero({ onReady }: { onReady?: () => void }) {
         </motion.div>
         {!reduced ? (
           <div className="thread-story__navigation">
-            <div className="thread-story__scroll-cue"><span aria-hidden="true">↓</span> Scroll to explore</div>
+            <div className="thread-story__scroll-cue"><ArrowDownIcon /><span>Scroll to explore</span></div>
             <nav aria-label="Introduction chapters" className="thread-story__chapters">
               {chapters.map((label, index) => <button aria-pressed={chapter === index} key={label} onClick={() => goToChapter(index)} type="button"><span aria-hidden="true">0{index + 1}</span><span>{label}</span></button>)}
             </nav>
-            <a className="thread-story__skip" href="#method">Skip intro <span aria-hidden="true">↘</span></a>
             <div aria-hidden="true" className="thread-story__progress"><motion.span style={{ width: progressWidth }} /></div>
           </div>
         ) : null}

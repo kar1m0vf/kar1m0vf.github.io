@@ -9,7 +9,7 @@ import type {
   TrackerSignalResult,
 } from '../types';
 import { useSound } from '../audio/SoundProvider';
-import { ArrowIcon } from './Icons';
+import { ArrowIcon, HeartIcon } from './Icons';
 import { PriceObservatory } from './PriceObservatory';
 import { ResponsiveImage } from './ResponsiveImage';
 
@@ -280,7 +280,7 @@ function NarVisual({ project }: { project: ProjectWorld }) {
         </div>
         <div className="nar-world__truth">
           <div><strong>Found a favourite?</strong><p>This small demo remembers your choice when you refresh.</p></div>
-          <button aria-pressed={savedCake} className="nar-save-choice" onClick={toggleCake} type="button"><span aria-hidden="true">{savedCake ? '♥' : '♡'}</span>{savedCake ? 'Chocolate cake saved' : 'Save chocolate cake'}</button>
+          <button aria-pressed={savedCake} className="nar-save-choice" onClick={toggleCake} type="button"><HeartIcon filled={savedCake} />{savedCake ? 'Chocolate cake saved' : 'Save chocolate cake'}</button>
         </div>
       </div>
 

@@ -12,6 +12,8 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import { useSound } from '../../audio/SoundProvider';
+import { controlOverlayEvent, isControlOverlayOpen } from '../../utils/controlOverlay';
+import { PauseIcon, PlayIcon, RestartIcon, SteerIcon } from '../Icons';
 import { loadMiniBlasterAssets } from './assets';
 import {
   createGameState,
@@ -251,6 +253,15 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
   }, [pauseRun, playSound, resumeRun]);
 
   useEffect(() => {
+    const pauseForControls = () => {
+      if (isControlOverlayOpen()) pauseRun('Micro run paused while K Control is open.');
+    };
+    pauseForControls();
+    window.addEventListener(controlOverlayEvent, pauseForControls);
+    return () => window.removeEventListener(controlOverlayEvent, pauseForControls);
+  }, [pauseRun, phase]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -448,7 +459,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
           onClick={togglePause}
           type="button"
         >
-          <span aria-hidden="true">{phase === 'paused' ? '▶' : 'Ⅱ'}</span>
+          {phase === 'paused' ? <PlayIcon /> : <PauseIcon />}
         </button>
       </div>
 
@@ -526,17 +537,17 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
       </div>
 
       <p className="mini-blaster__instructions" id={instructionsId}>
-        <span aria-hidden="true">⌁</span>
+        <SteerIcon />
         Drag to steer <i>·</i> WASD or arrows <i>·</i> Auto-fire enabled
       </p>
 
       <div className="mini-blaster__controls">
         <button disabled={phase === 'loading'} onClick={handlePrimaryAction} type="button">
-          <span aria-hidden="true">{phase === 'running' ? 'Ⅱ' : '▶'}</span>
+          {phase === 'running' ? <PauseIcon /> : <PlayIcon />}
           {primaryLabel}
         </button>
         <button disabled={phase === 'loading' || phase === 'ready'} onClick={restartRun} type="button">
-          <span aria-hidden="true">↻</span>
+          <RestartIcon />
           Restart
         </button>
       </div>

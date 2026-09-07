@@ -1,3 +1,4 @@
+import { controlOverlayEvent, isControlOverlayOpen } from '../../utils/controlOverlay';
 import {
   CatmullRomCurve3, Color, Curve, Fog, Group, Mesh, MeshBasicMaterial, PerspectiveCamera,
   PMREMGenerator, PointLight, Scene, SphereGeometry, TubeGeometry, Vector2, Vector3, WebGLRenderer,
@@ -246,7 +247,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
 
   const render = (time: number) => {
     frameId = 0;
-    if (disposed || unavailable || !visible || document.hidden) return;
+    if (disposed || unavailable || !visible || document.hidden || isControlOverlayOpen()) return;
     const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.1) : 0.016;
     slowFrames = lastTime && time - lastTime > 45 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
     lastTime = time;
@@ -303,7 +304,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     if (!options.reduced && !playing) frameId = requestAnimationFrame(render);
   };
   const schedule = () => {
-    if (!frameId && !disposed && !unavailable && visible && !document.hidden) frameId = requestAnimationFrame(render);
+    if (!frameId && !disposed && !unavailable && visible && !document.hidden && !isControlOverlayOpen()) frameId = requestAnimationFrame(render);
   };
   const requestMeasure = () => { if (!measureId && !disposed) measureId = requestAnimationFrame(measure); };
   const resize = () => {
@@ -319,7 +320,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   const leave = () => pointer.set(0, 0);
   const visibility = () => {
     lastTime = 0;
-    if (document.hidden) { cancelAnimationFrame(frameId); frameId = 0; } else requestMeasure();
+    if (document.hidden || isControlOverlayOpen()) { cancelAnimationFrame(frameId); frameId = 0; } else requestMeasure();
   };
   const fail = () => { unavailable = true; cancelAnimationFrame(frameId); frameId = 0; options.onUnavailable(); };
   const contextLost = (event: Event) => { event.preventDefault(); fail(); };
@@ -337,6 +338,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   root.addEventListener('pointermove', move, { passive: true }); root.addEventListener('pointerleave', leave);
   window.addEventListener('scroll', requestMeasure, { passive: true });
   document.addEventListener('visibilitychange', visibility);
+  window.addEventListener(controlOverlayEvent, visibility);
   canvas.addEventListener('webglcontextlost', contextLost);
   resize();
 
@@ -345,6 +347,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     observer.disconnect(); resizeObserver.disconnect(); mutations.disconnect();
     root.removeEventListener('pointermove', move); root.removeEventListener('pointerleave', leave);
     window.removeEventListener('scroll', requestMeasure); document.removeEventListener('visibilitychange', visibility);
+    window.removeEventListener(controlOverlayEvent, visibility);
     canvas.removeEventListener('webglcontextlost', contextLost);
     shell.geometry.dispose(); core.geometry.dispose(); glass.dispose(); coreMaterial.dispose();
     capGeometry.dispose(); beadGeometry.dispose(); beadMaterial.dispose(); environment.dispose(); bloom.dispose(); output.dispose(); composer.dispose();

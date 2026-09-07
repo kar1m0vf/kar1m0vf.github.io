@@ -185,10 +185,7 @@
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease;
 }
 
-.mini-blaster__pause span {
-  font-size: 1.25rem;
-  line-height: 1;
-}
+.mini-blaster__pause svg { display: block; width: 1.1rem; height: 1.1rem; margin: auto; }
 
 .mini-blaster__pause:hover:not(:disabled),
 .mini-blaster__pause:focus-visible {
@@ -348,9 +345,7 @@
   letter-spacing: 0.035em;
 }
 
-.mini-blaster__instructions > span {
-  font-size: 1.5rem;
-}
+.mini-blaster__instructions > svg { flex: 0 0 auto; width: 1.3rem; height: 1.3rem; }
 
 .mini-blaster__instructions i {
   color: #5a6f79;
@@ -391,11 +386,7 @@
   cursor: default;
 }
 
-.mini-blaster__controls button span {
-  min-width: 1.2rem;
-  font-size: 1.45rem;
-  line-height: 1;
-}
+.mini-blaster__controls button svg { flex: 0 0 auto; width: 1.2rem; height: 1.2rem; }
 
 .mini-blaster__footer {
   display: flex;

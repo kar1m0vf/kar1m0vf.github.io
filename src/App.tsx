@@ -13,10 +13,17 @@ import { MiddleThread } from './components/thread/MiddleThread';
 import { siteSections } from './data/siteSections';
 import { useActiveSection } from './hooks/useActiveSection';
 
+const builderPreferenceKey = 'portfolio:builder:v1';
+
+function readBuilderPreference() {
+  try { return window.localStorage.getItem(builderPreferenceKey) === 'true'; }
+  catch { return false; }
+}
+
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [heroReady, setHeroReady] = useState(false);
-  const [builderMode, setBuilderMode] = useState(false);
+  const [builderMode, setBuilderMode] = useState(readBuilderPreference);
   const activeSectionId = useActiveSection(isLoading);
   const activeSection = siteSections.find((section) => section.id === activeSectionId) ?? siteSections[0];
   const handleHeroReady = useCallback(() => setHeroReady(true), []);
@@ -44,6 +51,8 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.builderMode = builderMode ? 'true' : 'false';
+    try { window.localStorage.setItem(builderPreferenceKey, String(builderMode)); }
+    catch { /* The setting still works when storage is unavailable. */ }
     return () => { delete root.dataset.builderMode; };
   }, [builderMode]);
 

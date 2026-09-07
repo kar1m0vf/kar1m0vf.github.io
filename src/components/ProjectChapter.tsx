@@ -2,7 +2,7 @@ import { memo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { ProjectWorld, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { BuilderLayerPanel } from './BuilderMode';
-import { ArrowIcon, ArrowRightIcon, GitHubIcon, TelegramIcon } from './Icons';
+import { ArrowIcon, ArrowRightIcon, DisclosureIcon, GitHubIcon, TelegramIcon } from './Icons';
 import { ProjectVisual } from './ProjectVisuals';
 
 interface ProjectChapterProps {
@@ -81,7 +81,7 @@ function ProjectChapterComponent({
             ))}
           </div>
           <details className="project-details" open={builderMode || undefined}>
-            <summary>See how I built it<span aria-hidden="true">+</span></summary>
+            <summary>See how I built it<DisclosureIcon /></summary>
             <ol aria-label={`${project.title} loop`} className="project__flow" data-builder-zone="flow">
               {project.flow.map((step, index) => (
                 <li key={step}>

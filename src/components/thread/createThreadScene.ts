@@ -1,3 +1,4 @@
+import { controlOverlayEvent, isControlOverlayOpen } from '../../utils/controlOverlay';
 import {
   AdditiveBlending, BufferGeometry, Color, Curve, Float32BufferAttribute, Group,
   Mesh, MeshBasicMaterial, PerspectiveCamera, PMREMGenerator,
@@ -152,7 +153,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
 
   const render = (time: number) => {
     frameId = 0;
-    if (disposed || !contextAvailable || !inView || document.hidden) return;
+    if (disposed || !contextAvailable || !inView || document.hidden || isControlOverlayOpen()) return;
     const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.04) : 0.016;
     if (lastTime && time - lastTime > 45) slowFrames += 1;
     else slowFrames = Math.max(0, slowFrames - 1);
@@ -212,7 +213,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   };
 
   const schedule = () => {
-    if (!disposed && contextAvailable && inView && !document.hidden && !frameId) {
+    if (!disposed && contextAvailable && inView && !document.hidden && !isControlOverlayOpen() && !frameId) {
       lastTime = 0;
       frameId = requestAnimationFrame(render);
     }
@@ -238,7 +239,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   };
   const pointerLeave = () => pointer.set(0, 0);
   const visibility = () => {
-    if (document.hidden) { cancelAnimationFrame(frameId); frameId = 0; }
+    if (document.hidden || isControlOverlayOpen()) { cancelAnimationFrame(frameId); frameId = 0; }
     else schedule();
   };
   const contextLost = (event: Event) => {
@@ -261,6 +262,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   container.addEventListener('pointermove', pointerMove as EventListener, { passive: true });
   container.addEventListener('pointerleave', pointerLeave);
   document.addEventListener('visibilitychange', visibility);
+  window.addEventListener(controlOverlayEvent, visibility);
   canvas.addEventListener('webglcontextlost', contextLost);
   canvas.addEventListener('webglcontextrestored', contextRestored);
   resize();
@@ -273,6 +275,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     container.removeEventListener('pointermove', pointerMove as EventListener);
     container.removeEventListener('pointerleave', pointerLeave);
     document.removeEventListener('visibilitychange', visibility);
+    window.removeEventListener(controlOverlayEvent, visibility);
     canvas.removeEventListener('webglcontextlost', contextLost);
     canvas.removeEventListener('webglcontextrestored', contextRestored);
     cable.geometry.dispose(); core.geometry.dispose(); glass.dispose(); coreMaterial.dispose();
