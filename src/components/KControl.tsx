@@ -3,7 +3,8 @@ import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerE
 import { ArrowIcon, ArrowRightIcon, CloseIcon } from './Icons';
 import { kControlSections, type SiteSectionId } from '../data/siteSections';
 import { useSound } from '../audio/SoundProvider';
-import { setControlOverlayOpen } from '../utils/controlOverlay';
+import { isSceneTransitionActive, setControlOverlayOpen } from '../utils/controlOverlay';
+import { navigateToScene } from '../utils/sceneNavigation';
 
 export interface KControlProps {
   activeSection: SiteSectionId;
@@ -89,7 +90,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
 
   const openPalette = useCallback((source: 'keyboard' | 'pointer') => {
     const dialog = dialogRef.current;
-    if (!dialog || disabled) return false;
+    if (!dialog || disabled || isSceneTransitionActive()) return false;
     if (dialog.open) { closePalette(); return true; }
     if (document.body.classList.contains('nav-open')) return false;
     if (document.querySelector('dialog[open], [aria-modal="true"]')) return false;
@@ -139,7 +140,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
     setControlOverlayOpen(false);
     const destination = destinationRef.current;
     destinationRef.current = null;
-    if (disabled || document.querySelector('dialog[open], [aria-modal="true"]')) return;
+    if (disabled || isSceneTransitionActive() || document.querySelector('dialog[open], [aria-modal="true"]')) return;
     if (destination) {
       const section = document.getElementById(destination);
       const heading = section?.querySelector<HTMLElement>('h1, h2');
@@ -211,10 +212,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
                   event.preventDefault();
                   destinationRef.current = section.id;
                   closePalette();
-                  if (window.location.hash !== section.href) window.history.pushState(null, '', section.href);
-                  // Chapter selection is a direct jump, so reopening the controls cannot
-                  // interrupt a long smooth scroll halfway to the chosen destination.
-                  target.scrollIntoView({ behavior: 'instant', block: 'start' });
+                  navigateToScene(section.id);
                 }}>
                 <i aria-hidden="true" /><span aria-hidden="true">{section.index}</span>
                 <strong>{section.control.label}</strong><ArrowRightIcon />

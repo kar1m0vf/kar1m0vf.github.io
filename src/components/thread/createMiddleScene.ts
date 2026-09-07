@@ -1,4 +1,5 @@
-import { controlOverlayEvent, isControlOverlayOpen } from '../../utils/controlOverlay';
+import { controlOverlayEvent, isSceneRenderingSuspended } from '../../utils/controlOverlay';
+import { reportSceneFrame, sceneJumpEvent } from '../../utils/sceneNavigation';
 import {
   CatmullRomCurve3, Color, Curve, Fog, Group, Mesh, MeshBasicMaterial, PerspectiveCamera,
   PMREMGenerator, PointLight, Scene, SphereGeometry, TubeGeometry, Vector2, Vector3, WebGLRenderer,
@@ -10,6 +11,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createThreadCore, createThreadGlass } from './threadMaterial';
 import { passageTrajectory } from './passageTrajectory';
+import { extendThreadGeometry } from './extendThreadGeometry';
 
 interface Options { reduced: boolean; onReady: () => void; onUnavailable: () => void }
 interface Pose { shape: number; x: number; y: number; scale: number; angle: number; camera: number; visibility: number }
@@ -54,8 +56,8 @@ function createCurves() {
 }
 
 function tube(curves: Curve<Vector3>[], segments: number, radius: number, radial: number) {
-  const geometry = new TubeGeometry(curves[0]!, segments, radius, radial, false);
-  const targets = curves.slice(1).map((path) => new TubeGeometry(path, segments, radius, radial, false));
+  const geometry = extendThreadGeometry(new TubeGeometry(curves[0]!, segments, radius, radial, false), 160);
+  const targets = curves.slice(1).map((path) => extendThreadGeometry(new TubeGeometry(path, segments, radius, radial, false), 160));
   geometry.morphAttributes.position = targets.map((target) => target.attributes.position!.clone());
   geometry.morphAttributes.normal = targets.map((target) => target.attributes.normal!.clone());
   targets.forEach((target) => target.dispose());
@@ -95,9 +97,6 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   shell.frustumCulled = false; core.frustumCulled = false;
   const group = new Group();
   group.add(shell, core); scene.add(group);
-  const capGeometry = new SphereGeometry(0.145, 16, 10);
-  const caps = [new Mesh(capGeometry, glass), new Mesh(capGeometry, glass)];
-  group.add(...caps);
   const key = new PointLight(0xb9dfff, 65, 28, 2);
   const blue = new PointLight(0x2878ff, 45, 22, 2);
   key.position.set(-2, 5, 6); blue.position.set(4, -2, 3);
@@ -247,7 +246,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
 
   const render = (time: number) => {
     frameId = 0;
-    if (disposed || unavailable || !visible || document.hidden || isControlOverlayOpen()) return;
+    if (disposed || unavailable || !visible || document.hidden || isSceneRenderingSuspended()) return;
     const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.1) : 0.016;
     slowFrames = lastTime && time - lastTime > 45 ? slowFrames + 1 : Math.max(0, slowFrames - 1);
     lastTime = time;
@@ -293,20 +292,18 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
       paths[lower]!.getPointAt(t, a); paths[upper]!.getPointAt(t, b);
       bead.position.copy(a).lerp(b, blend);
     });
-    caps.forEach((cap, index) => {
-      paths[lower]!.getPoint(index, a); paths[upper]!.getPoint(index, b);
-      cap.position.copy(a).lerp(b, blend);
-    });
     bloom.strength = 0.28 + tunnel * 0.1;
     try { composer.render(dt); }
     catch { fail(); return; }
+    reportSceneFrame(host);
     if (firstRender) { firstRender = false; options.onReady(); }
     if (!options.reduced && !playing) frameId = requestAnimationFrame(render);
   };
   const schedule = () => {
-    if (!frameId && !disposed && !unavailable && visible && !document.hidden && !isControlOverlayOpen()) frameId = requestAnimationFrame(render);
+    if (!frameId && !disposed && !unavailable && visible && !document.hidden && !isSceneRenderingSuspended()) frameId = requestAnimationFrame(render);
   };
   const requestMeasure = () => { if (!measureId && !disposed) measureId = requestAnimationFrame(measure); };
+  const jump = () => { firstMeasure = true; requestMeasure(); };
   const resize = () => {
     width = host.clientWidth; height = host.clientHeight;
     if (!width || !height) return;
@@ -320,7 +317,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   const leave = () => pointer.set(0, 0);
   const visibility = () => {
     lastTime = 0;
-    if (document.hidden || isControlOverlayOpen()) { cancelAnimationFrame(frameId); frameId = 0; } else requestMeasure();
+    if (document.hidden || isSceneRenderingSuspended()) { cancelAnimationFrame(frameId); frameId = 0; } else requestMeasure();
   };
   const fail = () => { unavailable = true; cancelAnimationFrame(frameId); frameId = 0; options.onUnavailable(); };
   const contextLost = (event: Event) => { event.preventDefault(); fail(); };
@@ -339,6 +336,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   window.addEventListener('scroll', requestMeasure, { passive: true });
   document.addEventListener('visibilitychange', visibility);
   window.addEventListener(controlOverlayEvent, visibility);
+  window.addEventListener(sceneJumpEvent, jump);
   canvas.addEventListener('webglcontextlost', contextLost);
   resize();
 
@@ -348,9 +346,10 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     root.removeEventListener('pointermove', move); root.removeEventListener('pointerleave', leave);
     window.removeEventListener('scroll', requestMeasure); document.removeEventListener('visibilitychange', visibility);
     window.removeEventListener(controlOverlayEvent, visibility);
+    window.removeEventListener(sceneJumpEvent, jump);
     canvas.removeEventListener('webglcontextlost', contextLost);
     shell.geometry.dispose(); core.geometry.dispose(); glass.dispose(); coreMaterial.dispose();
-    capGeometry.dispose(); beadGeometry.dispose(); beadMaterial.dispose(); environment.dispose(); bloom.dispose(); output.dispose(); composer.dispose();
+    beadGeometry.dispose(); beadMaterial.dispose(); environment.dispose(); bloom.dispose(); output.dispose(); composer.dispose();
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   };
 }

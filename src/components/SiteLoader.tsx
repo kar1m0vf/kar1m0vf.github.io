@@ -3,6 +3,8 @@ import type { CSSProperties, SyntheticEvent } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { ProjectMedia } from '../types';
 import { projectWorlds } from '../data/projects';
+import { beginEntryHandoff, finishEntryHandoff } from '../utils/entryHandoff';
+import { jumpToScene } from '../utils/sceneNavigation';
 
 const minimumVisibleTime = 2000;
 const maximumWaitTime = 15000;
@@ -57,6 +59,7 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
   const completedAssetsRef = useRef(new Set<string>());
   const completionReportedRef = useRef(false);
   const completedCountRef = useRef(0);
+  const threadRef = useRef<SVGSVGElement>(null);
   const [completedCount, setCompletedCount] = useState(0);
   const [displayProgress, setDisplayProgress] = useState(0);
   const [isExiting, setIsExiting] = useState(false);
@@ -96,8 +99,29 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
     document.documentElement.dataset.siteLoading = 'true';
     return () => {
       delete document.documentElement.dataset.siteLoading;
+      finishEntryHandoff();
     };
   }, []);
+
+  useLayoutEffect(() => {
+    if (!isExiting) return;
+    // Resolve a deep link while the loader is still opaque, not after revealing Hero.
+    let id = 'top';
+    try { id = decodeURIComponent(location.hash.slice(1)) || 'top'; } catch { /* Use Start. */ }
+    const destination = document.getElementById(id);
+    if (destination) jumpToScene({ element: destination });
+    if (id === 'top' && !reduceMotion && threadRef.current) {
+      beginEntryHandoff(threadRef.current.getBoundingClientRect());
+    }
+  }, [isExiting, reduceMotion]);
+
+  useEffect(() => {
+    if (!isExiting) return;
+    const timer = window.setTimeout(() => {
+      if (!completionReportedRef.current) { completionReportedRef.current = true; onComplete(); }
+    }, reduceMotion ? 220 : 1300);
+    return () => window.clearTimeout(timer);
+  }, [isExiting, onComplete, reduceMotion]);
 
   useEffect(() => {
     let cancelled = false;
@@ -188,9 +212,9 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
       onAnimationComplete={completeLoader}
       role="status"
       transition={{
-        delay: reduceMotion ? 0 : 0.12,
-        duration: reduceMotion ? 0 : 0.44,
-        ease: [0.22, 1, 0.36, 1],
+        delay: 0,
+        duration: reduceMotion ? 0.12 : 0.94,
+        ease: [0.4, 0, 0.2, 1],
       }}
     >
       <div className="site-loader__scope" style={loaderStyle}>
@@ -199,7 +223,7 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
         </span>
         <div aria-hidden="true" className="site-loader__identity">
           <p className="site-loader__name">Kamil Kerimov</p>
-          <svg className="site-loader__thread" fill="none" viewBox="0 0 300 90">
+          <svg className="site-loader__thread" fill="none" ref={threadRef} viewBox="0 0 300 90">
             <path className="site-loader__thread-base" d="M207 18C118 9 12 24 12 45S137 82 250 63S234 17 207 18" />
             <path className="site-loader__thread-live" d="M207 18C118 9 12 24 12 45S137 82 250 63S234 17 207 18" pathLength="1" />
           </svg>

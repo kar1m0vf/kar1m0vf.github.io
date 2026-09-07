@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from 'motion/react';
 import { useSound } from '../audio/SoundProvider';
 import { ArrowDownIcon, ArrowIcon } from './Icons';
 import { ThreadSculpture } from './thread/ThreadSculpture';
 import './thread/ThreadStory.css';
+import { navigateToScene, sceneJumpEvent } from '../utils/sceneNavigation';
 
 const chapters = ['Meet me', 'My perspective', 'Selected work'] as const;
 const chapterPositions = [0, 0.46, 0.87] as const;
@@ -24,6 +25,18 @@ export function Hero({ onReady }: { onReady?: () => void }) {
   const closingY = useTransform(progress, [0.65, 0.82], ['8vh', '0vh']);
   const progressWidth = useTransform(progress, [0, 1], ['0%', '100%']);
 
+  useEffect(() => {
+    const snapToDestination = () => {
+      const section = sectionRef.current;
+      if (!section) return;
+      const value = Math.max(0, Math.min(1, -section.getBoundingClientRect().top / Math.max(1, section.offsetHeight - innerHeight)));
+      scrollYProgress.set(value);
+      progress.jump(value);
+    };
+    window.addEventListener(sceneJumpEvent, snapToDestination);
+    return () => window.removeEventListener(sceneJumpEvent, snapToDestination);
+  }, [progress, scrollYProgress]);
+
   useMotionValueEvent(progress, 'change', (value) => {
     const next = value < 0.29 ? 0 : value < 0.68 ? 1 : 2;
     setChapter((previous) => previous === next ? previous : next);
@@ -33,9 +46,8 @@ export function Hero({ onReady }: { onReady?: () => void }) {
     const section = sectionRef.current;
     if (!section) return;
     playSound('select');
-    const top = section.getBoundingClientRect().top + window.scrollY;
-    const distance = Math.max(0, section.offsetHeight - window.innerHeight);
-    window.scrollTo({ top: top + distance * (chapterPositions[index] ?? 0), behavior: reduced ? 'instant' : 'smooth' });
+    navigateToScene('top', { progress: chapterPositions[index] ?? 0, history: 'none',
+      focusSelector: ['h1', '.thread-story__perspective h2', '.thread-story__closing h2'][index] ?? 'h1' });
   };
 
   return (

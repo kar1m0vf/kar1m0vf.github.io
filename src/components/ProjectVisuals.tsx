@@ -347,7 +347,9 @@ function BlasterVisual({
       if (!entry?.isIntersecting) return;
       setShouldLoad(true);
       observer.disconnect();
-    }, { rootMargin: '420px 0px', threshold: 0.01 });
+    // Mount the game only when it is actually visible. Overscan used to mount
+    // it behind Journey during a direct jump and shift that chapter downward.
+    }, { rootMargin: '0px', threshold: 0.01 });
     observer.observe(root);
     return () => observer.disconnect();
   }, [shouldLoad]);

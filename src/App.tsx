@@ -8,6 +8,7 @@ import { Journey } from './components/Journey';
 import { KControl } from './components/KControl';
 import { Method } from './components/Method';
 import { SiteLoader } from './components/SiteLoader';
+import { SceneNavigation } from './components/SceneNavigation';
 import { WorkSequence } from './components/WorkSequence';
 import { MiddleThread } from './components/thread/MiddleThread';
 import { siteSections } from './data/siteSections';
@@ -27,15 +28,6 @@ export default function App() {
   const activeSectionId = useActiveSection(isLoading);
   const activeSection = siteSections.find((section) => section.id === activeSectionId) ?? siteSections[0];
   const handleHeroReady = useCallback(() => setHeroReady(true), []);
-
-  useEffect(() => {
-    if (isLoading || !window.location.hash) return;
-    // The initial fragment may be resolved before React mounts or while the page is inert.
-    const frame = window.requestAnimationFrame(() => {
-      document.getElementById(window.location.hash.slice(1))?.scrollIntoView({ behavior: 'instant', block: 'start' });
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [isLoading]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -59,6 +51,7 @@ export default function App() {
   return (
     <>
       {isLoading ? <SiteLoader heroReady={heroReady} onComplete={() => setIsLoading(false)} /> : null}
+      <SceneNavigation />
       <div aria-busy={isLoading} aria-hidden={isLoading} className="site" inert={isLoading ? true : undefined}>
         <Header />
         <ExperienceRail activeId={activeSectionId} />

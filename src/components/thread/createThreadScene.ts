@@ -1,4 +1,6 @@
-import { controlOverlayEvent, isControlOverlayOpen } from '../../utils/controlOverlay';
+import { controlOverlayEvent, isSceneRenderingSuspended } from '../../utils/controlOverlay';
+import { readEntryHandoff } from '../../utils/entryHandoff';
+import { reportSceneFrame, sceneJumpEvent } from '../../utils/sceneNavigation';
 import {
   AdditiveBlending, BufferGeometry, Color, Curve, Float32BufferAttribute, Group,
   Mesh, MeshBasicMaterial, PerspectiveCamera, PMREMGenerator,
@@ -11,6 +13,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createThreadCore, createThreadGlass } from './threadMaterial';
+import { extendThreadGeometry } from './extendThreadGeometry';
 
 interface SceneOptions {
   framing: 'intro' | 'closing';
@@ -47,10 +50,12 @@ class ThreadCurve extends Curve<Vector3> {
 
 function createCable(radius: number, segments: number, radial: number) {
   const curves = [new ThreadCurve('knot'), new ThreadCurve('aperture'), new ThreadCurve('thread')];
-  const geometry = new TubeGeometry(curves[0]!, segments, radius, radial, true);
+  const geometry = extendThreadGeometry(new TubeGeometry(curves[0]!, segments, radius, radial, true), 0);
   const targets = [
-    new TubeGeometry(curves[1]!, segments, radius, radial, true),
-    new TubeGeometry(curves[2]!, segments, radius * 0.23, radial, false),
+    extendThreadGeometry(new TubeGeometry(curves[1]!, segments, radius, radial, true), 0),
+    // The opening seam passes below the camera. Route its continuation around
+    // that edge so the far end never cuts through the frame during the morph.
+    extendThreadGeometry(new TubeGeometry(curves[2]!, segments, radius * 0.23, radial, false), 160, new Vector3(-1, -3, 0).normalize()),
   ];
   geometry.morphAttributes.position = targets.map((target) => target.attributes.position!.clone());
   geometry.morphAttributes.normal = targets.map((target) => target.attributes.normal!.clone());
@@ -153,7 +158,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
 
   const render = (time: number) => {
     frameId = 0;
-    if (disposed || !contextAvailable || !inView || document.hidden || isControlOverlayOpen()) return;
+    if (disposed || !contextAvailable || !inView || document.hidden || isSceneRenderingSuspended()) return;
     const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.04) : 0.016;
     if (lastTime && time - lastTime > 45) slowFrames += 1;
     else slowFrames = Math.max(0, slowFrames - 1);
@@ -166,6 +171,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       slowFrames = 0;
     }
     const p = clamp(options.getProgress());
+    const entry = options.framing === 'intro' && p < .001 && !options.reduced ? readEntryHandoff(time) : null;
     const open = smooth(0.17, 0.5, p);
     const unspool = smooth(0.66, 0.94, p);
     const approach = smooth(0.42, 0.69, p) * (1 - unspool);
@@ -183,10 +189,18 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       mix(0.32 + Math.sin(elapsed * 0.17) * 0.24, 0, open) + smoothedPointer.x * 0.18 * (1 - open),
       mix(-0.34 + elapsed * 0.025, -Math.PI * 0.5, open) * (1 - unspool) + unspool * 0.65,
     );
+    if (entry) {
+      const entryScale = entry.width * width / height * (2 * 9.3 * Math.tan(19 * Math.PI / 180)) * .96 / 4.2;
+      group.position.x = mix((entry.x - .5) * viewWidth, group.position.x, entry.progress);
+      group.position.y = mix((.5 - entry.y) * viewWidth / camera.aspect, group.position.y, entry.progress);
+      group.scale.setScalar(mix(entryScale, scale, entry.progress));
+      group.rotation.set(mix(1.36, group.rotation.x, entry.progress),
+        mix(0, group.rotation.y, entry.progress), mix(0, group.rotation.z, entry.progress));
+    }
     for (const mesh of [shell, filament]) {
       const influences = mesh.morphTargetInfluences!;
-      influences[0] = open * (1 - unspool);
-      influences[1] = unspool;
+      influences[0] = entry ? mix(1, open * (1 - unspool), entry.progress) : open * (1 - unspool);
+      influences[1] = entry ? unspool * entry.progress : unspool;
     }
     camera.position.z = 9.3 - approach * 5.6;
     camera.position.x = smoothedPointer.x * 0.12;
@@ -196,6 +210,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     bloom.strength = 0.28 + approach * 0.25;
     stars.rotation.z = -p * 0.25;
     beads.forEach((bead, index) => {
+      bead.visible = !entry || entry.progress > .65;
       const t = (elapsed * 0.065 + index / 3) % 1;
       cable.curves[0]!.getPointAt(t, pointA);
       cable.curves[1]!.getPointAt(t, pointB);
@@ -209,11 +224,14 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       options.onUnavailable();
       return;
     }
-    if (!options.reduced) frameId = requestAnimationFrame(render);
+    reportSceneFrame(host);
+    // One prepared frame is sufficient behind the opaque loader. The handoff
+    // event wakes the same canvas to turn its small glass loop into the Hero.
+    if (!options.reduced && (document.documentElement.dataset.siteLoading !== 'true' || entry)) frameId = requestAnimationFrame(render);
   };
 
   const schedule = () => {
-    if (!disposed && contextAvailable && inView && !document.hidden && !isControlOverlayOpen() && !frameId) {
+    if (!disposed && contextAvailable && inView && !document.hidden && !isSceneRenderingSuspended() && !frameId) {
       lastTime = 0;
       frameId = requestAnimationFrame(render);
     }
@@ -239,7 +257,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   };
   const pointerLeave = () => pointer.set(0, 0);
   const visibility = () => {
-    if (document.hidden || isControlOverlayOpen()) { cancelAnimationFrame(frameId); frameId = 0; }
+    if (document.hidden || isSceneRenderingSuspended()) { cancelAnimationFrame(frameId); frameId = 0; }
     else schedule();
   };
   const contextLost = (event: Event) => {
@@ -263,6 +281,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   container.addEventListener('pointerleave', pointerLeave);
   document.addEventListener('visibilitychange', visibility);
   window.addEventListener(controlOverlayEvent, visibility);
+  window.addEventListener(sceneJumpEvent, schedule);
   canvas.addEventListener('webglcontextlost', contextLost);
   canvas.addEventListener('webglcontextrestored', contextRestored);
   resize();
@@ -276,6 +295,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     container.removeEventListener('pointerleave', pointerLeave);
     document.removeEventListener('visibilitychange', visibility);
     window.removeEventListener(controlOverlayEvent, visibility);
+    window.removeEventListener(sceneJumpEvent, schedule);
     canvas.removeEventListener('webglcontextlost', contextLost);
     canvas.removeEventListener('webglcontextrestored', contextRestored);
     cable.geometry.dispose(); core.geometry.dispose(); glass.dispose(); coreMaterial.dispose();

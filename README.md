@@ -51,7 +51,9 @@ npm run lhci
 - WebGL is decorative; all essential information remains semantic HTML. Unsupported or lost graphics contexts use an SVG fallback.
 - Mobile keeps the 3D scene with a lower rendering budget. Reduced motion shows the story in normal document flow with a still sculpture.
 - The resume PDF remains repository context and is intentionally not linked from the website.
-- Deep links open their requested section after the loader finishes. Storage-dependent demos remain usable when browser storage is unavailable.
+- Deep links settle under the loader before the requested section is revealed. Storage-dependent demos remain usable when browser storage is unavailable.
 - The quiet loading screen uses the existing type and a small blue filament to show resource readiness; it keeps the media/font preparation and timeout fallback.
 - K Control opens with its floating trigger or Ctrl/Cmd+K. All seven chapters are available, with direct jumps, keyboard focus restoration, Escape/outside dismissal, and an inset sheet on mobile. Builder Mode and sound preferences survive reloads, with guarded storage access.
 - While K Control is open, the thread renderers rest and Blaster pauses. The scene resumes when the controls close; gameplay resumes only on the visitor’s request. Interface pictograms use the shared SVG family.
+- In-page navigation uses a blue light veil: the page jumps once while covered, scroll-driven springs snap to the destination, and the new scene renders before the reveal. Browser history and destination focus are preserved; reduced motion skips the effect.
+- The loading filament hands over to a small glass loop in the existing Hero canvas, which unfolds into the knot. Open thread poses continue beyond the frame without changing the original curve vertices.

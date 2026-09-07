@@ -12,7 +12,7 @@ import type {
   PointerEvent as ReactPointerEvent,
 } from 'react';
 import { useSound } from '../../audio/SoundProvider';
-import { controlOverlayEvent, isControlOverlayOpen } from '../../utils/controlOverlay';
+import { controlOverlayEvent, isSceneRenderingSuspended } from '../../utils/controlOverlay';
 import { PauseIcon, PlayIcon, RestartIcon, SteerIcon } from '../Icons';
 import { loadMiniBlasterAssets } from './assets';
 import {
@@ -254,7 +254,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
 
   useEffect(() => {
     const pauseForControls = () => {
-      if (isControlOverlayOpen()) pauseRun('Micro run paused while K Control is open.');
+      if (isSceneRenderingSuspended()) pauseRun('Micro run paused while you navigate.');
     };
     pauseForControls();
     window.addEventListener(controlOverlayEvent, pauseForControls);

@@ -1,0 +1,19 @@
+html[data-scene-transition] { overflow: hidden; overflow-anchor: none; }
+.scene-transition { position: fixed; z-index: 350; inset: 0; overflow: clip; background: #050709; pointer-events: auto; opacity: 0; }
+.scene-transition[hidden] { display: none; }
+.scene-transition::after { content: ''; position: absolute; left: -5%; right: -5%; top: 50%; height: 1px; background: linear-gradient(90deg,transparent,#387ce577 20%,#b5e4ff 50%,#387ce577 80%,transparent); box-shadow: 0 0 12px #3187f780; }
+.scene-transition__haze { position: absolute; inset: -12%; background: radial-gradient(ellipse at 50% 50%, #397fd544, #12305d33 22%, #05070900 58%); }
+.scene-transition__thread { position: absolute; left: 50%; top: 50%; width: max(34rem, 105vw); transform: translate(-50%,-50%) scaleY(.045); opacity: .9; }
+.scene-transition__thread svg { display: block; width: 100%; overflow: visible; }
+.scene-transition__thread path { stroke: #a2ddff; stroke-width: .6; filter: drop-shadow(0 0 4px #278cff); }
+html[data-scene-transition='covering'] .scene-transition__thread { animation: thread-transit-gather 240ms cubic-bezier(.22,1,.36,1) both; }
+html[data-scene-transition='covering'] .scene-transition::after { animation: transit-seam-in 210ms ease both; }
+html[data-scene-transition='revealing'] .scene-transition::after { animation: transit-seam-out 260ms ease both; }
+html[data-scene-transition='revealing'] .scene-transition__haze { animation: thread-transit-release 420ms ease-out both; }
+html[data-scene-transition='revealing'] .scene-transition__thread { animation: thread-transit-open 420ms cubic-bezier(.22,1,.36,1) both; }
+@keyframes thread-transit-gather { from { opacity: 0; transform: translate(-50%,-50%) scale(.7,.15); } to { opacity: .9; transform: translate(-50%,-50%) scale(1,.045); } }
+@keyframes thread-transit-open { to { opacity: 0; transform: translate(-50%,-50%) scale(1.12,1.6); } }
+@keyframes thread-transit-release { to { opacity: 0; transform: scale(1.15); } }
+@keyframes transit-seam-in { from { opacity: 0; transform: scaleX(.4); } to { opacity: .85; transform: none; } }
+@keyframes transit-seam-out { to { opacity: 0; transform: scaleX(1.1); } }
+@media (prefers-reduced-motion: reduce) { .scene-transition { display: none; } }
