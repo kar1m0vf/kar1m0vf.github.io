@@ -16,7 +16,7 @@ describe('the tunnel’s visual promise', () => {
         expect(frame.camera).toBeLessThanOrEqual(previous);
         previous = frame.camera;
       }
-      // The exit fade starts only after the viewer passed every physical coil.
+      // The exit fade starts after the viewer passes the main coils toward the light.
       expect(passageTrajectory(.86, scale).camera).toBeLessThan(-52.8 * scale);
       expect(passageTrajectory(.86, scale).visibility).toBe(1);
     });

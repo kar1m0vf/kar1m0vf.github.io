@@ -1,5 +1,11 @@
 export const MINI_BLASTER_DURATION_MS = 15_000;
 export const MINI_BLASTER_MAX_HULL = 3;
+export const MINI_BLASTER_MAX_SCORE = 50_000;
+export const MINI_BLASTER_BEST_KEY = 'portfolio:blaster-best:v2';
+export const MINI_BLASTER_REWARDS = {
+  droneHit: 500, droneDestroyed: 1_000,
+  bossHit: 1_000, bossDestroyed: 6_000,
+} as const;
 
 export type GamePhase =
   | 'ready'
@@ -97,4 +103,3 @@ export interface GameViewport {
   height: number;
   width: number;
 }
-

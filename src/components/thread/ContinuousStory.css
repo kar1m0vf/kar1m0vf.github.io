@@ -2,10 +2,12 @@
 .continuous-story { position: relative; isolation: isolate; background: #050709; --scene-shadow: 0 2px 5px #020408,0 0 22px #020408cc; }
 .continuity-layer { position: absolute; z-index: 0; inset: 0; pointer-events: none; overflow: clip; }
 .continuity-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: radial-gradient(ellipse at 78% 50%,#10377528,transparent 65%); }
+.continuity-stage::after { content: ''; position: absolute; inset: -20%; pointer-events: none; background: radial-gradient(ellipse at center,#9ad4ed70 0%,#4c96d24d 12%,#2457992e 32%,transparent 66%); opacity: var(--passage-light,0); transform: scale(calc(.65 + var(--passage-light,0) * .6)); }
 .continuity-canvas,.continuity-canvas canvas,.continuity-fallback { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .continuity-fallback { opacity: .65; }
 .continuous-story[data-renderer='ready'] .continuity-fallback { visibility: hidden; }
 .continuous-story[data-renderer='fallback'] .continuity-canvas { visibility: hidden; }
+.continuous-story[data-renderer='fallback'] .continuity-stage::after { display: none; }
 .continuous-story > :not(.continuity-layer) { position: relative; z-index: 1; }
 .continuous-story .personal-intro,.continuous-story .project,.continuous-story .life-story { background: transparent; }
 .continuous-story .project { --accent: #87c5ff; border: 0; overflow: clip; }
@@ -58,7 +60,7 @@
 .continuous-story .mini-blaster__hud::before { content: ''; position: absolute; z-index: -1; inset: -.8rem -1rem; pointer-events: none; background: radial-gradient(ellipse,#040913f5 35%,#040913b8 58%,transparent 76%); filter: blur(8px); }
 .continuous-story .mini-blaster__metric > strong { text-shadow: 0 1px 4px #000,0 0 12px #020508,0 0 20px #65eff440; }
 .continuous-story .mini-blaster__metric { padding-inline: .8rem; }
-.continuous-story .mini-blaster__arena,.continuous-story .blaster-runtime-poster { border-radius: 2rem; border: 1px solid #8dc6ff80; background-color: #030913; box-shadow: 0 1px 2px #a5d8ff40,0 15px 65px #075bc335,inset 0 0 30px #518df029; }
+.continuous-story .mini-blaster__arena,.continuous-story .blaster-runtime-poster { --blaster-radius: 2rem; border-radius: var(--blaster-radius); border: 1px solid #8dc6ff80; background-color: #030913; box-shadow: 0 1px 2px #a5d8ff40,0 15px 65px #075bc335,inset 0 0 30px #518df029; }
 .continuous-story .mini-blaster__arena::after { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; box-shadow: inset 0 1px 10px #8ec9ff40,inset 0 -4px 15px #1f80ed38; }
 .continuous-story .mini-blaster__instructions { position: relative; isolation: isolate; margin-top: .7rem; background: transparent; color: #b8eaff; }
 .continuous-story .mini-blaster__instructions::before { content: ''; position: absolute; z-index: -1; inset: .3rem 2%; pointer-events: none; background: radial-gradient(ellipse,#050b14e0 38%,#050b1480 60%,transparent 75%); filter: blur(5px); }
@@ -108,7 +110,7 @@
   .continuous-story .project__statement { margin-top: 1.5rem; }
   .continuous-story .project { min-height: 0; padding-block: 4.5rem; }
   .continuous-story .project--blaster { padding-top: 5rem; }
-  .continuous-story .mini-blaster__arena { border-radius: 1.4rem; }
+  .continuous-story .mini-blaster__arena { --blaster-radius: 1.4rem; }
   .continuous-story .mini-blaster__hud { margin-inline: 0; width: 100%; }
   .continuous-story .mini-blaster__metric { padding-inline: .35rem; }
   .continuous-story .mini-blaster__controls { padding-inline: 0; gap: .6rem; }
@@ -121,6 +123,7 @@
 .continuous-story[data-renderer='fallback'] .thread-passage { height: auto; margin-bottom: 0; }
 .continuous-story[data-renderer='fallback'] .thread-passage__sticky { position: relative; min-height: 42rem; }
 @media (prefers-reduced-motion:reduce), (max-height:649px) {
+  .continuity-stage::after { display: none; }
   .thread-passage { height: auto; margin-bottom: 0; }
   .thread-passage .thread-passage__sticky { position: relative; min-height: 42rem; height: auto; padding-block: 6rem 10rem; }
   .thread-passage__copy { transform: none; opacity: 1; }

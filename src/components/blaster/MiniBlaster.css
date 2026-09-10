@@ -240,6 +240,8 @@
 .mini-blaster__canvas {
   z-index: 1;
   pointer-events: none;
+  border-radius: inherit;
+  clip-path: inset(0 round var(--blaster-radius, 0 0 .3rem .3rem));
 }
 
 .mini-blaster__scanlines {

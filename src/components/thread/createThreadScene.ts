@@ -4,7 +4,7 @@ import { reportSceneFrame, sceneJumpEvent } from '../../utils/sceneNavigation';
 import {
   AdditiveBlending, BufferGeometry, Color, Curve, Float32BufferAttribute, Group,
   Mesh, MeshBasicMaterial, PerspectiveCamera, PMREMGenerator,
-  PointLight, Points, PointsMaterial, Scene, SphereGeometry, TubeGeometry, Vector2,
+  PointLight, Points, PointsMaterial, Scene, SphereGeometry, Vector2,
   Vector3, WebGLRenderer,
 } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -13,7 +13,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createThreadCore, createThreadGlass } from './threadMaterial';
-import { extendThreadGeometry } from './extendThreadGeometry';
+import { RoundThread, THREAD_RADIUS } from './RoundThread';
 
 interface SceneOptions {
   framing: 'intro' | 'closing';
@@ -33,7 +33,7 @@ const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 type Shape = 'knot' | 'aperture' | 'thread';
 
 /** All shapes share topology, so the cable opens continuously rather than swapping models. */
-class ThreadCurve extends Curve<Vector3> {
+export class ThreadCurve extends Curve<Vector3> {
   constructor(private readonly shape: Shape) { super(); }
   getPoint(t: number, target = new Vector3()) {
     const a = t * TAU;
@@ -46,23 +46,6 @@ class ThreadCurve extends Curve<Vector3> {
     }
     return target.set(-8 + 16 * t, 1.5 * Math.sin(a * 1.15) - 1.1, 0.5 * Math.cos(a));
   }
-}
-
-function createCable(radius: number, segments: number, radial: number) {
-  const curves = [new ThreadCurve('knot'), new ThreadCurve('aperture'), new ThreadCurve('thread')];
-  const geometry = extendThreadGeometry(new TubeGeometry(curves[0]!, segments, radius, radial, true), 0);
-  const targets = [
-    extendThreadGeometry(new TubeGeometry(curves[1]!, segments, radius, radial, true), 0),
-    // The opening seam passes below the camera. Route its continuation around
-    // that edge so the far end never cuts through the frame during the morph.
-    extendThreadGeometry(new TubeGeometry(curves[2]!, segments, radius * 0.23, radial, false), 160, new Vector3(-1, -3, 0).normalize()),
-  ];
-  geometry.morphAttributes.position = targets.map((target) => target.attributes.position!.clone());
-  geometry.morphAttributes.normal = targets.map((target) => target.attributes.normal!.clone());
-  targets.forEach((target) => target.dispose());
-  // The final open strand extends beyond the original knot's bounds.
-  geometry.boundingSphere = null;
-  return { geometry, curves };
 }
 
 export function createThreadScene(host: HTMLElement, options: SceneOptions): (() => void) | null {
@@ -94,15 +77,20 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
 
   const group = new Group();
   scene.add(group);
-  const cable = createCable(0.145, mobile() ? 220 : 320, 16);
+  const curves = [new ThreadCurve('knot'), new ThreadCurve('aperture'), new ThreadCurve('thread')];
+  const cable = new RoundThread(curves.map((path, index) => ({
+    path, radius: THREAD_RADIUS * (index === 2 ? .23 : 1), closed: index < 2,
+    extension: index === 2 ? 160 : 0,
+    ...(index === 2 ? { outwardStart: new Vector3(-1, -3, 0).normalize() } : {}),
+  })), mobile() ? 200 : 280);
+  const poseWeights = [1, 0, 0];
   const glass = createThreadGlass();
-  const shell = new Mesh(cable.geometry, glass);
+  const shell = new Mesh(cable.shell, glass);
   shell.frustumCulled = false;
   group.add(shell);
 
-  const core = createCable(0.022, mobile() ? 220 : 320, 8);
   const coreMaterial = createThreadCore();
-  const filament = new Mesh(core.geometry, coreMaterial);
+  const filament = new Mesh(cable.core, coreMaterial);
   filament.frustumCulled = false;
   group.add(filament);
 
@@ -152,9 +140,6 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   let slowFrames = 0;
   const pointer = new Vector2();
   const smoothedPointer = new Vector2();
-  const pointA = new Vector3();
-  const pointB = new Vector3();
-  const pointC = new Vector3();
 
   const render = (time: number) => {
     frameId = 0;
@@ -197,11 +182,10 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       group.rotation.set(mix(1.36, group.rotation.x, entry.progress),
         mix(0, group.rotation.y, entry.progress), mix(0, group.rotation.z, entry.progress));
     }
-    for (const mesh of [shell, filament]) {
-      const influences = mesh.morphTargetInfluences!;
-      influences[0] = entry ? mix(1, open * (1 - unspool), entry.progress) : open * (1 - unspool);
-      influences[1] = entry ? unspool * entry.progress : unspool;
-    }
+    poseWeights[1] = entry ? mix(1, open * (1 - unspool), entry.progress) : open * (1 - unspool);
+    poseWeights[2] = entry ? unspool * entry.progress : unspool;
+    poseWeights[0] = 1 - poseWeights[1]! - poseWeights[2]!;
+    cable.update(poseWeights);
     camera.position.z = 9.3 - approach * 5.6;
     camera.position.x = smoothedPointer.x * 0.12;
     camera.position.y = -smoothedPointer.y * 0.09;
@@ -212,10 +196,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     beads.forEach((bead, index) => {
       bead.visible = !entry || entry.progress > .65;
       const t = (elapsed * 0.065 + index / 3) % 1;
-      cable.curves[0]!.getPointAt(t, pointA);
-      cable.curves[1]!.getPointAt(t, pointB);
-      cable.curves[2]!.getPointAt(t, pointC);
-      bead.position.copy(pointA).lerp(pointB, open).lerp(pointC, unspool);
+      cable.getPointAt(t, bead.position);
     });
     canvas.dataset.phase = p < 0.29 ? 'knot' : p < 0.68 ? 'aperture' : 'thread';
     try { composer.render(dt); }
@@ -298,7 +279,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     window.removeEventListener(sceneJumpEvent, schedule);
     canvas.removeEventListener('webglcontextlost', contextLost);
     canvas.removeEventListener('webglcontextrestored', contextRestored);
-    cable.geometry.dispose(); core.geometry.dispose(); glass.dispose(); coreMaterial.dispose();
+    cable.shell.dispose(); cable.core.dispose(); glass.dispose(); coreMaterial.dispose();
     beadGeometry.dispose(); beadMaterial.dispose(); starsGeometry.dispose(); starsMaterial.dispose();
     environment.dispose(); bloom.dispose(); output.dispose(); composer.dispose();
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();

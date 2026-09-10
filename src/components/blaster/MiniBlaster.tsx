@@ -25,6 +25,8 @@ import {
 import { renderGame } from './renderer';
 import {
   MINI_BLASTER_MAX_HULL,
+  MINI_BLASTER_MAX_SCORE,
+  MINI_BLASTER_BEST_KEY,
 } from './types';
 import type {
   GamePhase,
@@ -70,8 +72,14 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
   const lastHullRef = useRef(MINI_BLASTER_MAX_HULL);
   const [bestScore, setBestScore] = useState(() => {
     try {
-      const saved = Number(localStorage.getItem('portfolio:blaster-best:v1'));
-      return Number.isSafeInteger(saved) && saved > 0 ? saved : 0;
+      const saved = localStorage.getItem(MINI_BLASTER_BEST_KEY);
+      if (saved !== null) {
+        const score = Number(saved);
+        return Number.isSafeInteger(score) && score >= 0 && score <= MINI_BLASTER_MAX_SCORE ? score : 0;
+      }
+      // The old maximum proves a perfect run. Partial old scores cannot be
+      // converted exactly because hit and kill rewards changed independently.
+      return Number(localStorage.getItem('portfolio:blaster-best:v1')) === 2630 ? MINI_BLASTER_MAX_SCORE : 0;
     } catch { return 0; }
   });
   const bestScoreRef = useRef(bestScore);
@@ -138,7 +146,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
       if (gameRef.current.score > bestScoreRef.current) {
         bestScoreRef.current = gameRef.current.score;
         setBestScore(gameRef.current.score);
-        try { localStorage.setItem('portfolio:blaster-best:v1', String(gameRef.current.score)); } catch { /* Keep the best score for this visit. */ }
+        try { localStorage.setItem(MINI_BLASTER_BEST_KEY, String(gameRef.current.score)); } catch { /* Keep the best score for this visit. */ }
       }
       clearInput();
       setGamePhase(result);
@@ -512,7 +520,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
               <>
                 <span>Run complete</span>
                 <strong>{formatScore(hud.score)} points.</strong>
-                <p>Nicely done. Think you can beat that?</p>
+                <p>{hud.score === MINI_BLASTER_MAX_SCORE ? 'Perfect run. Every target, every point.' : 'Nicely done. Think you can beat that?'}</p>
                 <button onClick={restartRun} type="button">Run again</button>
               </>
             ) : null}
@@ -553,7 +561,7 @@ export default function MiniBlaster({ inboundSignal = null }: MiniBlasterProps) 
       </div>
 
       <footer className="mini-blaster__footer">
-        <span>A short browser game inspired by my original Blaster.</span>
+        <span>A short browser game inspired by my original Blaster. Perfect run: 50,000.</span>
         {reducedEffects ? <strong>Reduced visual effects</strong> : null}
       </footer>
 

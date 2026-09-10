@@ -1,6 +1,7 @@
 import {
   MINI_BLASTER_DURATION_MS,
   MINI_BLASTER_MAX_HULL,
+  MINI_BLASTER_REWARDS,
 } from './types';
 import type {
   EnemyState,
@@ -227,12 +228,12 @@ function collideProjectiles(state: GameState): void {
 
         projectile.alive = false;
         enemy.hp -= 1;
-        state.score += enemy.kind === 'boss' ? 25 : 15;
+        state.score += enemy.kind === 'boss' ? MINI_BLASTER_REWARDS.bossHit : MINI_BLASTER_REWARDS.droneHit;
         addImpact(state, enemy.kind === 'boss' ? 'orange' : 'cyan', projectile.x, projectile.y, hitRadius * 1.7);
 
         if (enemy.hp <= 0) {
           enemy.alive = false;
-          state.score += enemy.kind === 'boss' ? 650 : 100;
+          state.score += enemy.kind === 'boss' ? MINI_BLASTER_REWARDS.bossDestroyed : MINI_BLASTER_REWARDS.droneDestroyed;
           addImpact(state, 'orange', enemy.x, enemy.y, enemy.kind === 'boss' ? 0.19 : 0.095);
           if (enemy.kind === 'boss') state.bossDestroyed = true;
         }
@@ -322,4 +323,3 @@ export function getHudSnapshot(state: GameState): HudSnapshot {
     wave,
   };
 }
-

@@ -88,9 +88,9 @@ export function ThreadSculpture({ framing = 'intro', onReady, progress, reduced 
           </linearGradient>
           <filter id={`${artworkId}-glow`} x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12" /></filter>
         </defs>
-        <path d="M350 98C560 20 646 280 480 411C304 551 128 535 134 358C141 161 331 152 451 309C584 483 447 676 292 550C107 400 148 173 350 98Z" stroke="#167cff" strokeWidth="22" opacity=".48" filter={`url(#${artworkId}-glow)`} />
-        <path d="M350 98C560 20 646 280 480 411C304 551 128 535 134 358C141 161 331 152 451 309C584 483 447 676 292 550C107 400 148 173 350 98Z" stroke={`url(#${artworkId}-light)`} strokeWidth="8" />
-        <path d="M350 98C560 20 646 280 480 411C304 551 128 535 134 358C141 161 331 152 451 309C584 483 447 676 292 550C107 400 148 173 350 98Z" stroke="#b8e9ff" strokeWidth="1" opacity=".7" />
+        <path d="M350 98C560 20 646 280 480 411C304 551 128 535 134 358C141 161 331 152 451 309C584 483 447 676 292 550C107 400 148 173 350 98Z" stroke="#167cff" strokeWidth="29.7" opacity=".48" filter={`url(#${artworkId}-glow)`} />
+        <path d="M350 98C560 20 646 280 480 411C304 551 128 535 134 358C141 161 331 152 451 309C584 483 447 676 292 550C107 400 148 173 350 98Z" stroke={`url(#${artworkId}-light)`} strokeWidth="10.8" />
+        <path d="M350 98C560 20 646 280 480 411C304 551 128 535 134 358C141 161 331 152 451 309C584 483 447 676 292 550C107 400 148 173 350 98Z" stroke="#b8e9ff" strokeWidth="1.35" opacity=".7" />
       </motion.svg>
       <div className="thread-sculpture__canvas" ref={hostRef} />
     </div>

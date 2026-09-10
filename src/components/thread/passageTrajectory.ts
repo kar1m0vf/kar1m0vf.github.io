@@ -10,8 +10,9 @@ export interface PassageFrame {
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const smooth = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
 
-/** The camera crosses the last coil (z = -52.8 × scale) before the signal is revealed.
- * Geometry/camera can reset only in the dark interval; reversing scroll retraces the trip.
+/** The camera crosses the main coils (z = -52.8 × scale), approaching the light.
+ * Geometry/camera reset while the mesh is hidden; a blue light wash bridges that
+ * interval into the signal scene. Reversing scroll retraces the same trip.
  */
 export function passageTrajectory(progress: number, scale: number): PassageFrame {
   const p = clamp(progress);

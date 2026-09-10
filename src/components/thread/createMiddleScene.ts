@@ -1,8 +1,8 @@
 import { controlOverlayEvent, isSceneRenderingSuspended } from '../../utils/controlOverlay';
 import { reportSceneFrame, sceneJumpEvent } from '../../utils/sceneNavigation';
 import {
-  CatmullRomCurve3, Color, Curve, Fog, Group, Mesh, MeshBasicMaterial, PerspectiveCamera,
-  PMREMGenerator, PointLight, Scene, SphereGeometry, TubeGeometry, Vector2, Vector3, WebGLRenderer,
+  AdditiveBlending, CanvasTexture, CatmullRomCurve3, Color, Fog, Group, Mesh, MeshBasicMaterial, PerspectiveCamera,
+  PMREMGenerator, PointLight, Scene, SphereGeometry, Sprite, SpriteMaterial, Vector2, Vector3, WebGLRenderer,
 } from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -11,27 +11,19 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createThreadCore, createThreadGlass } from './threadMaterial';
 import { passageTrajectory } from './passageTrajectory';
-import { extendThreadGeometry } from './extendThreadGeometry';
+import { RoundThread, THREAD_RADIUS } from './RoundThread';
+import { TunnelCurve } from './TunnelCurve';
 
 interface Options { reduced: boolean; onReady: () => void; onUnavailable: () => void }
 interface Pose { shape: number; x: number; y: number; scale: number; angle: number; camera: number; visibility: number }
 interface Stop { at: number; pose: Pose; phase: string }
-const TAU = Math.PI * 2;
 const clamp = (n: number) => Math.max(0, Math.min(1, n));
 const ease = (n: number) => { const t = clamp(n); return t * t * (3 - 2 * t); };
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 const curve = (points: number[][]) => new CatmullRomCurve3(points.map(([x, y, z]) => new Vector3(x, y, z)), false, 'centripetal');
 
-class Helix extends Curve<Vector3> {
-  constructor() { super(); }
-  getPoint(t: number, target = new Vector3()) {
-    const a = TAU * (7.4 * t + 0.12);
-    return target.set(2.3 * Math.cos(a), 2.3 * Math.sin(a), 3.2 - 56 * t);
-  }
-}
-
 // Open ends stay open in every pose: one mesh can flow from loop to frame to helix.
-function createCurves() {
+export function createMiddleCurves() {
   const strand = curve([[-4, 5, -1], [0, 2, 0], [1, 0, 0.4], [-0.5, -2, 0], [4, -5, -1]]);
   const loop = curve([
     [-1.4, 5, -0.6], [-1.1, 2.4, 0], [1.1, 1.4, 0.2], [1.3, -0.8, -0.5],
@@ -52,16 +44,7 @@ function createCurves() {
     [-1, 5, -1], [0.5, 2.2, 0], [2.3, 1.5, 0.3], [2.6, -0.7, 0.6], [1, -1.5, 0],
     [-1.7, -1.6, -0.2], [-2.6, -0.5, -0.4], [-1.8, 1.5, -0.8], [0.5, 1.4, -1], [2.2, -3.5, -0.6], [5, -5, -.8], [7, -7, -1],
   ]);
-  return [strand, loop, frame, new Helix(), signal, arcade, strand];
-}
-
-function tube(curves: Curve<Vector3>[], segments: number, radius: number, radial: number) {
-  const geometry = extendThreadGeometry(new TubeGeometry(curves[0]!, segments, radius, radial, false), 160);
-  const targets = curves.slice(1).map((path) => extendThreadGeometry(new TubeGeometry(path, segments, radius, radial, false), 160));
-  geometry.morphAttributes.position = targets.map((target) => target.attributes.position!.clone());
-  geometry.morphAttributes.normal = targets.map((target) => target.attributes.normal!.clone());
-  targets.forEach((target) => target.dispose());
-  return geometry;
+  return [strand, loop, frame, new TunnelCurve(), signal, arcade, strand];
 }
 
 export function createMiddleScene(host: HTMLElement, root: HTMLElement, options: Options): (() => void) | null {
@@ -88,12 +71,17 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   scene.environment = environment.texture;
   room.dispose(); pmrem.dispose();
 
-  const paths = createCurves();
-  const segments = host.clientWidth < 768 ? 300 : 520;
+  const paths = createMiddleCurves();
+  const segments = host.clientWidth < 768 ? 420 : 640;
+  const cable = new RoundThread(paths.map(path => ({
+    path, radius: THREAD_RADIUS, extension: 160,
+    ...(path instanceof TunnelCurve ? { sample: (count: number) => path.sampleSpine(count) } : {}),
+  })), segments);
+  const poseWeights = paths.map(() => 0);
   const glass = createThreadGlass();
   const coreMaterial = createThreadCore();
-  const shell = new Mesh(tube(paths, segments, 0.145, 16), glass);
-  const core = new Mesh(tube(paths, segments, 0.022, 8), coreMaterial);
+  const shell = new Mesh(cable.shell, glass);
+  const core = new Mesh(cable.core, coreMaterial);
   shell.frustumCulled = false; core.frustumCulled = false;
   const group = new Group();
   group.add(shell, core); scene.add(group);
@@ -104,9 +92,29 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   const beadGeometry = new SphereGeometry(0.042, 12, 8);
   const beadMaterial = new MeshBasicMaterial({ color: new Color('#c9eeff').multiplyScalar(5), toneMapped: false });
   const beads = Array.from({ length: 3 }, () => { const bead = new Mesh(beadGeometry, beadMaterial); group.add(bead); return bead; });
-  const focalPoint = new Mesh(beadGeometry, beadMaterial);
+  const focalMaterial = new MeshBasicMaterial({ color: new Color('#c9eeff').multiplyScalar(3), toneMapped: false, fog: false });
+  const focalPoint = new Mesh(beadGeometry, focalMaterial);
   focalPoint.position.set(0, 0, -68);
   group.add(focalPoint);
+  // One small texture, created once. The halo sits at the real depth of the
+  // light, so approaching it naturally increases its apparent size.
+  const haloCanvas = document.createElement('canvas');
+  haloCanvas.width = haloCanvas.height = 128;
+  const haloContext = haloCanvas.getContext('2d');
+  if (haloContext) {
+    const gradient = haloContext.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gradient.addColorStop(0, '#ffffff');
+    gradient.addColorStop(.12, '#ffffffa6');
+    gradient.addColorStop(.4, '#ffffff33');
+    gradient.addColorStop(1, '#ffffff00');
+    haloContext.fillStyle = gradient; haloContext.fillRect(0, 0, 128, 128);
+  }
+  const haloTexture = new CanvasTexture(haloCanvas);
+  const haloMaterial = new SpriteMaterial({ map: haloTexture, color: '#67b3ff',
+    blending: AdditiveBlending, depthWrite: false, fog: false, toneMapped: false });
+  const halo = new Sprite(haloMaterial);
+  halo.position.copy(focalPoint.position);
+  group.add(halo);
   const composer = new EffectComposer(renderer);
   const bloom = new UnrealBloomPass(new Vector2(1, 1), 0.3, 0.55, 1.05);
   const output = new OutputPass();
@@ -128,6 +136,8 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   let signalRunning = false;
   let signalPulse = .56;
   let narSaved = false;
+  let passageLight = 0;
+  let lightWash = 0;
   const passageElement = root.querySelector<HTMLElement>('#connections');
   const narElement = root.querySelector<HTMLElement>('.nar-world');
   let target: Pose = { shape: 1, x: 0.74, y: 0.4, scale: 1, angle: 0, camera: 9.3, visibility: 1 };
@@ -137,8 +147,6 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   let lastScroll = window.scrollY;
   const pointer = new Vector2();
   const pointerSoft = new Vector2();
-  const a = new Vector3();
-  const b = new Vector3();
 
   // Layout is sampled only after scroll/resize/content changes, never in the render loop.
   const measure = () => {
@@ -208,6 +216,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     // A distinct traversal, never an interpolation from a half-entered helix into the next pose.
     const animatedPassage = !options.reduced && height >= 650 && travel > 1;
     const traversing = animatedPassage && scroll >= top(passage) && scroll < top(passage) + travel;
+    passageLight = traversing ? ease((passageProgress - .68) / .22) * (1 - ease((passageProgress - .94) / .06)) : 0;
     root.style.setProperty('--tracker-reveal', String(animatedPassage ? ease((passageProgress - .9) / .1) : 1));
     root.style.setProperty('--tracker-events', animatedPassage && passageProgress < .9 ? 'none' : 'auto');
     passageElement?.style.setProperty('--passage-skip', String(animatedPassage ? 1 - ease((passageProgress - .88) / .12) : 1));
@@ -236,7 +245,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     if (options.reduced) { target.shape = Math.round(target.shape); target.camera = 9.3; }
     // Direct anchor navigation should land in its final composition immediately.
     if (firstMeasure || options.reduced || Math.abs(scroll - lastScroll) > height * 0.75) {
-      current = { ...target }; firstMeasure = false;
+      current = { ...target }; lightWash = passageLight; firstMeasure = false;
     }
     lastScroll = scroll;
     if (canvas.dataset.phase !== phase) canvas.dataset.phase = phase;
@@ -260,19 +269,25 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     const lower = Math.min(paths.length - 1, Math.floor(current.shape));
     const upper = Math.min(paths.length - 1, lower + 1);
     const blend = current.shape - lower;
-    for (const mesh of [shell, core]) {
-      const weights = mesh.morphTargetInfluences!;
-      weights.fill(0);
-      if (lower > 0) weights[lower - 1] = 1 - blend;
-      if (upper > 0) weights[upper - 1] = (weights[upper - 1] ?? 0) + blend;
-    }
+    poseWeights.fill(0);
+    poseWeights[lower] = 1 - blend;
+    poseWeights[upper] = (poseWeights[upper] ?? 0) + blend;
+    cable.update(poseWeights);
     camera.position.set(0, 0, current.camera);
     const viewHeight = 2 * 9.3 * Math.tan(19 * Math.PI / 180);
     group.position.set((current.x - 0.5) * viewHeight * camera.aspect, (0.5 - current.y) * viewHeight, 0);
     group.scale.setScalar(current.scale);
     const tunnel = Math.max(0, 1 - Math.abs(current.shape - 3));
-    focalPoint.visible = tunnel > 0.01;
-    focalPoint.scale.setScalar(4.5 * tunnel * Math.max(.04, (68 * current.scale + current.camera) / (68 * current.scale + 9.3)));
+    const approach = ease((9.3 - current.camera) / Math.max(1, 9.3 + 60 * current.scale));
+    focalPoint.visible = halo.visible = tunnel > 0.01;
+    focalPoint.scale.setScalar(tunnel * mix(2.8, 4.2, approach));
+    halo.scale.setScalar(mix(4.5, 8, approach));
+    haloMaterial.opacity = tunnel * mix(.3, .55, approach);
+    lightWash = mix(lightWash, passageLight, damp);
+    // The same blue light carries over the hidden camera reset into Trendyol.
+    // It lives outside the fading canvas and never covers the scene with white.
+    const wash = lightWash.toFixed(3);
+    if (root.style.getPropertyValue('--passage-light') !== wash) root.style.setProperty('--passage-light', wash);
     const opacity = current.visibility.toFixed(3);
     const depth = current.camera.toFixed(2);
     if (canvas.style.opacity !== opacity) canvas.style.opacity = opacity;
@@ -280,7 +295,10 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     // Keep illumination with the viewer inside the long tube.
     key.position.z = mix(6, current.camera + 2, tunnel);
     blue.position.z = mix(3, current.camera - 2, tunnel);
-    group.rotation.set(pointerSoft.y * 0.06 * (1 - tunnel), pointerSoft.x * 0.1 * (1 - tunnel),
+    // Aim the mouth at the viewer while it sits beside/below the copy. The axis
+    // straightens as the entrance centers, keeping its light visible throughout.
+    group.rotation.set(pointerSoft.y * 0.06 * (1 - tunnel) + Math.atan2(group.position.y, 9.3) * tunnel,
+      pointerSoft.x * 0.1 * (1 - tunnel) - Math.atan2(group.position.x, 9.3) * tunnel,
       current.angle + (options.reduced ? 0 : Math.sin(elapsed * 0.24) * 0.025 * (1 - tunnel)));
     const signalWeight = Math.max(0, 1 - Math.abs(current.shape - 4));
     const pulseTarget = [.04, .14, .38, .42, .72][Math.max(0, Math.min(4, signalPosition + 1))]!;
@@ -289,8 +307,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
       const t = signalWeight > .98 ? (index === 0 ? signalPulse : index === 1 ? .17 : .64)
         : (elapsed * 0.04 + index / 3 + 0.08) % 1;
       bead.scale.setScalar(signalWeight > .98 ? (index === 0 ? (signalRunning ? 2.8 : 1.8) : .6) : narSaved && lower === 2 ? 1.6 : 1);
-      paths[lower]!.getPointAt(t, a); paths[upper]!.getPointAt(t, b);
-      bead.position.copy(a).lerp(b, blend);
+      cable.getPointAt(t, bead.position);
     });
     bloom.strength = 0.28 + tunnel * 0.1;
     try { composer.render(dt); }
@@ -349,7 +366,9 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     window.removeEventListener(sceneJumpEvent, jump);
     canvas.removeEventListener('webglcontextlost', contextLost);
     shell.geometry.dispose(); core.geometry.dispose(); glass.dispose(); coreMaterial.dispose();
-    beadGeometry.dispose(); beadMaterial.dispose(); environment.dispose(); bloom.dispose(); output.dispose(); composer.dispose();
+    beadGeometry.dispose(); beadMaterial.dispose(); focalMaterial.dispose(); haloMaterial.dispose(); haloTexture.dispose();
+    root.style.removeProperty('--passage-light');
+    environment.dispose(); bloom.dispose(); output.dispose(); composer.dispose();
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   };
 }
