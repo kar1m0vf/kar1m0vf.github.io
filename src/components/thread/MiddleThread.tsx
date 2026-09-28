@@ -1,12 +1,14 @@
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useReducedMotion } from 'motion/react';
 
-export function MiddleThread({ children }: { children: ReactNode }) {
+export function MiddleThread({ children, prepare = false, onReady }: { children: ReactNode; prepare?: boolean; onReady?: () => void }) {
   const root = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState('loading');
   const reduced = Boolean(useReducedMotion());
   const gradient = useId();
+  const onReadyRef = useRef(onReady);
+  useEffect(() => { onReadyRef.current = onReady; }, [onReady]);
 
   useEffect(() => {
     const element = root.current;
@@ -15,22 +17,32 @@ export function MiddleThread({ children }: { children: ReactNode }) {
     let cancelled = false;
     let dispose: (() => void) | null = null;
     setStatus('loading');
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry?.isIntersecting) return;
-      observer.disconnect();
+    let started = false;
+    const settled = (state: 'ready' | 'fallback') => {
+      if (cancelled) return;
+      setStatus(state);
+      onReadyRef.current?.();
+    };
+    const start = () => {
+      if (started) return;
+      started = true;
+      observer?.disconnect();
       void import('./createMiddleScene').then(({ createMiddleScene }) => {
         if (cancelled) return;
         dispose = createMiddleScene(canvasHost, element, {
           reduced,
-          onReady: () => { if (!cancelled) setStatus('ready'); },
-          onUnavailable: () => { if (!cancelled) setStatus('fallback'); },
+          onReady: () => settled('ready'),
+          onUnavailable: () => settled('fallback'),
         });
-        if (!dispose) setStatus('fallback');
-      }).catch(() => { if (!cancelled) setStatus('fallback'); });
+        if (!dispose) settled('fallback');
+      }).catch(() => settled('fallback'));
+    };
+    const observer = prepare ? null : new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting && document.documentElement.dataset.siteLoading !== 'true') start();
     }, { rootMargin: '600px' });
-    observer.observe(element);
-    return () => { cancelled = true; observer.disconnect(); dispose?.(); };
-  }, [reduced]);
+    if (prepare) start(); else observer?.observe(element);
+    return () => { cancelled = true; observer?.disconnect(); dispose?.(); };
+  }, [reduced, prepare]);
 
   return (
     <div className="continuous-story" data-renderer={status} ref={root}>

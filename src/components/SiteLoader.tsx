@@ -22,6 +22,7 @@ interface LoaderMedia {
 
 interface SiteLoaderProps {
   heroReady: boolean;
+  scenesReady: boolean;
   onComplete: () => void;
 }
 
@@ -39,13 +40,14 @@ const loaderMedia: readonly LoaderMedia[] = [
   ...projectWorlds.flatMap((project) => {
     if (project.theme !== 'nar' && project.theme !== 'blaster') return [];
 
-    return project.media.map((media) => ({
-      id: media.src,
+    const variants = project.theme === 'nar'
+      ? ['(min-width: 1100px) 68vw, 94vw', '(min-width: 960px) 36vw, 86vw']
+      : ['(min-width: 901px) min(82rem, 92vw), 94vw', '(min-width: 901px) 30vw, 84vw', '(min-width: 1100px) 68vw, 94vw'];
+    return project.media.flatMap((media) => variants.map((sizes) => ({
+      id: `${media.src}:${sizes}`,
       media,
-      sizes: project.theme === 'nar'
-        ? '(min-width: 1100px) 68vw, 94vw'
-        : '(min-width: 901px) min(78rem, 108vw), 94vw',
-    }));
+      sizes,
+    })));
   }),
   {
     id: journeyBackdrop.src,
@@ -54,9 +56,9 @@ const loaderMedia: readonly LoaderMedia[] = [
   },
 ] as const;
 
-const totalAssetCount = loaderMedia.length + 2;
+const totalAssetCount = loaderMedia.length + 4;
 
-export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
+export function SiteLoader({ heroReady, scenesReady, onComplete }: SiteLoaderProps) {
   const reduceMotion = useReducedMotion();
   const startedAtRef = useRef(performance.now());
   const completedAssetsRef = useRef(new Set<string>());
@@ -153,6 +155,21 @@ export function SiteLoader({ heroReady, onComplete }: SiteLoaderProps) {
   useEffect(() => {
     if (heroReady) markAssetReady(heroSceneAssetId);
   }, [heroReady, markAssetReady]);
+
+  useEffect(() => {
+    if (scenesReady) markAssetReady('remaining-thread-scenes');
+  }, [scenesReady, markAssetReady]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void Promise.all([
+      import('./blaster/MiniBlaster'),
+      import('./blaster/assets').then(({ loadMiniBlasterAssets }) => loadMiniBlasterAssets()),
+    ]).catch(() => { if (!cancelled) setUsedFallback(true); }).then(() => {
+      if (!cancelled) markAssetReady('mini-blaster-runtime');
+    });
+    return () => { cancelled = true; };
+  }, [markAssetReady]);
 
   useEffect(() => {
     if (isExiting) return;

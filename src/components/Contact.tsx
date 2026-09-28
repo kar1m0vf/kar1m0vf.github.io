@@ -4,7 +4,7 @@ import { ArrowIcon, ArrowUpIcon, GitHubIcon, LinkedInIcon } from './Icons';
 import { ThreadSculpture } from './thread/ThreadSculpture';
 import './ClosingStory.css';
 
-export function Contact() {
+export function Contact({ prepare = false, onReady }: { prepare?: boolean; onReady?: () => void }) {
   const root = useRef<HTMLElement>(null);
   const visible = useInView(root, { margin: '300px', once: true });
   const reduced = Boolean(useReducedMotion());
@@ -12,7 +12,7 @@ export function Contact() {
   const progress = useTransform(scrollYProgress, [0, .9], [1, 0]);
   return (
     <footer className="closing-story" id="contact" ref={root}>
-      <div className="closing-story__sculpture" aria-hidden="true">{visible ? <ThreadSculpture framing="closing" progress={progress} reduced={reduced} /> : null}</div>
+      <div className="closing-story__sculpture" aria-hidden="true">{visible || prepare ? <ThreadSculpture framing="closing" onReady={onReady} progress={progress} reduced={reduced} /> : null}</div>
       <div className="section-shell closing-story__inner">
         <p className="story-label">The next chapter</p>
         <h2>What could<br />we <em>make next?</em></h2>

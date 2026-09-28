@@ -22,7 +22,7 @@ const TAU = Math.PI * 2;
 const coreRatio = .022 / .145;
 export const THREAD_RADIUS = .145 * 1.35;
 
-/** Blend the spine first, then sweep a circular section along it. Opposing
+/** Prepare the designed poses, blend their spines, then sweep a circular section. Opposing
  * normals from different poses can no longer cancel and pinch the glass.
  * Buffers are reused and uploaded only when the shape changes; idle motion
  * only changes the group's transform. There are no GPU morph textures. */
@@ -30,12 +30,18 @@ export class RoundThread {
   readonly shell: BufferGeometry;
   readonly core: BufferGeometry;
   private readonly samples: Vector3[][];
+  private readonly sampleFractions: Float64Array[];
+  private readonly fractions: Float64Array;
   private readonly starts: Vector3[];
   private readonly ends: Vector3[];
   private readonly centers: Vector3[];
   private readonly filtered: Vector3[];
   private readonly tangents: Vector3[];
   private readonly normals: Vector3[];
+  private readonly binormals: Vector3[];
+  private readonly distances: Float64Array;
+  private readonly bendWeights: Float64Array;
+  private readonly bendRegion: Uint8Array;
   private readonly surfaces: Surface[];
   private readonly weights: number[];
   private readonly rotation = new Quaternion();
@@ -52,6 +58,14 @@ export class RoundThread {
       path.updateArcLengths();
       return sample ? sample(segments) : path.getSpacedPoints(segments);
     });
+    this.sampleFractions = this.samples.map(points => {
+      const distances = new Float64Array(segments + 1);
+      for (let i = 1; i <= segments; i += 1) distances[i] = distances[i - 1]! + points[i]!.distanceTo(points[i - 1]!);
+      const length = distances[segments]!;
+      for (let i = 1; i <= segments; i += 1) distances[i] = distances[i]! / length;
+      return distances;
+    });
+    this.fractions = new Float64Array(segments + 1);
     this.starts = poses.map((pose, index) => this.samples[index]![0]!.clone().addScaledVector(
       pose.outwardStart ?? pose.path.getTangentAt(0).negate(), pose.extension ?? 0,
     ));
@@ -62,6 +76,19 @@ export class RoundThread {
     this.filtered = this.centers.map(() => new Vector3());
     this.tangents = this.centers.map(() => new Vector3());
     this.normals = this.centers.map(() => new Vector3());
+    this.binormals = this.centers.map(() => new Vector3());
+    this.distances = new Float64Array(segments + 1);
+    this.bendWeights = new Float64Array(segments + 1);
+    this.bendRegion = new Uint8Array(segments + 1);
+    // Correct each designed pose once. Re-solving a blended curve every frame
+    // made neighbouring scroll positions choose different corrections and snap.
+    // Fixed correspondence preserves the original linear motion of the spine.
+    this.poses.forEach((pose, poseIndex) => {
+      this.centers.forEach((center, i) => center.copy(this.samples[poseIndex]![i]!));
+      this.fractions.set(this.sampleFractions[poseIndex]!);
+      this.roundBends(pose.radius, Boolean(pose.closed));
+      this.samples[poseIndex] = this.centers.map(center => center.clone());
+    });
     this.weights = poses.map(() => 0);
     this.surfaces = [this.surface(20, 1), this.surface(4, coreRatio)];
     this.shell = this.surfaces[0]!.geometry;
@@ -116,27 +143,32 @@ export class RoundThread {
       if (!pose.closed) open += weight;
       this.start.addScaledVector(this.starts[poseIndex]!, weight);
       this.end.addScaledVector(this.ends[poseIndex]!, weight);
-      this.centers.forEach((center, i) => center.addScaledVector(this.samples[poseIndex]![i]!, weight));
+      this.centers.forEach((center, i) => {
+        center.addScaledVector(this.samples[poseIndex]![i]!, weight);
+      });
     });
     const closed = open < .000001;
-    this.roundBends(radius, closed);
+    if (closed) { this.start.copy(this.centers[0]!); this.end.copy(this.centers[this.segments]!); }
     this.frames(closed);
+    for (let i = 0; i <= this.segments; i += 1) {
+      this.binormals[i]!.crossVectors(this.tangents[i]!, this.normals[i]!).normalize();
+    }
     for (const surface of this.surfaces) {
       const stride = surface.sides + 1;
       for (let row = 0; row < this.segments + 3; row += 1) {
         const i = Math.max(0, Math.min(this.segments, row - 1));
         const center = row === 0 ? this.start : row === this.segments + 2 ? this.end : this.centers[i]!;
         const normal = this.normals[i]!;
-        this.binormal.crossVectors(this.tangents[i]!, normal).normalize();
+        const binormal = this.binormals[i]!;
+        const r = radius * surface.radiusRatio;
         for (let side = 0; side <= surface.sides; side += 1) {
           const cos = surface.circle[side * 2]!;
           const sin = surface.circle[side * 2 + 1]!;
-          const x = cos * normal.x + sin * this.binormal.x;
-          const y = cos * normal.y + sin * this.binormal.y;
-          const z = cos * normal.z + sin * this.binormal.z;
+          const x = cos * normal.x + sin * binormal.x;
+          const y = cos * normal.y + sin * binormal.y;
+          const z = cos * normal.z + sin * binormal.z;
           const offset = (row * stride + side) * 3;
           surface.normals[offset] = x; surface.normals[offset + 1] = y; surface.normals[offset + 2] = z;
-          const r = radius * surface.radiusRatio;
           surface.positions[offset] = center.x + r * x;
           surface.positions[offset + 1] = center.y + r * y;
           surface.positions[offset + 2] = center.z + r * z;
@@ -148,33 +180,92 @@ export class RoundThread {
     return true;
   }
 
-  /** Relax only corners tighter than the glass can bend around. The window is
-   * measured in world units, so densely sampled folds receive the same rounding. */
+  /** Prepare a designed pose, never an in-flight morph. Fair its tight bends
+   * across their whole neighbourhood, not individual rings.
+   * A hard per-ring threshold made little shoulders in the spine: neighbouring
+   * circular sections could turn inside out and look like attached discs.
+   * Arc-length weights keep clustered spline samples from pulling a bend inward. */
   private roundBends(radius: number, closed: boolean) {
     const count = this.segments;
-    for (let pass = 0; pass < 3; pass += 1) {
+    for (let pass = 0; pass < 10; pass += 1) {
+      const support = radius * (4 + pass * .8);
+      this.distances[0] = 0;
+      for (let i = 1; i <= count; i += 1) {
+        this.distances[i] = this.distances[i - 1]! + this.centers[i]!.distanceTo(this.centers[i - 1]!);
+      }
+      const length = this.distances[count]!;
+      let needsFairing = false;
+      for (let i = 0; i < count; i += 1) {
+        const center = this.centers[i]!;
+        const left = this.centers[closed ? (i - 1 + count) % count : Math.max(0, i - 1)]!;
+        const right = this.centers[i + 1]!;
+        this.before.subVectors(center, left);
+        this.after.subVectors(right, center);
+        const denominator = this.before.length() * this.after.length() * left.distanceTo(right);
+        const curvature = denominator > 1e-12 ? 2 * this.binormal.crossVectors(this.before, this.after).length() / denominator : 0;
+        const t = Math.max(0, Math.min(1, (radius * curvature - .7) / .3));
+        this.bendWeights[i] = t * t * (3 - 2 * t);
+        needsFairing ||= t > 0;
+      }
+      this.bendWeights[count] = closed ? this.bendWeights[0]! : 0;
+      if (!needsFairing) break;
+      // Only integrate neighbourhoods touched by a tight bend. Straight spans
+      // keep their exact centers and do no kernel work; scratch buffers persist.
+      this.bendRegion.fill(0);
+      for (let i = 0; i < count; i += 1) {
+        if (!this.bendWeights[i]) continue;
+        for (let direction = -1; direction <= 1; direction += 2) {
+          for (let offset = direction < 0 ? 0 : 1; offset < count; offset += 1) {
+            const raw = i + offset * direction;
+            if (!closed && (raw < 0 || raw > count)) break;
+            const index = closed ? (raw + count) % count : raw;
+            let distance = Math.abs(this.distances[index]! - this.distances[i]!);
+            if (closed) distance = Math.min(distance, length - distance);
+            if (distance >= support) break;
+            this.bendRegion[index] = 1;
+          }
+        }
+      }
       for (let i = 0; i <= count; i += 1) {
         const center = this.centers[i]!;
         const output = this.filtered[i]!.copy(center);
-        if (!closed && (i < 2 || i > count - 2)) continue;
-        const left = this.centers[(i - 1 + count) % count]!;
-        const right = this.centers[(i + 1) % count]!;
-        this.before.subVectors(center, left);
-        this.after.subVectors(right, center);
-        const step = Math.max(.00001, Math.min(this.before.length(), this.after.length()));
-        const bend = Math.sqrt(Math.max(0, (1 - this.before.normalize().dot(this.after.normalize())) * .5));
-        if (step > 4 * radius * bend) continue;
-        const reach = Math.min(16, Math.max(2, Math.ceil(radius * 2 / step)));
-        output.set(0, 0, 0);
+        if (!this.bendRegion[i] || (!closed && (i < 2 || i > count - 2))) continue;
+        let influence = this.bendWeights[i]!;
         let total = 0;
-        for (let offset = -reach; offset <= reach; offset += 1) {
-          const index = closed ? (i + offset + count) % count : Math.max(0, Math.min(count, i + offset));
-          const weight = reach + 1 - Math.abs(offset);
-          output.addScaledVector(this.centers[index]!, weight); total += weight;
+        this.before.set(0, 0, 0);
+        for (let direction = -1; direction <= 1; direction += 2) {
+          for (let offset = direction < 0 ? 0 : 1; offset < count; offset += 1) {
+            const raw = i + offset * direction;
+            if (!closed && (raw < 0 || raw > count)) break;
+            const index = closed ? (raw + count) % count : raw;
+            let distance = Math.abs(this.distances[index]! - this.distances[i]!);
+            if (closed) distance = Math.min(distance, length - distance);
+            if (distance >= support) break;
+            const kernel = (1 - (distance / support) ** 2) ** 2;
+            influence = Math.max(influence, this.bendWeights[index]! * kernel);
+            const left = index === 0 ? (closed ? length - this.distances[count - 1]! : 0) : this.distances[index]! - this.distances[index - 1]!;
+            const right = index === count ? 0 : this.distances[index + 1]! - this.distances[index]!;
+            const weight = kernel * (left + right);
+            this.before.addScaledVector(this.centers[index]!, weight);
+            total += weight;
+          }
         }
-        output.divideScalar(total).lerp(center, .25);
+        if (total > 1e-12 && influence > 0) output.lerp(this.before.divideScalar(total), influence * .85);
       }
-      this.centers.forEach((center, i) => center.copy(this.filtered[i]!));
+      if (closed) this.filtered[count]!.copy(this.filtered[0]!);
+      // Preserve the intended sampling density, including the tunnel's bore.
+      // This correspondence stays fixed for the entire subsequent animation.
+      this.distances[0] = 0;
+      for (let i = 1; i <= count; i += 1) this.distances[i] = this.distances[i - 1]! + this.filtered[i]!.distanceTo(this.filtered[i - 1]!);
+      const filteredLength = this.distances[count]!;
+      let cursor = 1;
+      for (let i = 0; i <= count; i += 1) {
+        const distance = this.fractions[i]! * filteredLength;
+        while (cursor < count && this.distances[cursor]! < distance) cursor += 1;
+        const span = this.distances[cursor]! - this.distances[cursor - 1]!;
+        const t = span > 1e-12 ? (distance - this.distances[cursor - 1]!) / span : 0;
+        this.centers[i]!.copy(this.filtered[cursor - 1]!).lerp(this.filtered[cursor]!, t);
+      }
       if (closed) this.centers[count]!.copy(this.centers[0]!);
     }
     if (closed) { this.start.copy(this.centers[0]!); this.end.copy(this.centers[count]!); }

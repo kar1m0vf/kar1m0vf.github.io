@@ -142,7 +142,7 @@ export function PriceObservatory({
             <svg aria-label="Illustrative prices over seven checks" role="img" viewBox="0 0 700 140" preserveAspectRatio="none">
               <title>Illustrative prices over seven checks</title>
               <path className="price-history-preview__target" d={`M0 ${130 - (targetPrice - config.simulation.min) / (config.simulation.max - config.simulation.min) * 120}H700`} />
-              <motion.path animate={{ d: [1250, 1210, 1260, 1170, 1190, config.simulation.previousPrice, currentPrice].map((price, index) => `${index ? 'L' : 'M'}${index * 116.66},${130 - (price - config.simulation.min) / (config.simulation.max - config.simulation.min) * 120}`).join(' ') }} transition={{ duration: reduceMotion ? 0 : .25 }} />
+              <motion.path initial={false} animate={{ d: [1250, 1210, 1260, 1170, 1190, config.simulation.previousPrice, currentPrice].map((price, index) => `${index ? 'L' : 'M'}${index * 116.66},${130 - (price - config.simulation.min) / (config.simulation.max - config.simulation.min) * 120}`).join(' ') }} transition={{ duration: reduceMotion ? 0 : .25 }} />
             </svg>
             <span className="price-history-preview__caption">Illustrative price history · dashed line = your target</span>
           </div>

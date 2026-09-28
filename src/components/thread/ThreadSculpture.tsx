@@ -25,9 +25,7 @@ export function ThreadSculpture({ framing = 'intro', onReady, progress, reduced 
     if (!hostRef.current) return;
     const host = hostRef.current;
     let cancelled = false;
-    let failed = false;
     let readyReported = false;
-    let readyFrame = 0;
     let dispose: (() => void) | undefined;
 
     setStatus('loading');
@@ -40,8 +38,6 @@ export function ThreadSculpture({ framing = 'intro', onReady, progress, reduced 
 
     const useFallback = () => {
       if (cancelled) return;
-      failed = true;
-      window.cancelAnimationFrame(readyFrame);
       setStatus('fallback');
       reportReady();
     };
@@ -52,6 +48,7 @@ export function ThreadSculpture({ framing = 'intro', onReady, progress, reduced 
         framing,
         getProgress: () => reduced ? 0 : progress.get(),
         reduced,
+        onReady: () => { if (!cancelled) { setStatus('ready'); reportReady(); } },
         onUnavailable: useFallback,
       });
 
@@ -61,20 +58,10 @@ export function ThreadSculpture({ framing = 'intro', onReady, progress, reduced 
       }
 
       dispose = scene;
-      // createThreadScene schedules its first render before returning. Waiting two
-      // animation frames keeps the loader up until WebGL has actually painted.
-      readyFrame = window.requestAnimationFrame(() => {
-        readyFrame = window.requestAnimationFrame(() => {
-          if (cancelled || failed) return;
-          setStatus('ready');
-          reportReady();
-        });
-      });
     }).catch(useFallback);
 
     return () => {
       cancelled = true;
-      window.cancelAnimationFrame(readyFrame);
       dispose?.();
     };
   }, [framing, progress, reduced]);

@@ -43,14 +43,31 @@ function loadImage(source: string, signal?: AbortSignal): Promise<HTMLImageEleme
   });
 }
 
-export async function loadMiniBlasterAssets(signal?: AbortSignal): Promise<MiniBlasterAssets> {
+let preparedAssets: Promise<MiniBlasterAssets> | undefined;
+
+async function prepareAssets(): Promise<MiniBlasterAssets> {
   const [boss, drone, effects, player] = await Promise.all([
-    loadImage(assetSources.boss, signal),
-    loadImage(assetSources.drone, signal),
-    loadImage(assetSources.effects, signal),
-    loadImage(assetSources.player, signal),
+    loadImage(assetSources.boss),
+    loadImage(assetSources.drone),
+    loadImage(assetSources.effects),
+    loadImage(assetSources.player),
   ]);
 
   return { boss, drone, effects, player };
 }
 
+/** Keep decoded sprites from the loader through every game restart. Aborting
+ * one consumer must not cancel the resource another mounted consumer awaits. */
+export function loadMiniBlasterAssets(signal?: AbortSignal): Promise<MiniBlasterAssets> {
+  if (signal?.aborted) return Promise.reject(new DOMException('Asset loading aborted.', 'AbortError'));
+  const assets = preparedAssets ??= prepareAssets().catch(error => {
+    preparedAssets = undefined;
+    throw error;
+  });
+  if (!signal) return assets;
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(new DOMException('Asset loading aborted.', 'AbortError'));
+    signal.addEventListener('abort', abort, { once: true });
+    void assets.then(resolve, reject).finally(() => signal.removeEventListener('abort', abort));
+  });
+}

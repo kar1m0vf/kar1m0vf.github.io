@@ -24,10 +24,14 @@ function readBuilderPreference() {
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [heroReady, setHeroReady] = useState(false);
+  const [middleReady, setMiddleReady] = useState(false);
+  const [closingReady, setClosingReady] = useState(false);
   const [builderMode, setBuilderMode] = useState(readBuilderPreference);
   const activeSectionId = useActiveSection(isLoading);
   const activeSection = siteSections.find((section) => section.id === activeSectionId) ?? siteSections[0];
   const handleHeroReady = useCallback(() => setHeroReady(true), []);
+  const handleMiddleReady = useCallback(() => setMiddleReady(true), []);
+  const handleClosingReady = useCallback(() => setClosingReady(true), []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -50,7 +54,7 @@ export default function App() {
 
   return (
     <>
-      {isLoading ? <SiteLoader heroReady={heroReady} onComplete={() => setIsLoading(false)} /> : null}
+      {isLoading ? <SiteLoader heroReady={heroReady} scenesReady={middleReady && closingReady} onComplete={() => setIsLoading(false)} /> : null}
       <SceneNavigation />
       <div aria-busy={isLoading} aria-hidden={isLoading} className="site" inert={isLoading ? true : undefined}>
         <Header activeSection={activeSectionId} />
@@ -68,12 +72,12 @@ export default function App() {
         />
         <main id="main-content">
           <Hero onReady={handleHeroReady} />
-          <MiddleThread>
+          <MiddleThread prepare={heroReady} onReady={handleMiddleReady}>
             <Method />
             <WorkSequence builderMode={builderMode} />
             <Journey />
           </MiddleThread>
-          <Contact />
+          <Contact prepare={middleReady} onReady={handleClosingReady} />
         </main>
       </div>
     </>

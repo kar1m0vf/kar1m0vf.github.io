@@ -10,14 +10,14 @@ test('one middle canvas follows project anchors and a reversible scroll passage'
   // Resolve document coordinates from the live rectangle, independent of containing blocks.
   await page.evaluate(() => {
     const el = document.getElementById('connections')!;
-    window.scrollTo({ top: el.getBoundingClientRect().top + scrollY + (el.offsetHeight - innerHeight) * 0.75, behavior: 'instant' });
+    window.scrollTo({ top: el.getBoundingClientRect().top + scrollY + (el.offsetHeight - innerHeight) * 0.55, behavior: 'instant' });
   });
   await expect(canvas).toHaveAttribute('data-phase', 'through');
   // The promised entrance is an actual camera traversal, not a shrinking or dropping spiral.
   await expect.poll(async () => Number(await canvas.getAttribute('data-camera-z'))).toBeLessThan(-20);
   await page.evaluate(() => {
     const el = document.getElementById('connections')!;
-    window.scrollTo({ top: el.getBoundingClientRect().top + scrollY + (el.offsetHeight - innerHeight) * 0.88, behavior: 'instant' });
+    window.scrollTo({ top: el.getBoundingClientRect().top + scrollY + (el.offsetHeight - innerHeight) * 0.72, behavior: 'instant' });
   });
   await expect(canvas).toHaveAttribute('data-phase', 'clearing');
   await page.evaluate(() => document.getElementById('connections')!.scrollIntoView({ behavior: 'instant' }));

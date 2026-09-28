@@ -19,6 +19,7 @@ interface SceneOptions {
   framing: 'intro' | 'closing';
   getProgress: () => number;
   reduced: boolean;
+  onReady: () => void;
   onUnavailable: () => void;
 }
 
@@ -59,7 +60,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   } catch { return null; }
 
   const mobile = () => host.clientWidth < 768;
-  let pixelRatio = Math.min(window.devicePixelRatio || 1, mobile() ? 1.35 : 1.7);
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, mobile() ? 1.35 : 1.7);
   renderer.setPixelRatio(pixelRatio);
   renderer.setClearColor(0x050709, 0);
   renderer.toneMappingExposure = 1.05;
@@ -137,24 +138,18 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   let frameId = 0;
   let lastTime = 0;
   let elapsed = 0;
-  let slowFrames = 0;
+  let firstRender = true;
+  let compiled = false;
+  let pointerBounds: DOMRect | null = null;
   const pointer = new Vector2();
   const smoothedPointer = new Vector2();
 
   const render = (time: number) => {
     frameId = 0;
-    if (disposed || !contextAvailable || !inView || document.hidden || isSceneRenderingSuspended()) return;
+    if (disposed || !contextAvailable || !compiled || (!inView && !firstRender) || document.hidden || isSceneRenderingSuspended()) return;
     const dt = lastTime ? Math.min((time - lastTime) / 1000, 0.04) : 0.016;
-    if (lastTime && time - lastTime > 45) slowFrames += 1;
-    else slowFrames = Math.max(0, slowFrames - 1);
     lastTime = time;
     elapsed += options.reduced ? 0 : dt;
-    if (slowFrames > 75 && pixelRatio > 1) {
-      pixelRatio = 1;
-      renderer.setPixelRatio(1);
-      composer.setPixelRatio(1);
-      slowFrames = 0;
-    }
     const p = clamp(options.getProgress());
     const entry = options.framing === 'intro' && p < .001 && !options.reduced ? readEntryHandoff(time) : null;
     const open = smooth(0.17, 0.5, p);
@@ -198,7 +193,8 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       const t = (elapsed * 0.065 + index / 3) % 1;
       cable.getPointAt(t, bead.position);
     });
-    canvas.dataset.phase = p < 0.29 ? 'knot' : p < 0.68 ? 'aperture' : 'thread';
+    const phase = p < 0.29 ? 'knot' : p < 0.68 ? 'aperture' : 'thread';
+    if (canvas.dataset.phase !== phase) canvas.dataset.phase = phase;
     try { composer.render(dt); }
     catch {
       contextAvailable = false;
@@ -206,30 +202,35 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       return;
     }
     reportSceneFrame(host);
+    if (firstRender) { firstRender = false; options.onReady(); }
     // One prepared frame is sufficient behind the opaque loader. The handoff
     // event wakes the same canvas to turn its small glass loop into the Hero.
-    if (!options.reduced && (document.documentElement.dataset.siteLoading !== 'true' || entry)) frameId = requestAnimationFrame(render);
+    if (inView && !options.reduced && (document.documentElement.dataset.siteLoading !== 'true' || entry)) frameId = requestAnimationFrame(render);
   };
 
   const schedule = () => {
-    if (!disposed && contextAvailable && inView && !document.hidden && !isSceneRenderingSuspended() && !frameId) {
+    if (!disposed && contextAvailable && compiled && (inView || firstRender) && !document.hidden && !isSceneRenderingSuspended() && !frameId) {
       lastTime = 0;
       frameId = requestAnimationFrame(render);
     }
   };
   const resize = () => {
-    width = host.clientWidth;
-    height = host.clientHeight;
-    if (!width || !height) return;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false);
-    composer.setSize(width, height);
+    pointerBounds = null;
+    const nextWidth = host.clientWidth, nextHeight = host.clientHeight;
+    if (!nextWidth || !nextHeight) return;
+    if (width !== nextWidth || height !== nextHeight) {
+      width = nextWidth; height = nextHeight;
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+      composer.setSize(width, height);
+    }
     schedule();
   };
+  const scroll = () => { pointerBounds = null; };
   const pointerMove = (event: PointerEvent) => {
     if (event.pointerType !== 'mouse' || options.reduced) return;
-    const bounds = host.getBoundingClientRect();
+    const bounds = pointerBounds ??= host.getBoundingClientRect();
     if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) {
       pointer.set(0, 0);
       return;
@@ -255,17 +256,25 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   const observer = new IntersectionObserver(([entry]) => {
     inView = entry?.isIntersecting ?? false;
     if (inView) schedule();
-    else { cancelAnimationFrame(frameId); frameId = 0; }
+    else if (!firstRender) { cancelAnimationFrame(frameId); frameId = 0; }
   }, { rootMargin: '100px' });
   observer.observe(host);
   container.addEventListener('pointermove', pointerMove as EventListener, { passive: true });
   container.addEventListener('pointerleave', pointerLeave);
   document.addEventListener('visibilitychange', visibility);
+  window.addEventListener('scroll', scroll, { passive: true });
   window.addEventListener(controlOverlayEvent, visibility);
   window.addEventListener(sceneJumpEvent, schedule);
   canvas.addEventListener('webglcontextlost', contextLost);
   canvas.addEventListener('webglcontextrestored', contextRestored);
   resize();
+  // Compile the glass before revealing it. The first composed frame also warms
+  // bloom/output targets, and is the actual readiness signal for the loader.
+  void renderer.compileAsync(scene, camera).then(() => {
+    if (disposed || !contextAvailable) return;
+    compiled = true;
+    schedule();
+  }).catch(() => { if (!disposed) { contextAvailable = false; options.onUnavailable(); } });
 
   return () => {
     disposed = true;
@@ -275,6 +284,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     container.removeEventListener('pointermove', pointerMove as EventListener);
     container.removeEventListener('pointerleave', pointerLeave);
     document.removeEventListener('visibilitychange', visibility);
+    window.removeEventListener('scroll', scroll);
     window.removeEventListener(controlOverlayEvent, visibility);
     window.removeEventListener(sceneJumpEvent, schedule);
     canvas.removeEventListener('webglcontextlost', contextLost);
