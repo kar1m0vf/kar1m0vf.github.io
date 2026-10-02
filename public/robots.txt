@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kar1m0vf.github.io/sitemap.xml
+Sitemap: https://kamilkerimov.com/sitemap.xml

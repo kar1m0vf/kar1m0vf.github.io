@@ -2,7 +2,9 @@
 
 A personal, single-page portfolio connecting Kamil's curiosity, projects, and life in Baku through one blue thread.
 
-Live site: https://kar1m0vf.github.io/
+Live site: https://kamilkerimov.com/
+
+The site is deployed through GitHub Actions. Set `kamilkerimov.com` in the repository's **Settings → Pages → Custom domain**, configure the domain's DNS for GitHub Pages, and enable **Enforce HTTPS** when available. This deployment method does not require a `CNAME` file. See [GitHub's custom domain setup guide](https://docs.github.com/en/pages/configuring-a-custom-domain-for-your-github-pages-site/managing-a-custom-domain-for-your-github-pages-site).
 
 ## Stack
 
