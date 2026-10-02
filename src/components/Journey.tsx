@@ -30,7 +30,7 @@ export function Journey() {
             <span className="life-story__number">0{index + 1}</span><h3>{moment.title}</h3><p>{moment.text}</p><small>{moment.detail}</small>
           </motion.li>
         ))}</ol>
-        <div className="life-story__note"><span>Along the way</span><p>Winner of DIV Academy’s<br />#GələcəyiYazanlar project.</p><a className="story-link" href="mailto:kamil16092006@gmail.com?subject=Could%20you%20send%20me%20your%20r%C3%A9sum%C3%A9%3F">Ask for my résumé<ArrowIcon /></a></div>
+        <div className="life-story__note"><span>Along the way</span><p>Winner of DIV Academy’s<br />#GələcəyiYazanlar project.</p><a className="story-link" href="mailto:hello@kamilkerimov.com?subject=Could%20you%20send%20me%20your%20r%C3%A9sum%C3%A9%3F">Ask for my résumé<ArrowIcon /></a></div>
       </div>
     </section>
   );

@@ -54,7 +54,7 @@ test.describe('The Whole Loop portfolio', () => {
     await expect(page.getByRole('link', { name: /View live demo/ })).toHaveAttribute('target', '_blank');
     await expect(page.getByRole('link', { name: /Open live bot/ })).toHaveAttribute('href', 'https://t.me/trendyolpw_bot');
     await expect(page.locator('#contact').getByRole('link', { name: /Email Kamil Kerimov/i }))
-      .toHaveAttribute('href', 'mailto:kamil16092006@gmail.com');
+      .toHaveAttribute('href', 'mailto:hello@kamilkerimov.com');
 
     const results = await new AxeBuilder({ page }).analyze();
     expect(results.violations).toEqual([]);

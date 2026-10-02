@@ -14,7 +14,7 @@ export interface KControlProps {
 }
 
 const quickActions = [
-  { href: 'mailto:kamil16092006@gmail.com', label: 'Email' },
+  { href: 'mailto:hello@kamilkerimov.com', label: 'Email' },
   { href: 'https://t.me/kar1m0vf', label: 'Telegram' },
   { href: 'https://github.com/kar1m0vf', label: 'GitHub' },
   { href: 'https://www.linkedin.com/in/kamil-kerimov', label: 'LinkedIn' },

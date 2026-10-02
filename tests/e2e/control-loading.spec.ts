@@ -89,7 +89,7 @@ test('modal traps focus, ignores input shortcuts, and remains accessible on shor
   await expect(dialog(page).getByRole('link', { name: 'LinkedIn', exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Close K Control', exact: true })).toBeFocused();
-  await expect(dialog(page).getByRole('link', { name: 'Email', exact: true })).toHaveAttribute('href', 'mailto:kamil16092006@gmail.com');
+  await expect(dialog(page).getByRole('link', { name: 'Email', exact: true })).toHaveAttribute('href', 'mailto:hello@kamilkerimov.com');
   expect((await new AxeBuilder({ page }).include('#k-control-dialog').analyze()).violations).toEqual([]);
   await page.setViewportSize({ width: 360, height: 640 });
   await expect(dialog(page)).toBeVisible();
