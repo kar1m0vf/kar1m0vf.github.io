@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type CSSProperties } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { PriceObservatoryConfig, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { useSound } from '../audio/SoundProvider';
@@ -28,6 +28,9 @@ export function PriceObservatory({
   const [position, setPosition] = useState(2);
   const [selectedGate, setSelectedGate] = useState(2);
   const [running, setRunning] = useState(false);
+  const rangeStyle = (value: number): CSSProperties & { '--range-progress': string } => ({
+    '--range-progress': `${(value - config.simulation.min) / (config.simulation.max - config.simulation.min) * 100}%`,
+  });
 
   const targetMatched = currentPrice <= targetPrice;
   const stopPosition = targetMatched ? (quietHours ? 2 : 3) : 1;
@@ -134,7 +137,7 @@ export function PriceObservatory({
             <output>{formatPrice(currentPrice)}</output>
             <input aria-label="Illustrative current price" disabled={running}
               max={config.simulation.max} min={config.simulation.min} step={config.simulation.step}
-              type="range" value={currentPrice} onChange={(event) => {
+              style={rangeStyle(currentPrice)} type="range" value={currentPrice} onChange={(event) => {
                 setCurrentPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1);
               }} />
           </label>
@@ -152,7 +155,7 @@ export function PriceObservatory({
           <label className="signal-world__target price-target-control">
             <span>Your target <strong>{formatPrice(targetPrice)}</strong></span>
             <input aria-label="Your target price" disabled={running} max={config.simulation.max}
-              min={config.simulation.min} step={config.simulation.step} type="range" value={targetPrice}
+              min={config.simulation.min} step={config.simulation.step} style={rangeStyle(targetPrice)} type="range" value={targetPrice}
               onChange={(event) => { setTargetPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1); }} />
           </label>
           <button aria-pressed={quietHours} className="signal-world__quiet" disabled={running} type="button"

@@ -6,7 +6,65 @@
 .signal-world__price-control { display: block; }
 .signal-world__price-control > span,.signal-world__target > span { color: #adbdce; font-size: .9rem; }
 .signal-world__price-control output { display: block; margin-block: .2rem 1.5rem; color: #edf5ff; font: 400 clamp(2.8rem,4.6vw,4.9rem)/1.12 var(--serif); font-variant-numeric: tabular-nums; letter-spacing: -.025em; }
-.signal-world input[type='range'] { display: block; width: 100%; height: 48px; margin: .65rem 0 0; accent-color: #83c3ff; cursor: pointer; }
+.signal-world input[type='range'] {
+  --range-thumb-border: #c9e6ff;
+  --range-thumb-shadow: inset 0 1px 2px #fff9, 0 0 0 4px #081725b8, 0 0 18px #5baeff55;
+  --range-thumb-scale: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin: .65rem 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 99px;
+  background:
+    linear-gradient(90deg, #4c91e3, #bae9ff) left center / var(--range-progress, 0%) 4px no-repeat,
+    linear-gradient(#56728f, #56728f) center / 100% 4px no-repeat;
+  cursor: pointer;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Transparent tracks keep the full 48px hit area around the 4px visual line. */
+.signal-world input[type='range']::-webkit-slider-runnable-track { height: 48px; border: 0; background: transparent; }
+.signal-world input[type='range']::-moz-range-track { height: 48px; border: 0; background: transparent; }
+.signal-world input[type='range']::-moz-range-progress { border: 0; background: transparent; }
+.signal-world input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  margin-top: 14px;
+  border: 1px solid var(--range-thumb-border);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #f1fbff, #b4dcff 38%, #6094c4);
+  box-shadow: var(--range-thumb-shadow);
+  transform: scale(var(--range-thumb-scale));
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.signal-world input[type='range']::-moz-range-thumb {
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--range-thumb-border);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 25%, #f1fbff, #b4dcff 38%, #6094c4);
+  box-shadow: var(--range-thumb-shadow);
+  transform: scale(var(--range-thumb-scale));
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+.signal-world input[type='range']:hover:not(:disabled) {
+  --range-thumb-border: #f0faff;
+  --range-thumb-shadow: inset 0 1px 2px #fff9, 0 0 0 4px #081725b8, 0 0 24px #6abaff85;
+}
+.signal-world input[type='range']:active:not(:disabled) { --range-thumb-scale: 1.1; }
+.signal-world input[type='range']:focus-visible:not(:disabled) {
+  --range-thumb-shadow: inset 0 1px 2px #fff9, 0 0 0 3px #081725, 0 0 0 5px #a8dcff, 0 0 24px #6abaff75;
+  outline: none;
+}
+.signal-world input[type='range']:disabled { opacity: .45; }
 .signal-world input:disabled { cursor: wait; }
 .signal-world .price-history-preview { margin-top: 1.4rem; padding: 0; border: 0; }
 .signal-world .price-history-preview svg { display: block; width: 100%; overflow: visible; fill: none; height: 75px; margin-block: .5rem; stroke: #b3dfff; stroke-width: 2; filter: drop-shadow(0 3px 5px #06101b); }
@@ -75,4 +133,14 @@
 }
 @media(prefers-reduced-motion:reduce) {
   .signal-world__quiet i,.signal-world__quiet i::after { transition: none; }
+  .signal-world input[type='range']::-webkit-slider-thumb { transition: none; }
+  .signal-world input[type='range']::-moz-range-thumb { transition: none; }
+}
+@media(forced-colors:active) {
+  .signal-world input[type='range'] { background: none; }
+  .signal-world input[type='range']:focus-visible:not(:disabled) { outline: 2px solid Highlight; outline-offset: 2px; }
+  .signal-world input[type='range']::-webkit-slider-runnable-track { height: 4px; border: 1px solid GrayText; background: Canvas; }
+  .signal-world input[type='range']::-webkit-slider-thumb { margin-top: -9px; border-color: ButtonText; background: Highlight; box-shadow: none; }
+  .signal-world input[type='range']::-moz-range-track { height: 4px; border: 1px solid GrayText; background: Canvas; }
+  .signal-world input[type='range']::-moz-range-thumb { border-color: ButtonText; background: Highlight; box-shadow: none; }
 }
