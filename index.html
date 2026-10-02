@@ -40,7 +40,9 @@
             "@type": "Person",
             "@id": "https://kamilkerimov.com/#person",
             "name": "Kamil Kerimov",
+            "alternateName": "Kamil Karimov",
             "url": "https://kamilkerimov.com/",
+            "mainEntityOfPage": { "@id": "https://kamilkerimov.com/#profile" },
             "jobTitle": "Frontend & Software Developer",
             "homeLocation": { "@type": "Place", "name": "Baku, Azerbaijan" },
             "sameAs": [
@@ -54,10 +56,19 @@
             "@type": "WebSite",
             "@id": "https://kamilkerimov.com/#website",
             "url": "https://kamilkerimov.com/",
-            "name": "Kamil Kerimov — The Whole Loop",
+            "name": "Kamil Kerimov",
             "description": "A portfolio about building the interface, the system behind it, and the release that holds.",
             "inLanguage": "en",
             "author": { "@id": "https://kamilkerimov.com/#person" }
+          },
+          {
+            "@type": "ProfilePage",
+            "@id": "https://kamilkerimov.com/#profile",
+            "url": "https://kamilkerimov.com/",
+            "name": "Kamil Kerimov — Frontend & Software Developer",
+            "inLanguage": "en",
+            "isPartOf": { "@id": "https://kamilkerimov.com/#website" },
+            "mainEntity": { "@id": "https://kamilkerimov.com/#person" }
           }
         ]
       }
