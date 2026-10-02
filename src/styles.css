@@ -1701,16 +1701,24 @@ html[data-experience-section='contact'] .experience-rail {
   z-index: 150;
   inset: 0;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 1rem;
   padding: 1.25rem;
   background: rgb(3 4 5 / 96%);
   backdrop-filter: blur(18px);
 }
 
+.media-lightbox__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .media-lightbox__close {
-  justify-self: end;
-  padding: 0.65rem 0;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.65rem 0.4rem;
   border: 0;
   border-bottom: 1px solid var(--line-strong);
   background: transparent;
@@ -1722,26 +1730,43 @@ html[data-experience-section='contact'] .experience-rail {
 }
 
 .media-lightbox__image {
-  display: grid;
-  place-items: center;
+  min-width: 0;
   min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: none;
 }
 
-.media-lightbox__image picture {
+.media-lightbox__image::-webkit-scrollbar { display: none; }
+.media-lightbox__image:not([data-zoom='1']) { cursor: grab; }
+.media-lightbox__image[data-dragging='true'] { cursor: grabbing; }
+.media-lightbox__canvas {
   display: grid;
   place-items: center;
+}
+.media-lightbox__capture { pointer-events: none; user-select: none; }
+.media-lightbox__capture picture {
+  display: block;
   width: 100%;
   height: 100%;
 }
 
 .media-lightbox__image img {
-  width: auto;
-  max-width: 96vw;
-  height: auto;
-  max-height: 78vh;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
   object-fit: contain;
   border: 1px solid var(--line);
 }
+
+.media-lightbox__zoom { display: flex; align-items: center; gap: 0.25rem; }
+.media-lightbox__zoom button { min-width: 44px; min-height: 44px; padding: 0.4rem; border: 1px solid var(--line); background: transparent; color: var(--ink); font: inherit; font-size: 0.8rem; cursor: pointer; }
+.media-lightbox__zoom button:first-child, .media-lightbox__zoom button:nth-of-type(2) { font-size: 1.2rem; }
+.media-lightbox__zoom output { width: 3.3rem; color: #b9c7d8; text-align: center; font-size: 0.75rem; font-variant-numeric: tabular-nums; }
+.media-lightbox__zoom button:disabled { opacity: 0.35; cursor: default; }
+.media-lightbox__zoom button:hover:not(:disabled), .media-lightbox__footer button:hover { border-color: #83c3ff; color: #fff; }
 
 .media-lightbox__footer {
   display: grid;
@@ -1765,6 +1790,7 @@ html[data-experience-section='contact'] .experience-rail {
 }
 
 .media-lightbox__footer button {
+  min-height: 44px;
   padding: 0.45rem 0.75rem;
   border: 1px solid var(--line);
   background: transparent;
@@ -2729,7 +2755,9 @@ html[data-experience-section='contact'] .experience-rail {
 
   .media-lightbox__footer > div {
     grid-column: 1 / -1;
+    width: 100%;
   }
+  .media-lightbox__footer button { flex: 1; }
 
   .quality-loop h2 {
     display: grid;

@@ -115,7 +115,9 @@
   .continuous-story .mini-blaster__metric { padding-inline: .35rem; }
   .continuous-story .mini-blaster__controls { padding-inline: 0; gap: .6rem; }
   .continuous-story .mini-blaster__controls button { min-height: 48px; font-size: .7rem; }
-  .continuous-story .project--trendyol .project__after { display: grid; }
+  .continuous-story .project--trendyol .project__after { display: grid; grid-template-columns: minmax(0,1fr); justify-content: stretch; }
+  .continuous-story .project__actions { width: 100%; }
+  .continuous-story .project-details > summary { width: 100%; min-width: 0; }
   .continuous-story :is(.project__header,.personal-intro__copy,.perspective-panel)::before { inset: -2rem -1rem; background: radial-gradient(ellipse,#050709f2 38%,#050709b0 72%,transparent); }
 }
 .continuous-story[data-renderer='ready'] .project--trendyol { opacity: var(--tracker-reveal,1); pointer-events: var(--tracker-events,auto); }

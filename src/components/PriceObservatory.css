@@ -6,7 +6,7 @@
 .signal-world__price-control { display: block; }
 .signal-world__price-control > span,.signal-world__target > span { color: #adbdce; font-size: .9rem; }
 .signal-world__price-control output { display: block; margin-block: .2rem 1.5rem; color: #edf5ff; font: 400 clamp(2.8rem,4.6vw,4.9rem)/1.12 var(--serif); font-variant-numeric: tabular-nums; letter-spacing: -.025em; }
-.signal-world input[type='range'] { display: block; width: 100%; height: 28px; margin: .65rem 0 0; accent-color: #83c3ff; cursor: pointer; }
+.signal-world input[type='range'] { display: block; width: 100%; height: 48px; margin: .65rem 0 0; accent-color: #83c3ff; cursor: pointer; }
 .signal-world input:disabled { cursor: wait; }
 .signal-world .price-history-preview { margin-top: 1.4rem; padding: 0; border: 0; }
 .signal-world .price-history-preview svg { display: block; width: 100%; overflow: visible; fill: none; height: 75px; margin-block: .5rem; stroke: #b3dfff; stroke-width: 2; filter: drop-shadow(0 3px 5px #06101b); }

@@ -8,6 +8,14 @@
 .closing-story__primary { display: inline-flex; align-items: center; justify-content: space-between; gap: 3rem; padding: 1.1rem 1.5rem; background: #4b9cff; color: #061225; font-weight: 700; }
 .closing-story__primary svg { width: 1rem; height: 1rem; }
 .closing-story__primary:hover { background: #8bbfff; }
+.closing-story__email { width: min(100%,29rem); margin-top: 1.8rem; }
+.closing-story__email-row { display: flex; align-items: center; gap: 1rem; min-width: 0; padding-block: .6rem; border-bottom: 1px solid #47617d60; }
+.closing-story__email-address { min-width: 0; color: #c7ddef; font-size: .9rem; overflow-wrap: anywhere; user-select: text; }
+.closing-story__email-address:hover { color: #fff; }
+.closing-story__email-copy { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: .5rem; min-width: 44px; min-height: 44px; margin-left: auto; padding: .6rem .8rem; border: 1px solid #47617d80; background: transparent; color: #c7ddef; font: inherit; font-size: .78rem; cursor: pointer; }
+.closing-story__email-copy:hover { border-color: #a5cdff; color: #fff; }
+.closing-story__email-copy svg { width: 1rem; height: 1rem; }
+.closing-story__email-status { display: block; min-height: 1.5rem; margin-top: .35rem; color: #a5cdff; font-size: .75rem; }
 .closing-story__profiles { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 4rem; }
 .closing-story__profiles a { display: inline-flex; align-items: center; gap: .65rem; font-size: .8rem; color: #b9c7d8; padding-block: .6rem; }
 .closing-story__profiles svg { width: 1rem; height: 1rem; }
@@ -21,7 +29,16 @@
   .closing-story .thread-sculpture__fallback { top: 0; height: 100%; }
   .closing-story__inner { padding-top: 23rem; min-height: auto; }
   .closing-story h2 { margin-top: 1.5rem; font-size: clamp(3.7rem,12vw,6rem); }
+  .closing-story__actions { flex-direction: column; align-items: stretch; gap: .9rem; }
+  .closing-story__primary { width: 100%; }
+  .closing-story__actions .story-link { width: 100%; min-height: 48px; justify-content: space-between; }
+  .closing-story__email-row { gap: .75rem; }
+  .closing-story__email-address { font-size: .85rem; }
   .closing-story__profiles { gap: 1.2rem; margin-top: 3rem; }
   .closing-story__foot { margin-top: 3rem; padding-bottom: 4rem; flex-wrap: wrap; }
   html[data-experience-section='contact'] .k-control__trigger { left: auto; right: var(--gutter); }
+}
+@media(max-width:360px) {
+  .closing-story__email-copy { padding: .6rem; }
+  .closing-story__email-copy span { display: none; }
 }

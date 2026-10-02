@@ -1,7 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import type { KeyboardEvent, RefObject } from 'react';
+import type { KeyboardEvent } from 'react';
 import type {
   ProjectMedia,
   ProjectWorld,
@@ -12,6 +11,7 @@ import { useSound } from '../audio/SoundProvider';
 import { ArrowIcon, HeartIcon } from './Icons';
 import { PriceObservatory } from './PriceObservatory';
 import { ResponsiveImage } from './ResponsiveImage';
+import { MediaLightbox } from './MediaLightbox';
 
 const MiniBlaster = lazy(() => import('./blaster/MiniBlaster'));
 
@@ -37,122 +37,6 @@ function MediaTrigger({ className = '', eager = false, media, onOpen, sizes }: M
         Full view <ArrowIcon />
       </span>
     </button>
-  );
-}
-
-interface MediaLightboxProps {
-  activeIndex: number | null;
-  media: readonly ProjectMedia[];
-  onChange: (index: number | null) => void;
-  returnFocusRef: RefObject<HTMLButtonElement | null>;
-}
-
-function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: MediaLightboxProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const activeIndexRef = useRef(activeIndex);
-  const isOpen = activeIndex !== null;
-
-  useEffect(() => {
-    activeIndexRef.current = activeIndex;
-  }, [activeIndex]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const dialog = dialogRef.current;
-    const previousOverflow = document.body.style.overflow;
-    const inerted = Array.from(document.body.children)
-      .filter((child): child is HTMLElement => child instanceof HTMLElement && child !== dialog)
-      .map((element) => ({ element, inert: element.inert, ariaHidden: element.getAttribute('aria-hidden') }));
-
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      const currentIndex = activeIndexRef.current;
-      if (currentIndex === null) return;
-      if (event.key === 'Escape') onChange(null);
-      if (event.key === 'ArrowLeft') onChange((currentIndex - 1 + media.length) % media.length);
-      if (event.key === 'ArrowRight') onChange((currentIndex + 1) % media.length);
-
-      if (event.key === 'Tab' && dialog) {
-        const focusable = Array.from(
-          dialog.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'),
-        ).filter((element) => !element.hasAttribute('hidden'));
-        const first = focusable[0];
-        const last = focusable.at(-1);
-        if (!first || !last) return;
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    inerted.forEach(({ element }) => {
-      element.inert = true;
-      element.setAttribute('aria-hidden', 'true');
-    });
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-      inerted.forEach(({ element, inert, ariaHidden }) => {
-        element.inert = inert;
-        if (ariaHidden === null) element.removeAttribute('aria-hidden');
-        else element.setAttribute('aria-hidden', ariaHidden);
-      });
-      returnFocusRef.current?.focus();
-    };
-  }, [isOpen, media.length, onChange, returnFocusRef]);
-
-  return createPortal(
-    <AnimatePresence>
-      {activeIndex !== null && media[activeIndex] ? (
-        <motion.div
-          animate={{ opacity: 1 }}
-          aria-label={`${media[activeIndex].caption} image viewer`}
-          aria-modal="true"
-          className="media-lightbox"
-          exit={{ opacity: 0 }}
-          initial={{ opacity: 0 }}
-          onMouseDown={(event) => {
-            if (event.currentTarget === event.target) onChange(null);
-          }}
-          ref={dialogRef}
-          role="dialog"
-        >
-          <button autoFocus className="media-lightbox__close" onClick={() => onChange(null)} type="button">
-            Close
-          </button>
-          <motion.div
-            animate={{ opacity: 1, scale: 1 }}
-            className="media-lightbox__image"
-            initial={{ opacity: 0, scale: 0.985 }}
-            key={media[activeIndex].src}
-          >
-            <ResponsiveImage
-              eager
-              media={media[activeIndex]}
-              sizes="(min-width: 1100px) 68vw, 94vw"
-            />
-          </motion.div>
-          <div className="media-lightbox__footer">
-            <span>{String(activeIndex + 1).padStart(2, '0')} / {String(media.length).padStart(2, '0')}</span>
-            <strong>{media[activeIndex].caption}</strong>
-            {media.length > 1 ? (
-              <div>
-                <button onClick={() => onChange((activeIndex - 1 + media.length) % media.length)} type="button">Previous</button>
-                <button onClick={() => onChange((activeIndex + 1) % media.length)} type="button">Next</button>
-              </div>
-            ) : null}
-          </div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>,
-    document.body,
   );
 }
 
