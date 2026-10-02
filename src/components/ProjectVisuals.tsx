@@ -214,7 +214,7 @@ function BlasterVisual({
   const [shouldLoad, setShouldLoad] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const openerRef = useRef<HTMLButtonElement | null>(null);
-  const battle = project.media[0];
+  const battle = project.media.find((media) => media.src.includes('/blaster/battle-')) ?? project.media[0];
   const inboundLabel = trackerHandoff && trackerHandoff.status !== 'idle'
     ? inboundOutcomeLabels[trackerHandoff.outcome]
     : null;

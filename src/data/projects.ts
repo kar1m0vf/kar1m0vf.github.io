@@ -113,8 +113,8 @@ export const projectWorlds: readonly ProjectWorld[] = [
       { label: 'Open repository', href: 'https://github.com/kar1m0vf/blaster-game', kind: 'primary' },
     ],
     media: [
-      responsiveMedia('blaster/battle', [640, 1280], 'Blaster wave gameplay', 'Gameplay · Neon Belt', 1280, 720),
       responsiveMedia('blaster/menu', [640, 1280], 'Blaster main menu', 'Launch · Main menu', 1280, 720),
+      responsiveMedia('blaster/battle', [640, 1280], 'Blaster wave gameplay', 'Gameplay · Neon Belt', 1280, 720),
       responsiveMedia('blaster/boss', [640, 1280], 'Blaster boss battle', 'Combat · Boss phase', 1280, 720),
     ],
   },

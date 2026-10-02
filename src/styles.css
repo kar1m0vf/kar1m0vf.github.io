@@ -1739,6 +1739,7 @@ html[data-experience-section='contact'] .experience-rail {
 }
 
 .media-lightbox__image::-webkit-scrollbar { display: none; }
+.media-lightbox__image[data-zoom='1'] { touch-action: pan-y; }
 .media-lightbox__image:not([data-zoom='1']) { cursor: grab; }
 .media-lightbox__image[data-dragging='true'] { cursor: grabbing; }
 .media-lightbox__canvas {
