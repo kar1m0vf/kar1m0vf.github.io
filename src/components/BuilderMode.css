@@ -30,14 +30,6 @@
 
 html[data-builder-mode='true'] .project[data-builder-layer] [data-builder-zone] {
   position: relative;
-  opacity: 0.58;
-  transition: opacity 260ms ease;
-}
-
-html[data-builder-mode='true'] .project[data-builder-layer='0'] [data-builder-zone='flow'],
-html[data-builder-mode='true'] .project[data-builder-layer='1'] [data-builder-zone='system'],
-html[data-builder-mode='true'] .project[data-builder-layer='2'] [data-builder-zone='output'] {
-  opacity: 1;
 }
 
 html[data-builder-mode='true'] .project[data-builder-layer='0'] [data-builder-zone='flow']::after,
@@ -496,16 +488,6 @@ html[data-builder-mode='true'] .project[data-builder-layer='2'] [data-builder-zo
 }
 
 @media (max-width: 699px) {
-  html[data-builder-mode='true'] .project[data-builder-layer] [data-builder-zone] {
-    opacity: 0.72;
-  }
-
-  html[data-builder-mode='true'] .project[data-builder-layer='0'] [data-builder-zone='flow'],
-  html[data-builder-mode='true'] .project[data-builder-layer='1'] [data-builder-zone='system'],
-  html[data-builder-mode='true'] .project[data-builder-layer='2'] [data-builder-zone='output'] {
-    opacity: 1;
-  }
-
   .builder-hud {
     top: auto;
     right: max(0.75rem, env(safe-area-inset-right));
@@ -739,10 +721,6 @@ html[data-builder-mode='true'] .project[data-builder-layer='2'] [data-builder-zo
 }
 
 @media (prefers-reduced-motion: reduce) {
-  html[data-builder-mode='true'] .project[data-builder-layer] [data-builder-zone] {
-    transition: none;
-  }
-
   .builder-hud__signal {
     animation: none;
   }
