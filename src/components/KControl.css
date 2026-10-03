@@ -10,18 +10,12 @@ body.k-control-open { overflow: hidden; }
   color: #edf4fa; backdrop-filter: blur(14px);
   cursor: pointer; transition: border-color 180ms, box-shadow 180ms;
 }
-.k-control-logo { display: inline-flex; align-items: center; gap: .65rem; vertical-align: middle; }
-.k-control-logo__mark { display: block; flex: 0 0 auto; width: 3.5rem; height: 3.5rem; overflow: visible; }
-.k-control-logo__light { stop-color: var(--theme-soft, #d2ebff); }
-.k-control-logo__colour { stop-color: var(--experience-accent, #82bfff); }
-.k-control-logo__shade { stop-color: color-mix(in srgb, var(--experience-accent, #82bfff) 65%, #29415e); }
-.k-control-logo__orbit { stroke: var(--theme-soft, #b6dfff); stroke-width: .9; stroke-linecap: round; opacity: .65; }
-.k-control-logo__glint { stroke: #fff; stroke-width: .6; stroke-linecap: round; opacity: .45; }
-.k-control-logo__node { fill: var(--experience-accent, #82bfff); }
-.k-control-logo__wordmark { padding-block: .45rem; border-bottom: 1px solid var(--theme-line, #82bfff66); color: #edf2f7; font: 600 .84rem/1.15 'Manrope Variable', Manrope, sans-serif; letter-spacing: .2em; text-transform: uppercase; }
-.k-control-logo--compact { width: 100%; height: 100%; }
-.k-control-logo--compact .k-control-logo__mark { width: 100%; height: 100%; }
-.k-control__trigger .k-control-logo__mark { filter: drop-shadow(0 0 5px var(--theme-glow, #2289f077)); }
+.k-control-logo { display: inline-flex; align-items: baseline; gap: .45rem; padding-bottom: .4rem; border-bottom: 1px solid var(--experience-accent, #82bfff); color: #f3f1ed; vertical-align: middle; }
+.k-control-logo__initial { flex: 0 0 auto; font: 670 3rem/1 'Manrope Variable', Manrope, sans-serif; letter-spacing: -.06em; }
+.k-control-logo__wordmark { font: 400 2.75rem/1 var(--serif); letter-spacing: -.025em; }
+.k-control-logo--compact { position: relative; display: grid; place-items: center; width: 100%; height: 100%; padding: 0; border: 0; }
+.k-control-logo--compact .k-control-logo__initial { font-size: 1.65rem; transform: translateX(-.03em); }
+.k-control-logo--compact::after { content: ''; position: absolute; bottom: .1rem; width: .7rem; height: 1px; background: var(--experience-accent, #82bfff); }
 .k-control__trigger:hover { border-color: #a8d8ff; box-shadow: inset 0 1px #c4e6ff20, 0 0 24px #267aca22; }
 .k-control__trigger:disabled, html[data-site-loading='true'] .k-control__trigger, body.nav-open .k-control__trigger { visibility: hidden; pointer-events: none; }
 .k-control {
@@ -83,7 +77,8 @@ body.k-control-open { overflow: hidden; }
   .k-control { --control-row-height: 2.65rem; }
   .k-control__surface { padding-block: 1.3rem 1rem; }
   .k-control__header { margin-bottom: .85rem; }
-  .k-control__header .k-control-logo__mark { width: 3rem; height: 3rem; }
+  .k-control__header .k-control-logo__initial { font-size: 2.65rem; }
+  .k-control__header .k-control-logo__wordmark { font-size: 2.4rem; }
   .k-control__destinations { margin-bottom: .85rem; }
   .k-control__destination > strong { font-size: 1.45rem; }
   .k-control__setting { min-height: 3.6rem; }
@@ -95,7 +90,8 @@ body.k-control-open { overflow: hidden; }
   .k-control { --control-row-height: 2.75rem; inset: auto .5rem max(.5rem, env(safe-area-inset-bottom)); width: calc(100% - 1rem); max-height: calc(100dvh - 1.5rem); border-radius: 1.75rem; }
   .k-control__surface { padding: 1.4rem 1.2rem 1.2rem; }
   .k-control__header { margin-bottom: 1rem; }
-  .k-control__header .k-control-logo__mark { width: 3rem; height: 3rem; }
+  .k-control__header .k-control-logo__initial { font-size: 2.65rem; }
+  .k-control__header .k-control-logo__wordmark { font-size: 2.4rem; }
   .k-control__header p { font-size: .75rem; }
   .k-control__destination { gap: .7rem; }
   .k-control__destination > strong { font-size: 1.45rem; }
@@ -110,11 +106,8 @@ body.k-control-open { overflow: hidden; }
   .k-control *, .k-control__trigger { transition: none !important; }
 }
 @media (forced-colors: active) {
-  .k-control-logo__mark { filter: none !important; }
-  .k-control-logo__light, .k-control-logo__colour, .k-control-logo__shade { stop-color: ButtonText; }
-  .k-control-logo__orbit { stroke: ButtonText; }
-  .k-control-logo__glint { stroke: Canvas; }
-  .k-control-logo__node { fill: ButtonText; }
+  .k-control-logo { color: ButtonText; border-color: ButtonText; }
+  .k-control-logo--compact::after { background: ButtonText; }
   .k-control__spine path, .k-control__point { stroke: LinkText; filter: none; }
   .k-control__point { fill: Canvas; }
   .k-control__point[data-active='true'] { fill: Highlight; stroke: Highlight; filter: none; }
