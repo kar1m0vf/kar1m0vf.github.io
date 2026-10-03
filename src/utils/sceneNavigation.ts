@@ -25,13 +25,26 @@ export function jumpToScene(destination: SceneDestination) {
   window.dispatchEvent(new Event(sceneJumpEvent));
 }
 
+export function focusWithoutScrolling(target: HTMLElement) {
+  const temporary = !target.hasAttribute('tabindex') && target.tabIndex < 0;
+  // Static destinations need focus for screen readers and the next Tab, but
+  // Safari can give them a focus-visible ring even after a touch navigation.
+  const sceneTarget = temporary || target.matches('h1, h2, section, main');
+  if (temporary) target.tabIndex = -1;
+  if (sceneTarget) target.setAttribute('data-scene-focus', '');
+  target.focus({ preventScroll: true });
+  const cleanUp = () => {
+    if (temporary) target.removeAttribute('tabindex');
+    if (sceneTarget) target.removeAttribute('data-scene-focus');
+  };
+  if (document.activeElement !== target) cleanUp();
+  else if (temporary || sceneTarget) target.addEventListener('blur', cleanUp, { once: true });
+}
+
 export function focusScene(destination: SceneDestination) {
   const heading = destination.element.querySelector<HTMLElement>(destination.focusSelector ?? 'h1, h2');
   const target = heading && !heading.closest('[inert]') ? heading : destination.element;
-  const temporary = !target.hasAttribute('tabindex') && target.tabIndex < 0;
-  if (temporary) target.tabIndex = -1;
-  target.focus({ preventScroll: true });
-  if (temporary) target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+  focusWithoutScrolling(target);
 }
 
 export function navigateToScene(id: string, options: Omit<SceneDestination, 'element'> = {}) {

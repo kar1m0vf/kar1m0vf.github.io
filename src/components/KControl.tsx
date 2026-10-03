@@ -4,7 +4,7 @@ import { ArrowIcon, ArrowRightIcon, CloseIcon } from './Icons';
 import { kControlSections, type SiteSectionId } from '../data/siteSections';
 import { useSound } from '../audio/SoundProvider';
 import { isSceneTransitionActive, setControlOverlayOpen } from '../utils/controlOverlay';
-import { navigateToScene } from '../utils/sceneNavigation';
+import { focusWithoutScrolling, navigateToScene } from '../utils/sceneNavigation';
 
 export interface KControlProps {
   activeSection: SiteSectionId;
@@ -54,15 +54,6 @@ function isEditableTarget(target: EventTarget | null) {
 function isOutsideDialog(event: ReactPointerEvent<HTMLDialogElement>) {
   const rect = event.currentTarget.getBoundingClientRect();
   return event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
-}
-
-function focusWithoutScrolling(target: HTMLElement) {
-  // Headings selected by chapter navigation lose their temporary tabindex on blur.
-  // Restore it when returning from the dialog, then clean it up again on departure.
-  const temporary = target.tabIndex < 0 && !target.hasAttribute('tabindex');
-  if (temporary) target.tabIndex = -1;
-  target.focus({ preventScroll: true });
-  if (temporary) target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
 }
 
 export function KControl({ activeSection, builderMode, disabled = false, onBuilderModeChange }: KControlProps) {

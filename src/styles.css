@@ -109,6 +109,12 @@ ul {
   outline-offset: 5px;
 }
 
+/* A chapter's reading position is not an interactive control. Keep its focus
+   for accessible navigation without framing the heading after a scene jump. */
+[data-scene-focus]:focus {
+  outline: none;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
