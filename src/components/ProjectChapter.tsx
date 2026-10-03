@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from 'react';
+import { memo, useRef } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { ProjectWorld, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { BuilderLayerPanel } from './BuilderMode';
@@ -23,12 +23,10 @@ function ProjectChapterComponent({
 }: ProjectChapterProps) {
   const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement | null>(null);
-  const [builderLayer, setBuilderLayer] = useState(0);
 
   return (
     <section
       className={`project project--${project.theme}`}
-      data-builder-layer={builderMode ? builderLayer : undefined}
       data-builder-world={project.id}
       id={project.id}
       ref={sectionRef}
@@ -52,7 +50,7 @@ function ProjectChapterComponent({
         </motion.header>
 
         <div className="project__experience">
-          <div className="project__visual-focus" data-builder-zone="system">
+          <div className="project__visual-focus">
             <ProjectVisual
               onHandoffReset={onHandoffReset}
               onHandoffResolved={onHandoffResolved}
@@ -61,7 +59,7 @@ function ProjectChapterComponent({
             />
           </div>
 
-          {builderMode ? <BuilderLayerPanel onLayerChange={setBuilderLayer} project={project} /> : null}
+          {builderMode ? <BuilderLayerPanel project={project} /> : null}
         </div>
 
         <div className="project__after">

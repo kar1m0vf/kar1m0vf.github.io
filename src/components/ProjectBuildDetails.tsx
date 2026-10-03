@@ -89,7 +89,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
   return (
     <>
       <button aria-controls={dialogId} aria-expanded={isOpen} aria-haspopup="dialog"
-        className="project-build-trigger" data-builder-zone="flow" onClick={openDetails}
+        className="project-build-trigger" onClick={openDetails}
         ref={triggerRef} type="button">
         <span>See how I built it</span><ArrowIcon />
       </button>

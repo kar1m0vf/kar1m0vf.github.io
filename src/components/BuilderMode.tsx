@@ -12,7 +12,6 @@ export interface BuilderModeHudProps {
 }
 
 export interface BuilderLayerPanelProps {
-  onLayerChange?: (index: number) => void;
   project: ProjectWorld;
 }
 
@@ -97,7 +96,7 @@ export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderMod
   );
 }
 
-export function BuilderLayerPanel({ onLayerChange, project }: BuilderLayerPanelProps) {
+export function BuilderLayerPanel({ project }: BuilderLayerPanelProps) {
   const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -109,7 +108,6 @@ export function BuilderLayerPanel({ onLayerChange, project }: BuilderLayerPanelP
   const nextLayer = build.layers[nextIndex] ?? build.layers[0];
 
   useEffect(() => setSelectedIndex(0), [projectId]);
-  useEffect(() => onLayerChange?.(selectedIndex), [onLayerChange, selectedIndex]);
 
   const selectRelativeLayer = (index: number, direction: -1 | 1) => {
     const nextIndex = (index + direction + build.layers.length) % build.layers.length;
