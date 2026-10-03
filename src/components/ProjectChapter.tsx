@@ -2,8 +2,9 @@ import { memo, useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import type { ProjectWorld, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { BuilderLayerPanel } from './BuilderMode';
-import { ArrowIcon, ArrowRightIcon, DisclosureIcon, GitHubIcon, TelegramIcon } from './Icons';
+import { ArrowIcon, GitHubIcon, TelegramIcon } from './Icons';
 import { ProjectVisual } from './ProjectVisuals';
+import { ProjectBuildDetails } from './ProjectBuildDetails';
 
 interface ProjectChapterProps {
   builderMode: boolean;
@@ -80,30 +81,7 @@ function ProjectChapterComponent({
               </a>
             ))}
           </div>
-          <details className="project-details" open={builderMode || undefined}>
-            <summary>See how I built it<DisclosureIcon /></summary>
-            <ol aria-label={`${project.title} loop`} className="project__flow" data-builder-zone="flow">
-              {project.flow.map((step, index) => (
-                <li key={step}>
-                  <span>{step}</span>
-                  {index < project.flow.length - 1 ? <ArrowRightIcon /> : null}
-                </li>
-              ))}
-            </ol>
-            <div className="project__notes" data-builder-zone="output">
-              <div className="project__decision">
-                <span>A decision that mattered</span>
-                <blockquote>{project.decision}</blockquote>
-                {project.releaseNote ? <p>{project.releaseNote}</p> : null}
-              </div>
-              <div className="project__meta">
-                <dl>
-                  <div><dt>My part</dt><dd>{project.role}</dd></div>
-                  <div><dt>Built with</dt><dd>{project.stack.join(' · ')}</dd></div>
-                </dl>
-              </div>
-            </div>
-          </details>
+          <ProjectBuildDetails project={project} />
         </div>
       </div>
     </section>
