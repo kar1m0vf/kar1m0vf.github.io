@@ -39,7 +39,7 @@ export function KControlSpine({ activeSection, enabled }: { activeSection: SiteS
     const tick = (time: number) => {
       if (reduced.matches || document.hidden) { frame = 0; return; }
       // Resume from the same phase after a pause instead of catching up in one jump.
-      if (lastTime !== null) phaseRef.current = (phaseRef.current + Math.min(time - lastTime, 64) * Math.PI * 2 / 10_000) % (Math.PI * 2);
+      if (lastTime !== null) phaseRef.current = (phaseRef.current + Math.min(time - lastTime, 64) * Math.PI * 2 / 5_000) % (Math.PI * 2);
       lastTime = time;
       draw();
       frame = requestAnimationFrame(tick);
