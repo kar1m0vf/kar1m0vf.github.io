@@ -14,6 +14,7 @@ import { advancePassage, passageTrajectory } from './passageTrajectory';
 import { RoundThread, THREAD_RADIUS } from './RoundThread';
 import { TunnelCurve } from './TunnelCurve';
 import { SceneLayout } from './SceneLayout';
+import { sampleSceneTheme, sceneThemes, type ThemeBlend, type SceneTheme } from '../../data/sceneThemes';
 
 interface Options { reduced: boolean; onReady: () => void; onUnavailable: () => void }
 interface Pose { shape: number; x: number; y: number; scale: number; angle: number; camera: number; visibility: number }
@@ -118,6 +119,23 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   const halo = new Sprite(haloMaterial);
   halo.position.copy(focalPoint.position);
   group.add(halo);
+  const tint = new Color();
+  const tintTargets = [
+    { material: glass.color, tone: 'glass', strength: 1 },
+    { material: glass.emissive, tone: 'emissive', strength: 1 },
+    { material: coreMaterial.color, tone: 'core', strength: 3.4 },
+    { material: key.color, tone: 'key', strength: 1 },
+    { material: blue.color, tone: 'rim', strength: 1 },
+    { material: haloMaterial.color, tone: 'halo', strength: 1 },
+    { material: beadMaterial.color, tone: 'bead', strength: 5 },
+    { material: focalMaterial.color, tone: 'bead', strength: 3 },
+  ].map(({ material, tone, strength }) => ({
+    material, strength,
+    colors: Object.fromEntries(Object.entries(sceneThemes).map(([theme, palette]) =>
+      [theme, new Color(palette[tone as keyof typeof palette])])) as Record<SceneTheme, Color>,
+  }));
+  let themeBlend: ThemeBlend = { from: 'blue', to: 'blue', progress: 1 };
+  let snapTint = true;
   const composer = new EffectComposer(renderer);
   const bloom = new UnrealBloomPass(new Vector2(1, 1), 0.3, 0.55, 1.05);
   const output = new OutputPass();
@@ -181,6 +199,13 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     const blaster = bounds('#blaster');
     const journey = bounds('#journey');
     if (!method || !nar || !passage || !tracker || !blaster || !journey) return;
+    themeBlend = sampleSceneTheme(scroll + height * .42, [
+      { at: nar.top + scroll, theme: 'nar' },
+      { at: nar.top + nar.height + scroll, theme: 'blue' },
+      { at: tracker.top + scroll, theme: 'trendyol' },
+      { at: blaster.top + scroll, theme: 'blaster' },
+      { at: journey.top + scroll, theme: 'blue' },
+    ], height * .45);
     const anchored = (selector: string, shape: number, size = 1, span = 4.6): Pose => {
       const rect = bounds(selector);
       if (!rect) return { shape, x: 0.72, y: 0.5, scale: 1, angle: 0, camera: 9.3, visibility: 1 };
@@ -247,7 +272,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     if (options.reduced) { target.shape = Math.round(target.shape); target.camera = 9.3; }
     // Direct anchor navigation should land in its final composition immediately.
     if (firstMeasure || options.reduced) {
-      current = { ...target }; passageProgress = passageTarget; firstMeasure = false;
+      current = { ...target }; passageProgress = passageTarget; firstMeasure = false; snapTint = true;
     }
     playing = Boolean(root.querySelector('.mini-blaster[data-phase="running"]'));
   };
@@ -260,6 +285,14 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     lastTime = time;
     if (!options.reduced && !playing) elapsed += dt;
     const damp = options.reduced || playing ? 1 : 1 - Math.exp(-dt * 10);
+    const tintDamp = snapTint || options.reduced || playing ? 1 : 1 - Math.exp(-dt * 6);
+    for (const entry of tintTargets) {
+      tint.copy(entry.colors[themeBlend.from]).lerp(entry.colors[themeBlend.to], themeBlend.progress).multiplyScalar(entry.strength);
+      entry.material.lerp(tint, tintDamp);
+    }
+    snapTint = false;
+    const threadColor = `#${glass.color.getHexString()}`;
+    if (canvas.dataset.threadColor !== threadColor) canvas.dataset.threadColor = threadColor;
     for (const key of poseKeys) current[key] = mix(current[key], target[key], damp);
     passageProgress = options.reduced ? passageTarget : advancePassage(passageProgress, passageTarget, dt);
     const trip = passageTrajectory(passageProgress, passageHelix?.scale ?? 1);
@@ -302,7 +335,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     focalPoint.scale.setScalar(tunnel * mix(2.8, 4.2, approach));
     halo.scale.setScalar(mix(4.5, 8, approach));
     haloMaterial.opacity = tunnel * mix(.3, .55, approach);
-    // The same blue light carries over the hidden camera reset into Trendyol.
+    // The same light carries over the hidden camera reset into Trendyol.
     // It lives outside the fading canvas and never covers the scene with white.
     const opacity = current.visibility.toFixed(3);
     const depth = current.camera.toFixed(2);

@@ -93,7 +93,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
       </button>
       {createPortal(
         <dialog aria-labelledby={`${dialogId}-title`} aria-describedby={`${dialogId}-project`}
-          className="project-build" id={dialogId} ref={dialogRef}
+          className="project-build" data-project-theme={project.theme} id={dialogId} ref={dialogRef}
           onCancel={(event) => { event.preventDefault(); closeDetails(); }}
           onClose={handleClose} onKeyDown={trapFocus}
           onPointerDown={(event) => { outsidePointerRef.current = event.target === event.currentTarget; }}

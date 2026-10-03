@@ -1,0 +1,174 @@
+/* Project colours extend the existing glass identity without changing its geometry. */
+@property --experience-accent {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #82bfff;
+}
+
+:root { --experience-accent: #82bfff; --theme-accent: var(--experience-accent); transition: --experience-accent 850ms cubic-bezier(.22,1,.36,1); }
+:root[data-experience-theme='nar'] { --experience-accent: var(--nar); }
+:root[data-experience-theme='trendyol'] { --experience-accent: var(--trendyol); }
+:root[data-experience-theme='blaster'] { --experience-accent: var(--blaster); }
+.project--nar, .project-build[data-project-theme='nar'] { --theme-accent: var(--nar); }
+.project--trendyol, .project-build[data-project-theme='trendyol'] { --theme-accent: var(--trendyol); }
+.project--blaster, .project-build[data-project-theme='blaster'] { --theme-accent: var(--blaster); }
+
+/* Recompute derived tones at each palette boundary, including portalled dialogs. */
+:root, .project, .project-build {
+  --theme-soft: color-mix(in srgb, var(--theme-accent) 45%, white);
+  --theme-muted: color-mix(in srgb, var(--theme-accent) 18%, #a5b5c9);
+  --theme-line: color-mix(in srgb, var(--theme-accent) 45%, transparent);
+  --theme-faint: color-mix(in srgb, var(--theme-accent) 18%, transparent);
+  --theme-wash: color-mix(in srgb, var(--theme-accent) 9%, transparent);
+  --theme-glow: color-mix(in srgb, var(--theme-accent) 28%, transparent);
+  --theme-surface: color-mix(in srgb, var(--theme-accent) 12%, #081019);
+  --theme-deep: color-mix(in srgb, var(--theme-accent) 5%, #050709);
+}
+.continuous-story .project, .project-build { --accent: var(--theme-accent); --blue: var(--theme-accent); --blue-bright: var(--theme-soft); }
+
+@media (forced-colors: none) {
+  .continuous-story .project__kicker { color: var(--theme-accent); }
+  .continuous-story .project-link { border-color: var(--theme-line); color: var(--theme-soft); }
+  .continuous-story .project-link--primary { color: var(--theme-soft); }
+  .continuous-story .project-link:hover { color: white; border-color: var(--theme-soft); }
+  .project-build-trigger { border-color: var(--theme-line); }
+  .project-build-trigger > svg { color: var(--theme-soft); }
+  .project-build-trigger:hover { border-color: var(--theme-soft); }
+  .project :is(a, button):focus-visible, .project-build :is(a, button):focus-visible { outline-color: var(--theme-soft); }
+  .experience-rail { --rail-accent: var(--experience-accent); }
+  .header-cta > svg { color: var(--experience-accent); }
+  .continuity-stage { background: radial-gradient(ellipse at 78% 50%, var(--theme-wash), transparent 65%); }
+
+  /* The palette follows the current chapter even when K Control is in the top layer. */
+  .k-control__trigger {
+    border-color: var(--theme-line);
+    background: linear-gradient(135deg, var(--theme-surface), var(--theme-deep) 70%);
+    box-shadow: inset 0 1px var(--theme-faint), 0 5px 25px #0006;
+  }
+  .k-control__trigger > svg { color: var(--experience-accent); filter: drop-shadow(0 0 5px var(--theme-glow)); }
+  .k-control__trigger:hover { border-color: var(--theme-soft); box-shadow: inset 0 1px var(--theme-faint), 0 0 24px var(--theme-wash); }
+  .k-control {
+    border-color: var(--theme-line);
+    background: radial-gradient(ellipse at 0 0, var(--theme-faint), transparent 50%), linear-gradient(145deg, var(--theme-surface), var(--theme-deep));
+    box-shadow: inset 0 1px 1px var(--theme-faint), inset 0 0 28px var(--theme-wash), 0 24px 100px #0009;
+    scrollbar-color: var(--theme-line) transparent;
+  }
+  .k-control__header p, .k-control__hint, .k-control__setting-copy small { color: var(--theme-muted); }
+  .k-control__close { border-color: var(--theme-line); background: var(--theme-wash); color: var(--theme-soft); }
+  .k-control__close:hover { background: var(--theme-faint); }
+  .k-control__spine path { stroke: var(--experience-accent); filter: drop-shadow(0 0 3px var(--theme-glow)); }
+  .k-control__destination:hover::before, .k-control__destination:focus-visible::before { background: var(--theme-wash); }
+  .k-control__destination[aria-current='location']::before { background: linear-gradient(100deg, var(--theme-faint), var(--theme-wash)); border-color: var(--theme-faint); }
+  .k-control__destination > i { border-color: var(--experience-accent); background: var(--theme-deep); }
+  .k-control__destination[aria-current='location'] > i { background: var(--experience-accent); border-color: var(--theme-soft); box-shadow: 0 0 12px var(--theme-glow); }
+  .k-control__destination > span { color: var(--theme-muted); }
+  .k-control__destination > svg, .k-control__setting { color: var(--theme-soft); }
+  .k-control__settings { border-color: var(--theme-faint); }
+  .k-control__switch { border-color: var(--theme-line); background: var(--theme-deep); }
+  .k-control__switch span { background: var(--theme-muted); }
+  .k-control__setting[aria-checked='true'] .k-control__switch { background: var(--experience-accent); border-color: var(--theme-soft); box-shadow: 0 0 16px var(--theme-wash); }
+  .k-control__quick a:hover { color: var(--theme-soft); }
+  .k-control :is(a,button):focus-visible, .k-control__trigger:focus-visible { outline-color: var(--theme-soft); }
+
+  /* How I built it retains its own project palette throughout open/close. */
+  .project-build__surface {
+    border-color: var(--theme-line);
+    background: radial-gradient(ellipse at 0 0, var(--theme-faint), transparent 60%), linear-gradient(140deg, var(--theme-surface), var(--theme-deep) 75%);
+    box-shadow: inset 0 1px 1px var(--theme-faint), 0 24px 100px #0009, 0 0 80px var(--theme-wash);
+  }
+  .project-build__intro > p, .project-build__footer > span { color: var(--theme-muted); }
+  .project-build__intro > p > span, .project-build__flow li > svg { color: var(--theme-accent); }
+  .project-build__intro h2 em, .project-build__flow li > strong, .project-build__footer > button { color: var(--theme-soft); }
+  .project-build__close { border-color: var(--theme-line); background: var(--theme-wash); color: var(--theme-soft); }
+  .project-build__close:hover { border-color: var(--theme-soft); background: var(--theme-faint); }
+  .project-build__body { scrollbar-color: var(--theme-line) transparent; }
+  .project-build__flow, .project-build__meta, .project-build__footer { border-color: var(--theme-faint); }
+  .project-build__flow li > span, .project-build__label, .project-build__meta dt { color: var(--theme-muted); }
+  .project-build__footer { background: var(--theme-wash); }
+  .media-lightbox { --blue-bright: var(--theme-soft); }
+  .media-lightbox__close { border-color: var(--theme-line); }
+  .media-lightbox__zoom button, .media-lightbox__footer button { border-color: var(--theme-line); color: var(--theme-soft); }
+  .media-lightbox__zoom button:hover:not(:disabled), .media-lightbox__footer button:hover { border-color: var(--experience-accent); }
+
+  /* Nar: pink glass, navigation traces and saved choices. Product images stay intact. */
+  .nar-world__stage::after { background: radial-gradient(ellipse, var(--theme-glow), transparent 64%); }
+  .nar-world__screen::before {
+    background: linear-gradient(120deg, var(--theme-line), var(--theme-wash) 35%, var(--theme-line));
+    box-shadow: 12px 32px 65px #0009, 0 20px 75px var(--theme-glow);
+  }
+  .nar-world .nar-world__media { border-color: var(--theme-line); }
+  .nar-world__route button > span { color: var(--theme-soft); }
+  .nar-world__route button:not(:last-child)::after { background: linear-gradient(90deg, var(--theme-line), transparent); }
+  .nar-world__route button.is-active > span { text-shadow: 0 0 15px var(--theme-accent); }
+  .nar-world .nar-save-choice { border-color: var(--theme-line); background: var(--theme-surface); color: var(--theme-soft); }
+  .nar-world .nar-save-choice[aria-pressed='true'] { border-color: var(--theme-soft); background: color-mix(in srgb, var(--theme-accent) 22%, #081019); box-shadow: 0 0 24px var(--theme-glow); }
+  .nar-world .nar-save-choice > svg { color: var(--theme-soft); }
+
+  /* Trendyol: orange light around the same custom 48px slider hit areas. */
+  .signal-world input[type='range'] {
+    --range-thumb-border: var(--theme-soft);
+    --range-thumb-shadow: inset 0 1px 2px #fff9, 0 0 0 4px #081725b8, 0 0 18px var(--theme-glow);
+    background:
+      linear-gradient(90deg, var(--theme-accent), var(--theme-soft)) left center / var(--range-progress, 0%) 4px no-repeat,
+      linear-gradient(var(--theme-muted), var(--theme-muted)) center / 100% 4px no-repeat;
+  }
+  .signal-world input[type='range']::-webkit-slider-thumb { background: radial-gradient(circle at 35% 25%, white, var(--theme-soft) 38%, var(--theme-accent)); }
+  .signal-world input[type='range']::-moz-range-thumb { background: radial-gradient(circle at 35% 25%, white, var(--theme-soft) 38%, var(--theme-accent)); }
+  .signal-world input[type='range']:hover:not(:disabled) { --range-thumb-border: white; --range-thumb-shadow: inset 0 1px 2px #fff9, 0 0 0 4px #081725b8, 0 0 24px var(--theme-line); }
+  .signal-world input[type='range']:focus-visible:not(:disabled) { --range-thumb-shadow: inset 0 1px 2px #fff9, 0 0 0 3px #081725, 0 0 0 5px var(--theme-soft), 0 0 24px var(--theme-line); }
+  .signal-world .price-history-preview svg { stroke: var(--theme-soft); }
+  .signal-world__rule-island, .signal-world__outcome {
+    border-color: var(--theme-line);
+    background: linear-gradient(140deg, var(--theme-faint), var(--theme-deep) 55%, var(--theme-surface));
+    box-shadow: inset 0 1px 3px var(--theme-line), inset 0 -12px 30px var(--theme-wash), 0 25px 60px #0004, 0 5px 35px var(--theme-glow);
+  }
+  .signal-world__rule-island::after { background: radial-gradient(ellipse, var(--theme-glow), transparent 65%); }
+  .signal-world__quiet { border-color: var(--theme-faint); }
+  .signal-world__quiet strong, .signal-world__details > summary > svg, .signal-world__stations em { color: var(--theme-soft); }
+  .signal-world__quiet[aria-pressed='true'] i, .price-notice-label svg { background: var(--theme-accent); }
+  .price-notice-label svg { color: #170c05; }
+  .signal-world[data-outcome='released'] .signal-world__outcome { border-color: var(--theme-soft); box-shadow: inset 0 1px 3px var(--theme-line), 0 0 55px var(--theme-glow); }
+  .signal-world__run {
+    border-color: var(--theme-soft);
+    background: linear-gradient(var(--theme-soft), var(--theme-accent));
+    box-shadow: inset 0 1px 1px #fff6, 0 8px 30px var(--theme-glow);
+    color: #170c05;
+  }
+  .signal-world__run:hover:not(:disabled) { background: linear-gradient(color-mix(in srgb, var(--theme-accent) 30%, white), var(--theme-accent)); box-shadow: 0 8px 40px var(--theme-line); }
+  .signal-world__beacon { background: var(--theme-soft); box-shadow: 0 0 14px var(--theme-accent); }
+  .signal-world__details, .signal-world__stations { border-color: var(--theme-faint); }
+  .signal-world__stations button span { color: var(--theme-soft); }
+
+  /* Blaster: violet instruments and lens. The game's own colours remain semantic. */
+  .project--blaster .mini-blaster { --mini-cyan: var(--theme-soft); --mini-cyan-soft: var(--theme-line); --mini-panel: var(--theme-surface); }
+  .continuous-story .mini-blaster__arena, .continuous-story .blaster-runtime-poster {
+    border-color: var(--theme-line); background-color: var(--theme-deep);
+    box-shadow: 0 1px 2px var(--theme-line), 0 15px 65px var(--theme-glow), inset 0 0 30px var(--theme-wash);
+  }
+  .continuous-story .mini-blaster__arena::after { box-shadow: inset 0 1px 10px var(--theme-line), inset 0 -4px 15px var(--theme-glow); }
+  .continuous-story .mini-blaster__metric > strong { text-shadow: 0 1px 4px #000, 0 0 12px #020508, 0 0 20px var(--theme-glow); }
+  .continuous-story .mini-blaster__controls button { border-color: var(--theme-line); background: linear-gradient(155deg, var(--theme-surface), var(--theme-deep) 65%); box-shadow: inset 0 1px 2px var(--theme-faint), 0 8px 25px #0003; }
+  .continuous-story .mini-blaster__instructions { color: var(--theme-soft); }
+  /* The runtime loads its CSS lazily; the project scope keeps its palette stable. */
+  .project--blaster .mini-blaster__attract { background: radial-gradient(ellipse at 50% 28%, var(--theme-faint), transparent 60%), var(--theme-deep); }
+  .project--blaster .mini-blaster__attract > div { background-image: radial-gradient(circle, var(--theme-line) 1px, transparent 1px), radial-gradient(circle, var(--theme-faint) 1px, transparent 1px); }
+  .project--blaster .mini-blaster__attract > svg { stroke: var(--theme-soft); filter: drop-shadow(0 0 9px var(--theme-accent)); }
+  .project--blaster .mini-blaster__attract > img { filter: drop-shadow(0 0 15px var(--theme-accent)); }
+  .project--blaster .mini-blaster__lives b.is-live { filter: drop-shadow(0 0 .45rem var(--theme-line)); }
+  .project--blaster .mini-blaster__pause:hover:not(:disabled), .project--blaster .mini-blaster__pause:focus-visible { background: var(--theme-faint); }
+  .project--blaster .mini-blaster__wave, .project--blaster .mini-blaster__loading { border-color: var(--theme-line); color: var(--theme-soft); }
+  .project--blaster .mini-blaster__loading { border-top-color: var(--theme-soft); }
+  .project--blaster .mini-blaster__scanlines { background: repeating-linear-gradient(180deg, transparent 0 3px, var(--theme-wash) 3px 4px); }
+  .project--blaster .mini-blaster__overlay { background: radial-gradient(circle at 50% 48%, var(--theme-faint), transparent 22rem), #02050bc2; }
+  .project--blaster .mini-blaster__overlay button:hover, .project--blaster .mini-blaster__overlay button:focus-visible { background: white; }
+  .blaster-runtime-poster__grid { background-image: linear-gradient(var(--theme-wash) 1px, transparent 1px), linear-gradient(90deg, var(--theme-wash) 1px, transparent 1px); }
+  .blaster-runtime-poster__copy > span, .continuous-story .blaster-evidence__heading span { color: var(--theme-soft); }
+  .blaster-runtime-poster__copy button { border-color: var(--theme-soft); background: var(--theme-soft); }
+  .blaster-runtime-poster__copy button:hover, .blaster-runtime-poster__copy button:focus-visible { background: white; }
+  .continuous-story .blaster-evidence { border-color: var(--theme-faint); }
+  .blaster-evidence__shot { border-color: var(--theme-line); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { transition: none; }
+}

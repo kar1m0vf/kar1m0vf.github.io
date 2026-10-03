@@ -31,6 +31,9 @@ export function useActiveSection(disabled = false) {
         }).section;
 
       setActiveId((current) => (current === nextSection.id ? current : nextSection.id));
+      // Navigation still highlights the nearest chapter in a gap, while its
+      // colour returns to blue outside the actual project boundaries.
+      document.documentElement.dataset.experienceTheme = containingMarker?.section.theme ?? 'blue';
     };
 
     const observer = new IntersectionObserver(updateActiveSection, {
@@ -41,7 +44,10 @@ export function useActiveSection(disabled = false) {
     sectionElements.forEach(({ element }) => observer.observe(element));
     updateActiveSection();
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      delete document.documentElement.dataset.experienceTheme;
+    };
   }, [disabled]);
 
   return activeId;

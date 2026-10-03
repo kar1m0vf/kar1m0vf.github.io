@@ -49,7 +49,7 @@ export function MiddleThread({ children, prepare = false, onReady }: { children:
       <div aria-hidden="true" className="continuity-layer">
         <div className="continuity-stage">
           <svg className="continuity-fallback" fill="none" viewBox="0 0 1440 1000" preserveAspectRatio="xMidYMid slice">
-            <defs><linearGradient id={gradient} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#c1e7ff" /><stop offset=".38" stopColor="#2772df" /><stop offset=".65" stopColor="#92d2ff" /><stop offset="1" stopColor="#1255ad" /></linearGradient></defs>
+            <defs><linearGradient id={gradient} x1="0" y1="0" x2="1" y2="1"><stop stopColor="color-mix(in srgb, var(--experience-accent) 30%, white)" /><stop offset=".38" stopColor="var(--experience-accent)" /><stop offset=".65" stopColor="color-mix(in srgb, var(--experience-accent) 45%, white)" /><stop offset="1" stopColor="color-mix(in srgb, var(--experience-accent) 75%, #050709)" /></linearGradient></defs>
             <path d="M1050-150C590 140 740 360 1160 215C1550 70 1390 680 1070 615C780 550 810 340 1150 430C1540 535 1000 960 1500 1120" stroke={`url(#${gradient})`} strokeWidth="24.3" />
           </svg>
           <div className="continuity-canvas" ref={host} />

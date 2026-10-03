@@ -36,11 +36,9 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement;
     root.dataset.experienceSection = activeSection.id;
-    root.dataset.experienceTheme = activeSection.theme;
 
     return () => {
       delete root.dataset.experienceSection;
-      delete root.dataset.experienceTheme;
     };
   }, [activeSection]);
 

@@ -14,6 +14,7 @@ import './components/BlasterWorld.css';
 import './components/SignalIdentity.css';
 import './components/PortfolioEvolution.css';
 import './components/thread/ContinuousStory.css';
+import './components/ProjectThemes.css';
 import { cleanupLegacyRuntime } from './utils/legacyRuntime';
 
 const root = document.getElementById('root');
