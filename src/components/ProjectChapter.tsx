@@ -61,7 +61,7 @@ function ProjectChapterComponent({
             />
           </div>
 
-          {builderMode ? <BuilderLayerPanel onLayerChange={setBuilderLayer} projectId={project.id} /> : null}
+          {builderMode ? <BuilderLayerPanel onLayerChange={setBuilderLayer} project={project} /> : null}
         </div>
 
         <div className="project__after">

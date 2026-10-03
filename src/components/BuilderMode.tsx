@@ -1,9 +1,9 @@
 import { useEffect, useId, useState, type KeyboardEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useSound } from '../audio/SoundProvider';
+import { projectBuilds } from '../data/projectBuilds';
+import type { ProjectWorld } from '../types';
 import './BuilderMode.css';
-
-export type BuilderProjectId = 'nar' | 'trendyol' | 'blaster';
 
 export interface BuilderModeHudProps {
   enabled: boolean;
@@ -13,116 +13,8 @@ export interface BuilderModeHudProps {
 
 export interface BuilderLayerPanelProps {
   onLayerChange?: (index: number) => void;
-  projectId: BuilderProjectId;
+  project: ProjectWorld;
 }
-
-interface BuilderLayer {
-  detail: string;
-  index: string;
-  label: string;
-  name: string;
-  proof: string;
-  stack: readonly string[];
-}
-
-interface BuilderProject {
-  eyebrow: string;
-  title: string;
-  layers: readonly BuilderLayer[];
-}
-
-const projects: Record<BuilderProjectId, BuilderProject> = {
-  nar: {
-    eyebrow: 'Nar Patisserie',
-    title: 'A shopping intent that survives the route.',
-    layers: [
-      {
-        detail: 'Search, filters, catalog routes, and product detail turn a broad craving into one clear choice.',
-        index: '01',
-        label: 'Search · Filter · Route',
-        name: 'Discover',
-        proof: 'One route connects search, filters, catalog, and product detail.',
-        stack: ['React', 'React Router', 'CSS'],
-      },
-      {
-        detail: 'Favourites, cart quantities, and interface state stay coherent while the customer moves between views.',
-        index: '02',
-        label: 'Favourite · Cart · Quantity',
-        name: 'State',
-        proof: 'Favourites and cart quantities stay coherent between views.',
-        stack: ['React state', 'JavaScript', 'Components'],
-      },
-      {
-        detail: 'The cart and favourites return after a reload, so a route change never erases the customer’s decision.',
-        index: '03',
-        label: 'Save · Restore · Continue',
-        name: 'Persist',
-        proof: 'Cart and favourites restore after a reload.',
-        stack: ['localStorage', 'Vite', 'Responsive UI'],
-      },
-    ],
-  },
-  trendyol: {
-    eyebrow: 'Trendyol Price Tracker',
-    title: 'Observation becomes useful only after a rule agrees.',
-    layers: [
-      {
-        detail: 'Scheduled checks use batches, locking, caching, and network limits to collect price history without uncontrolled work.',
-        index: '01',
-        label: 'Schedule · Check · Remember',
-        name: 'Observe',
-        proof: 'Successful checks become a usable price-history trail.',
-        stack: ['Python', 'APScheduler', 'SQLite'],
-      },
-      {
-        detail: 'Targets, drops, ranges, percentages, intervals, pauses, and quiet hours decide whether a change deserves attention.',
-        index: '02',
-        label: 'Rules · Target · Quiet hours',
-        name: 'Decide',
-        proof: 'Targets and quiet hours can stop an alert before delivery.',
-        stack: ['Python', 'SQL', 'Rule engine'],
-      },
-      {
-        detail: 'Qualified changes become grouped Telegram alerts; diagnostics and four locales keep delivery reliable in use.',
-        index: '03',
-        label: 'Group · Localize · Alert',
-        name: 'Deliver',
-        proof: 'Qualified changes are grouped and localized for Telegram.',
-        stack: ['aiogram 3', 'Telegram', 'Diagnostics'],
-      },
-    ],
-  },
-  blaster: {
-    eyebrow: 'Blaster',
-    title: 'A playable loop backed by a release loop.',
-    layers: [
-      {
-        detail: 'Player input, menus, and game controls enter one consistently scaled 16:9 play surface.',
-        index: '01',
-        label: 'Move · Fire · Navigate',
-        name: 'Input',
-        proof: 'Desktop controls feed one consistently scaled 16:9 surface.',
-        stack: ['Python 3.11', 'Pygame', '16:9 surface'],
-      },
-      {
-        detail: 'Gameplay state coordinates waves, projectiles, collisions, boss phases, retry, settings, and highscores.',
-        index: '02',
-        label: 'State · Collision · Boss',
-        name: 'Runtime',
-        proof: 'Waves, collisions, boss phases, and retry share one runtime state.',
-        stack: ['Pygame', 'JSON', 'pytest'],
-      },
-      {
-        detail: 'A checked PowerShell flow packages the Windows build, assembles the ZIP, and produces SHA256 checksums.',
-        index: '03',
-        label: 'Test · Package · Verify',
-        name: 'Release',
-        proof: 'The Windows package ships with a SHA256 checksum.',
-        stack: ['PowerShell', 'PyInstaller', 'SHA256'],
-      },
-    ],
-  },
-};
 
 const sectionLabels: Record<string, string> = {
   top: 'Entry signal',
@@ -205,21 +97,22 @@ export function BuilderModeHud({ enabled, onDisable, activeSection }: BuilderMod
   );
 }
 
-export function BuilderLayerPanel({ onLayerChange, projectId }: BuilderLayerPanelProps) {
+export function BuilderLayerPanel({ onLayerChange, project }: BuilderLayerPanelProps) {
   const { playSound } = useSound();
   const reduceMotion = useReducedMotion();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const detailsId = useId();
-  const project = projects[projectId];
-  const selectedLayer = project.layers[selectedIndex] ?? project.layers[0];
-  const nextIndex = (selectedIndex + 1) % project.layers.length;
-  const nextLayer = project.layers[nextIndex] ?? project.layers[0];
+  const projectId = project.id;
+  const build = projectBuilds[projectId];
+  const selectedLayer = build.layers[selectedIndex] ?? build.layers[0];
+  const nextIndex = (selectedIndex + 1) % build.layers.length;
+  const nextLayer = build.layers[nextIndex] ?? build.layers[0];
 
   useEffect(() => setSelectedIndex(0), [projectId]);
   useEffect(() => onLayerChange?.(selectedIndex), [onLayerChange, selectedIndex]);
 
   const selectRelativeLayer = (index: number, direction: -1 | 1) => {
-    const nextIndex = (index + direction + project.layers.length) % project.layers.length;
+    const nextIndex = (index + direction + build.layers.length) % build.layers.length;
     playSound('select');
     setSelectedIndex(nextIndex);
     document.getElementById(`${detailsId}-tab-${nextIndex}`)?.focus();
@@ -241,13 +134,13 @@ export function BuilderLayerPanel({ onLayerChange, projectId }: BuilderLayerPane
   return (
     <section className="builder-layer-panel" data-project={projectId} aria-labelledby={`${detailsId}-title`}>
       <header className="builder-layer-panel__heading">
-        <p>Builder inspection · {project.eyebrow}</p>
-        <h3 id={`${detailsId}-title`}>{project.title}</h3>
+        <p>Builder inspection · {project.title}</p>
+        <h3 id={`${detailsId}-title`}>{build.title}</h3>
       </header>
 
-      <div aria-label={`${project.eyebrow} system layers`} className="builder-layer-panel__layers" role="tablist">
+      <div aria-label={`${project.title} system layers`} className="builder-layer-panel__layers" role="tablist">
         <span aria-hidden="true" className="builder-layer-panel__spine" />
-        {project.layers.map((layer, index) => {
+        {build.layers.map((layer, index) => {
           const selected = index === selectedIndex;
           return (
             <button
@@ -267,7 +160,7 @@ export function BuilderLayerPanel({ onLayerChange, projectId }: BuilderLayerPane
               type="button"
             >
               <span aria-hidden="true" className="builder-layer-panel__node" />
-              <span className="builder-layer-panel__index">{layer.index}</span>
+              <span className="builder-layer-panel__index">{String(index + 1).padStart(2, '0')}</span>
               <span className="builder-layer-panel__layer-copy">
                 <strong>{layer.name}</strong>
                 <small>{layer.label}</small>
@@ -290,19 +183,25 @@ export function BuilderLayerPanel({ onLayerChange, projectId }: BuilderLayerPane
         transition={{ duration: reduceMotion ? 0 : 0.24, ease: [0.22, 1, 0.36, 1] }}
       >
         <div className="builder-layer-panel__detail-copy">
-          <span>{selectedLayer.name} layer · {String(selectedIndex + 1).padStart(2, '0')} / {String(project.layers.length).padStart(2, '0')}</span>
-          <p>{selectedLayer.detail}</p>
+          <span>{selectedLayer.name} layer · {String(selectedIndex + 1).padStart(2, '0')} / {String(build.layers.length).padStart(2, '0')}</span>
+          <p>{selectedLayer.summary}</p>
         </div>
+        <ul className="builder-layer-panel__notes">
+          {selectedLayer.points.map((point) => <li key={point}>{point}</li>)}
+        </ul>
         <p className="builder-layer-panel__proof">
-          <span>Proof</span>
+          <span>In practice</span>
           <strong>{selectedLayer.proof}</strong>
         </p>
-        <ul aria-label="Technologies and system concerns">
+        <ul aria-label="Technologies and system concerns" className="builder-layer-panel__stack">
           {selectedLayer.stack.map((item) => <li key={item}>{item}</li>)}
         </ul>
+        <a className="builder-layer-panel__source" href={selectedLayer.source.href} rel="noreferrer" target="_blank">
+          {selectedLayer.source.label}<ArrowIcon />
+        </a>
         <button className="builder-layer-panel__next" onClick={inspectNext} type="button">
           <span>Next · {nextLayer.name}</span>
-          <small>{String(nextIndex + 1).padStart(2, '0')} / {String(project.layers.length).padStart(2, '0')}</small>
+          <small>{String(nextIndex + 1).padStart(2, '0')} / {String(build.layers.length).padStart(2, '0')}</small>
           <ArrowIcon />
         </button>
       </motion.div>

@@ -1,5 +1,24 @@
 export type ProjectTheme = 'nar' | 'trendyol' | 'blaster';
 
+export interface ProjectBuildLayer {
+  name: string;
+  label: string;
+  title: string;
+  summary: string;
+  detail: string;
+  points: readonly string[];
+  proof: string;
+  stack: readonly string[];
+  source: { label: string; href: string };
+}
+
+export interface ProjectBuildStory {
+  title: string;
+  overview: string;
+  scope: string;
+  layers: readonly [ProjectBuildLayer, ProjectBuildLayer, ProjectBuildLayer];
+}
+
 export interface ProjectLink {
   label: string;
   href: string;

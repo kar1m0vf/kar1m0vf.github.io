@@ -25,7 +25,7 @@ export const projectWorlds: readonly ProjectWorld[] = [
     loopLabel: 'A little attention to detail',
     statement: 'Something sweet. A little easier to find.',
     description:
-      'A patisserie storefront for discovering a favourite, finding the right cake, and picking up where you left off.',
+      'A patisserie storefront with ingredient search, product details, and recommendations. Favourites and cart quantities stay with you when you return.',
     flow: ['Discover', 'Narrow', 'Choose', 'Save', 'Return'],
     decision:
       'State should follow intent. Favourites and cart quantities persist, so route changes and reloads do not erase the customer’s choices.',
@@ -50,7 +50,7 @@ export const projectWorlds: readonly ProjectWorld[] = [
     loopLabel: 'A little less busywork',
     statement: 'Let the price come to you.',
     description:
-      'Send a product link, choose a price, and let a Telegram bot keep an eye on it. Useful updates, with quiet hours when you need them.',
+      'Send a product link, set your alert rules, and follow its price history. A Telegram bot handles the checks, with quiet hours built in.',
     flow: ['Link', 'Normalize', 'Remember', 'Check', 'Decide', 'Deliver'],
     decision:
       'I separated observation from interruption: background checks collect data; personal rules decide when the system should speak.',
@@ -99,7 +99,7 @@ export const projectWorlds: readonly ProjectWorld[] = [
     loopLabel: 'Blaster · A little room to play',
     statement: 'I made a game. Your turn to play.',
     description:
-      'Dodge, shoot, and see how long you last. This short browser version is inspired by my original desktop game.',
+      'The desktop original has three ships, boss phases, and a death replay. Try a short browser adaptation here, or explore the full Pygame project.',
     flow: ['Input', 'State', 'Wave', 'Boss', 'Retry', 'Persist'],
     decision:
       'One scaled 16:9 game surface keeps controls and layout consistent across desktop resolutions, while settings and highscores survive between runs.',

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useReducedMotion } from 'motion/react';
 import { useSound } from '../audio/SoundProvider';
+import { projectBuilds } from '../data/projectBuilds';
 import type { ProjectWorld } from '../types';
 import { isControlOverlayOpen, isSceneTransitionActive, setControlOverlayOpen } from '../utils/controlOverlay';
 import { focusWithoutScrolling } from '../utils/sceneNavigation';
@@ -17,6 +18,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
   const reducedMotion = useReducedMotion();
   const { playSound } = useSound();
   const dialogId = `${project.id}-build-details`;
+  const build = projectBuilds[project.id];
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -74,7 +76,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
 
   const trapFocus = (event: KeyboardEvent<HTMLDialogElement>) => {
     if (event.key !== 'Tab') return;
-    const controls = event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not(:disabled), a[href]');
+    const controls = event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]');
     const first = controls[0];
     const last = controls[controls.length - 1];
     if (event.shiftKey && document.activeElement === first) {
@@ -119,11 +121,32 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
                     {index < project.flow.length - 1 ? <ArrowRightIcon /> : null}</li>
                 ))}
               </ol>
+              <p className="project-build__overview">{build.overview}</p>
               <div className="project-build__decision">
                 <p className="project-build__label">A decision that mattered</p>
                 <blockquote>{project.decision}</blockquote>
                 {project.releaseNote ? <p className="project-build__release">{project.releaseNote}</p> : null}
               </div>
+              <div className="project-build__story">
+                {build.layers.map((layer, index) => (
+                  <section className="project-build__chapter" key={layer.name}
+                    aria-labelledby={`${dialogId}-${index}-title`}>
+                    <p className="project-build__label">{String(index + 1).padStart(2, '0')} · {layer.name}</p>
+                    <h3 id={`${dialogId}-${index}-title`}>{layer.title}</h3>
+                    <p className="project-build__copy">{layer.detail}</p>
+                    <ul className="project-build__points">
+                      {layer.points.map((point) => <li key={point}>{point}</li>)}
+                    </ul>
+                    <a className="project-build__source" href={layer.source.href} rel="noreferrer" target="_blank">
+                      {layer.source.label}<ArrowIcon />
+                    </a>
+                  </section>
+                ))}
+              </div>
+              <aside className="project-build__scope">
+                <p className="project-build__label">Project scope</p>
+                <p className="project-build__copy">{build.scope}</p>
+              </aside>
               <dl className="project-build__meta">
                 <div><dt>My part</dt><dd>{project.role}</dd></div>
                 <div><dt>Built with</dt><dd>{project.stack.join(' · ')}</dd></div>
