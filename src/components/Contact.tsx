@@ -12,7 +12,8 @@ export function Contact({ prepare = false, onReady }: { prepare?: boolean; onRea
   const visible = useInView(root, { margin: '300px', once: true });
   const reduced = Boolean(useReducedMotion());
   const { scrollYProgress } = useScroll({ target: root, offset: ['start end', 'start start'] });
-  const progress = useTransform(scrollYProgress, [0, .9], [1, 0]);
+  // Trim the reverse sequence at the ring; preserve the remaining scroll timing.
+  const progress = useTransform(scrollYProgress, [0, .45, .9], [.5, .5, 0]);
 
   useEffect(() => {
     if (copyStatus !== 'copied') return;

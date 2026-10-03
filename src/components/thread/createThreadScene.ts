@@ -253,7 +253,9 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
   const container = host.closest('.thread-story__sticky') ?? host;
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(host);
-  const observer = new IntersectionObserver(([entry]) => {
+  const observer = new IntersectionObserver((entries) => {
+    // Mobile resizing can queue an exit and re-entry together for the footer.
+    const entry = options.framing === 'closing' ? entries.at(-1) : entries[0];
     inView = entry?.isIntersecting ?? false;
     if (inView) schedule();
     else if (!firstRender) { cancelAnimationFrame(frameId); frameId = 0; }
