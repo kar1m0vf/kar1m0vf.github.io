@@ -59,8 +59,8 @@
   .k-control__spine path { stroke: var(--experience-accent); filter: drop-shadow(0 0 3px var(--theme-glow)); }
   .k-control__destination:hover::before, .k-control__destination:focus-visible::before { background: var(--theme-wash); }
   .k-control__destination[aria-current='location']::before { background: linear-gradient(100deg, var(--theme-faint), var(--theme-wash)); border-color: var(--theme-faint); }
-  .k-control__destination > i { border-color: var(--experience-accent); background: var(--theme-deep); }
-  .k-control__destination[aria-current='location'] > i { background: var(--experience-accent); border-color: var(--theme-soft); box-shadow: 0 0 12px var(--theme-glow); }
+  .k-control__point { stroke: var(--experience-accent); fill: var(--theme-deep); }
+  .k-control__point[data-active='true'] { fill: var(--experience-accent); stroke: var(--theme-soft); filter: drop-shadow(0 0 6px var(--theme-glow)); }
   .k-control__destination > span { color: var(--theme-muted); }
   .k-control__destination > svg, .k-control__setting { color: var(--theme-soft); }
   .k-control__settings { border-color: var(--theme-faint); }

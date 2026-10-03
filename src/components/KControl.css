@@ -35,14 +35,16 @@ body.k-control-open { overflow: hidden; }
 .k-control__close:hover { background: #36699330; color: #fff; }
 .k-control__close svg { width: 100%; height: 100%; }
 .k-control__destinations { position: relative; margin: 0 -.8rem 1.4rem 0; }
-.k-control__spine { position: absolute; left: -.1rem; top: 0; width: 1.25rem; height: 100%; pointer-events: none; }
+.k-control__spine { position: absolute; z-index: 1; left: -.1rem; top: 0; width: 1.25rem; height: 100%; overflow: visible; pointer-events: none; visibility: hidden; }
+.k-control__spine[data-ready='true'] { visibility: visible; }
 .k-control__spine path { stroke: #62bdff; stroke-width: .9; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 3px #3d9bed50); }
+.k-control__point { r: calc(.325rem - .75px); stroke: #65baff; stroke-width: 1.5; fill: #08131f; vector-effect: non-scaling-stroke; }
+.k-control__point[data-active='true'] { fill: #379dff; stroke: #7ec8ff; filter: drop-shadow(0 0 6px #369cff88); }
 .k-control__destination { position: relative; isolation: isolate; display: grid; grid-template-columns: 1.1rem 1.8rem minmax(0,1fr) 1.4rem; gap: .9rem; align-items: center; min-height: var(--control-row-height); padding-right: .8rem; border-radius: 1rem; }
 .k-control__destination::before { content: ''; position: absolute; z-index: -1; inset: .12rem 0 .12rem 1.3rem; border: 1px solid transparent; border-radius: 1rem; transition: background 160ms, border-color 160ms; }
 .k-control__destination:hover::before, .k-control__destination:focus-visible::before { background: #356da822; }
 .k-control__destination[aria-current='location']::before { background: linear-gradient(100deg,#123b654d,#194a7626); border-color: #3e83b929; }
-.k-control__destination > i { width: .65rem; height: .65rem; border: 1.5px solid #65baff; border-radius: 50%; background: #08131f; justify-self: center; }
-.k-control__destination[aria-current='location'] > i { background: #379dff; border-color: #7ec8ff; box-shadow: 0 0 12px #369cff88; }
+.k-control__destination > i { width: .65rem; height: .65rem; visibility: hidden; }
 .k-control__destination > span { font: 400 .69rem/1 'Manrope Variable', Manrope, system-ui, sans-serif; color: #a0b8d1; font-variant-numeric: tabular-nums; }
 .k-control__destination > strong { font: 400 1.625rem/1.2 var(--serif); color: #edf2f7; }
 .k-control__destination > svg { width: 1.3rem; height: 1.3rem; color: #a8c8e9; transition: transform 180ms; }
@@ -100,6 +102,9 @@ body.k-control-open { overflow: hidden; }
   .k-control *, .k-control__trigger { transition: none !important; }
 }
 @media (forced-colors: active) {
+  .k-control__spine path, .k-control__point { stroke: LinkText; filter: none; }
+  .k-control__point { fill: Canvas; }
+  .k-control__point[data-active='true'] { fill: Highlight; stroke: Highlight; filter: none; }
   .k-control__switch { border-color: ButtonText; }
   .k-control__switch span { background: ButtonText; }
   .k-control__destination[aria-current='location']::before { border-color: Highlight; }

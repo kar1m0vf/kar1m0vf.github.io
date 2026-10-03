@@ -5,6 +5,7 @@ import { kControlSections, type SiteSectionId } from '../data/siteSections';
 import { useSound } from '../audio/SoundProvider';
 import { isSceneTransitionActive, setControlOverlayOpen } from '../utils/controlOverlay';
 import { focusWithoutScrolling, navigateToScene } from '../utils/sceneNavigation';
+import { KControlSpine } from './KControlSpine';
 
 export interface KControlProps {
   activeSection: SiteSectionId;
@@ -190,9 +191,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
             <button aria-label="Close K Control" className="k-control__close" onClick={closePalette} type="button"><CloseIcon /></button>
           </div>
           <nav aria-label="K Control destinations" className="k-control__destinations">
-            <svg aria-hidden="true" className="k-control__spine" fill="none" preserveAspectRatio="none" viewBox="0 0 20 364">
-              <path d="M10 0C19 42 1 71 10 105S19 172 10 208S1 273 10 310S13 350 10 364" />
-            </svg>
+            <KControlSpine activeSection={activeSection} enabled={isOpen} />
             {kControlSections.map((section) => (
               <a aria-current={section.id === activeSection ? 'location' : undefined}
                 className="k-control__destination" href={section.href} key={section.id}
