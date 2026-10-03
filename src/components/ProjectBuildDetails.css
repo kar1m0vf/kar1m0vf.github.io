@@ -72,6 +72,7 @@
 .project-build__close:hover { color: #fff; border-color: #a8d8ff; background: #36699330; }
 .project-build__close svg { width: 100%; height: 100%; }
 .project-build__body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 2.6rem 2.25rem; scrollbar-width: thin; scrollbar-color: #5986ad70 transparent; }
+.project-build__body:focus-visible { outline: 2px solid var(--theme-soft); outline-offset: -2px; }
 .project-build__flow { display: flex; flex-wrap: wrap; gap: .75rem 0; padding: 1.3rem 0; border-block: 1px solid #a6c9e52b; }
 .project-build__flow li { display: flex; align-items: center; gap: .5rem; font-size: .76rem; }
 .project-build__flow li > span { color: #83a8c8; font-size: .6rem; font-variant-numeric: tabular-nums; }
@@ -81,32 +82,31 @@
 .project-build__overview { max-width: 42rem; margin-top: 1.4rem; color: var(--theme-muted); font-size: .88rem; line-height: 1.8; }
 .project-build__label, .project-build__meta dt { color: #88afd0; font-size: .63rem; font-weight: 550; letter-spacing: .16em; text-transform: uppercase; }
 .project-build__decision blockquote { margin-top: .9rem; max-width: 44rem; color: #e6e5e1; font: 400 clamp(1.6rem, 2.9vw, 2.15rem)/1.25 var(--serif); }
-.project-build__release { max-width: 42rem; margin-top: 1.15rem; color: #a5b6c7; font-size: .82rem; line-height: 1.75; }
 .project-build__chapter { padding-block: 1.65rem; border-top: 1px solid var(--theme-faint); }
 .project-build__chapter h3 { margin-top: .65rem; color: var(--ink-bright); font: 400 clamp(1.65rem, 3.2vw, 2.2rem)/1.2 var(--serif); letter-spacing: -.015em; }
 .project-build__copy { max-width: 42rem; margin-top: .9rem; color: #b7c8d7; font-size: .85rem; line-height: 1.8; }
 .project-build__points { display: grid; gap: .65rem; margin-top: 1rem; padding-left: 1.05rem; list-style: disc; color: #b7c8d7; font-size: .82rem; line-height: 1.7; }
 .project-build__points li { padding-left: .2rem; }
 .project-build__points li::marker { color: var(--theme-soft); }
-.project-build__source { display: inline-flex; align-items: center; gap: .7rem; min-height: 2.75rem; margin-top: .6rem; color: var(--theme-soft); font-size: .78rem; line-height: 1.5; text-decoration: underline; text-underline-offset: .3em; }
-.project-build__source svg { flex: 0 0 auto; width: .9rem; height: .9rem; }
-.project-build__source:hover { color: white; }
 .project-build__scope { margin-block: .5rem 1.65rem; padding: 1rem 1.2rem; border-left: 2px solid var(--theme-line); background: var(--theme-wash); }
 .project-build__scope .project-build__copy { margin-top: .6rem; font-size: .8rem; }
-.project-build__meta { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding-top: 1.45rem; border-top: 1px solid #a6c9e52b; }
+.project-build__meta { padding-top: 1.45rem; border-top: 1px solid #a6c9e52b; }
 .project-build__meta dd { margin-top: .65rem; color: #b7c8d7; font-size: .79rem; line-height: 1.7; }
+.project-build__stack { margin-top: 1.45rem; }
+.project-build__stack ul { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .75rem; }
+.project-build__stack li { padding: .45rem .65rem; border: 1px solid var(--theme-faint); border-radius: .3rem; background: var(--theme-wash); color: var(--theme-muted); font-size: .75rem; line-height: 1.45; }
 .project-build__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex: 0 0 auto; padding: .6rem 2.6rem .75rem; border-top: 1px solid #a6c9e521; background: #060f1845; }
 .project-build__footer > span { color: #90a9c1; font-size: .7rem; font-variant-numeric: tabular-nums; }
 .project-build__footer > button { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; min-height: 2.75rem; padding: .5rem 0; border: 0; background: transparent; color: #c2dff8; font-size: .78rem; cursor: pointer; transition: color 180ms ease; }
 .project-build__footer > button:hover { color: #fff; }
 .project-build__footer > button > svg { width: 1.1rem; height: 1.1rem; }
-.project-build[open] :is(.project-build__intro, .project-build__flow, .project-build__overview, .project-build__decision, .project-build__story, .project-build__scope, .project-build__meta) { animation: project-build-content 420ms cubic-bezier(.22,1,.36,1) var(--build-delay, 0ms) both; }
+.project-build[open] :is(.project-build__intro, .project-build__flow, .project-build__overview, .project-build__decision, .project-build__story, .project-build__scope, .project-build__meta, .project-build__stack) { animation: project-build-content 420ms cubic-bezier(.22,1,.36,1) var(--build-delay, 0ms) both; }
 .project-build__intro { --build-delay: 50ms; }
 .project-build__flow { --build-delay: 100ms; }
 .project-build__overview { --build-delay: 120ms; }
 .project-build__decision { --build-delay: 140ms; }
 .project-build__story, .project-build__scope { --build-delay: 180ms; }
-.project-build__meta { --build-delay: 180ms; }
+.project-build__meta, .project-build__stack { --build-delay: 180ms; }
 
 @keyframes project-build-enter { from { opacity: 0; transform: translateY(22px) scale(.975); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes project-build-exit { from { opacity: var(--exit-opacity, 1); transform: var(--exit-transform, none); } to { opacity: 0; transform: translateY(10px) scale(.985); } }
@@ -126,10 +126,10 @@
   .project-build__flow li { font-size: .72rem; }
   .project-build__flow li > svg { margin-inline: .1rem .7rem; width: .8rem; }
   .project-build__decision { padding-block: 1.6rem; }
-  .project-build__meta { grid-template-columns: 1fr; gap: 1.2rem; padding-top: 1.25rem; }
+  .project-build__meta { padding-top: 1.25rem; }
   .project-build__footer { padding-inline: 1.4rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .project-build[open] .project-build__surface, .project-build[open] :is(.project-build__intro, .project-build__flow, .project-build__overview, .project-build__decision, .project-build__story, .project-build__scope, .project-build__meta), .project-build::backdrop, .project-build[data-state='closing']::backdrop { animation: none; }
+  .project-build[open] .project-build__surface, .project-build[open] :is(.project-build__intro, .project-build__flow, .project-build__overview, .project-build__decision, .project-build__story, .project-build__scope, .project-build__meta, .project-build__stack), .project-build::backdrop, .project-build[data-state='closing']::backdrop { animation: none; }
   .project-build-trigger, .project-build-trigger > svg, .project-build__close, .project-build__footer > button { transition: none; }
 }

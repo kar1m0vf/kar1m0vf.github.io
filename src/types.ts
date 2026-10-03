@@ -3,20 +3,32 @@ export type ProjectTheme = 'nar' | 'trendyol' | 'blaster';
 export interface ProjectBuildLayer {
   name: string;
   label: string;
-  title: string;
-  summary: string;
   detail: string;
   points: readonly string[];
   proof: string;
-  stack: readonly string[];
+  stack: readonly { name: string; purpose: string }[];
   source: { label: string; href: string };
 }
 
 export interface ProjectBuildStory {
   title: string;
-  overview: string;
-  scope: string;
   layers: readonly [ProjectBuildLayer, ProjectBuildLayer, ProjectBuildLayer];
+}
+
+export interface ProjectStoryChapter {
+  label: string;
+  title: string;
+  detail: string;
+  points: readonly string[];
+}
+
+export interface ProjectStory {
+  flow: readonly string[];
+  overview: string;
+  decision: string;
+  scope: string;
+  contribution: string;
+  chapters: readonly [ProjectStoryChapter, ProjectStoryChapter, ProjectStoryChapter];
 }
 
 export interface ProjectLink {

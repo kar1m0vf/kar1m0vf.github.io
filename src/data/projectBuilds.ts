@@ -1,29 +1,26 @@
 import type { ProjectBuildStory, ProjectTheme } from '../types';
 
-// The detailed window and Builder Mode share these repository-backed notes.
+// Builder-only notes describe verified public implementation and tooling.
 export const projectBuilds: Record<ProjectTheme, ProjectBuildStory> = {
   nar: {
     title: 'A shopping intent that survives the route.',
-    overview:
-      'I built a five-page React storefront prototype: home, catalog, product details, cart, and contacts. The focus was a complete browsing flow, from finding a dessert to keeping a selection for later.',
-    scope:
-      'This is a frontend prototype. Checkout shows a local confirmation and clears the cart; payments, order delivery, and a backend are outside the current implementation.',
     layers: [
       {
         name: 'Discover',
-        label: 'Search · Filter · Route',
-        title: 'Find it by more than its name.',
-        summary:
-          'The catalog combines category, search, sorting, and a favourites-only view. Search also checks taste and ingredients, so a customer can start with what they want rather than a product name.',
+        label: 'Query · Filter · Route',
         detail:
-          'One product dataset supplies the catalog, detail pages, and cart. Catalog controls work together: a category narrows the range, a query searches product information, and sorting changes the order of the remaining items. I kept this filtering in one transformation rather than separate lists, so the result count and cards describe the same selection.',
+          'One product dataset feeds catalog cards, detail routes, and cart lookups. The catalog applies category, query, favourites, and sort order in one transformation, so its cards and result count stay consistent. Search matches names, descriptions, categories, tastes, and ingredients.',
         points: [
-          'Search covers names, descriptions, categories, tastes, and ingredients.',
-          'Price and alphabetical sorting work alongside the favourites filter.',
-          'Empty results explain how to recover by changing a query or filter.',
+          'Price ascending, price descending, and alphabetical sorting operate on the filtered collection.',
+          'Product IDs connect reusable cards with the corresponding detail route.',
+          'Empty results offer a recovery path without resetting the whole browsing flow.',
         ],
-        proof: 'An ingredient search can find a dessert without knowing its name.',
-        stack: ['React', 'React Router', 'Product data'],
+        proof: 'An ingredient query and a favourites-only filter can be combined in the same result set.',
+        stack: [
+          { name: 'React 18 + React DOM', purpose: 'Component rendering and catalog controls.' },
+          { name: 'React Router 6', purpose: 'Catalog and product-detail navigation.' },
+          { name: 'JavaScript', purpose: 'Combined filtering, sorting, and product lookups.' },
+        ],
         source: {
           label: 'Inspect the catalog',
           href: 'https://github.com/kar1m0vf/nar-patisserie/blob/main/src/pages/Catalog.jsx',
@@ -31,19 +28,20 @@ export const projectBuilds: Record<ProjectTheme, ProjectBuildStory> = {
       },
       {
         name: 'State',
-        label: 'Details · Cart · Quantity',
-        title: 'Keep choosing and buying connected.',
-        summary:
-          'Product details expose ingredients, allergens, format, and quantity before adding an item. The app owns cart state, so product pages and the cart use the same quantities and totals.',
+        label: 'Identity · Quantity · Totals',
         detail:
-          'Each product has its own route with a clear purchase panel and supporting information. Quantity starts at one when the product changes and is bounded on the detail page. Adding the same item again increases its existing cart quantity. The cart resolves saved IDs against the product dataset and derives its item count, line totals, and overall total from that state.',
+          'Cart state belongs to the app above the route tree. Stored product IDs resolve against the catalog, and quantities drive the item count, line totals, and overall total. Adding an existing product increments its entry instead of creating a duplicate; changing routes leaves that shared state intact.',
         points: [
-          'Detail pages show taste, ingredients, allergens, price, and product format.',
-          'Quantity changes, removal, and clearing the cart update the order summary.',
-          'A small curated recommendation section gives the customer a next choice.',
+          'The detail-page quantity resets to one on product change and is bounded from 1 to 12.',
+          'Cart removal, quantity changes, and clearing derive a new order summary from the same state.',
+          'Recommendations are a small curated selection; checkout only confirms locally and clears the cart.',
         ],
-        proof: 'Adding an existing product changes its quantity instead of creating a second cart entry.',
-        stack: ['React state', 'Shared cart', 'JavaScript'],
+        proof: 'Re-adding the same product produces one cart entry with an increased quantity.',
+        stack: [
+          { name: 'React hooks', purpose: 'Shared cart state and detail-page quantity updates.' },
+          { name: 'Product data', purpose: 'Stable IDs and a single source for prices and product information.' },
+          { name: 'CSS', purpose: 'Responsive cards, purchase controls, and cart layout.' },
+        ],
         source: {
           label: 'Inspect product details',
           href: 'https://github.com/kar1m0vf/nar-patisserie/blob/main/src/pages/ProductDetails.jsx',
@@ -51,137 +49,136 @@ export const projectBuilds: Record<ProjectTheme, ProjectBuildStory> = {
       },
       {
         name: 'Persist',
-        label: 'Save · Restore · Continue',
-        title: 'Make returning feel continuous.',
-        summary:
-          'Cart IDs and quantities are restored at app startup and saved when they change. A dedicated favourites hook persists the saved selection independently of the current page.',
+        label: 'Restore · Validate · Deploy',
         detail:
-          'The cart lives above the route tree rather than inside a page that disappears during navigation. Its initial state reads localStorage, and subsequent changes are written back. Favourites use a separate hook that checks stored data is an array and keeps finite numeric IDs. Hash-based routing also lets the static GitHub Pages demo open its product and catalog routes without a server rewrite.',
+          'The cart restores localStorage data at startup and writes changes back through an effect. A separate favourites hook checks for an array of finite numeric IDs and falls back to an empty selection on unreadable JSON. HashRouter keeps deep routes compatible with a static host without server rewrites.',
         points: [
-          'Favourites and cart quantities survive page reloads in the same browser.',
-          'Unreadable stored JSON falls back to an empty saved selection.',
-          'Reusable cards, a responsive layout, and Vite support the static demo.',
+          'Cart and favourites use separate stored selections in the same browser.',
+          'Persistence stays above page lifecycles rather than depending on a mounted catalog.',
+          'The deployment workflow installs dependencies, builds the app, and publishes the dist artifact.',
         ],
-        proof: 'A route change does not discard the cart, and a reload restores it.',
-        stack: ['localStorage', 'HashRouter', 'Vite'],
+        proof: 'A page reload restores saved choices; malformed favourites data yields an empty selection.',
+        stack: [
+          { name: 'localStorage + JSON', purpose: 'Browser-local cart and favourites persistence.' },
+          { name: 'Vite 5 + React plugin', purpose: 'Development server and production asset build.' },
+          { name: 'GitHub Actions + Pages', purpose: 'Automated static-site build and hosting.' },
+        ],
         source: {
-          label: 'Inspect state and persistence',
-          href: 'https://github.com/kar1m0vf/nar-patisserie/blob/main/src/App.jsx',
+          label: 'Inspect favourites persistence',
+          href: 'https://github.com/kar1m0vf/nar-patisserie/blob/main/src/hooks/useFavorites.js',
         },
       },
     ],
   },
   trendyol: {
     title: 'Observation becomes useful only after a rule agrees.',
-    overview:
-      'I built an independent Telegram service for tracking Trendyol products. It connects personal watchlists, price history, alert strategies, and owner tools, so a product link becomes an ongoing service rather than a one-time price lookup.',
-    scope:
-      'The live service uses an owner-managed runtime. The public repository documents its architecture and includes handlers, data models, parsing, and tests; the production network scraper is private.',
     layers: [
       {
         name: 'Observe',
-        label: 'Normalize · Schedule · Remember',
-        title: 'One product, one shared observation.',
-        summary:
-          'Scheduled checks are locked, batched, and limited in network concurrency. A shared product fetch service caches snapshots and combines simultaneous requests for the same URL.',
+        label: 'Schedule · Cache · Store',
         detail:
-          'External product data becomes a shared ProductSnapshot used by checks and product cards. URL normalization removes harmless differences while preserving query parameters that select the seller. APScheduler runs background checks; a global lock prevents overlapping runs, and task batches plus a network semaphore bound the work. Fresh cached data can be read without starting another external request.',
+          'Background checks and product cards share a ProductSnapshot model. APScheduler coordinates recurring jobs, with a global lock to prevent overlapping checks. Task batches and bounded concurrency control the workload, while SQLite retains subscriptions and price history with migrations and query indexes.',
         points: [
-          'Concurrent requests for the same product share an in-flight fetch.',
-          'Empty results expire sooner than successful product snapshots.',
-          'SQLite stores watchlists and price history with migrations and query indexes.',
+          'Concurrent requests for one product share the same in-flight result.',
+          'Successful snapshots have a longer cache lifetime than empty results.',
+          'Compact product cards can read a fresh cached snapshot without starting a new request.',
         ],
-        proof: 'A test checks that five simultaneous requests use one fetch.',
-        stack: ['Python', 'APScheduler', 'SQLite', 'Async cache'],
+        proof: 'An async test verifies that five simultaneous requests produce one shared fetch.',
+        stack: [
+          { name: 'Python + asyncio', purpose: 'Asynchronous tasks, locks, and bounded concurrency.' },
+          { name: 'APScheduler', purpose: 'Recurring price checks and maintenance jobs.' },
+          { name: 'SQLite / SQL', purpose: 'Durable watchlists, price history, migrations, and indexes.' },
+        ],
         source: {
-          label: 'Inspect shared product fetching',
+          label: 'Inspect the snapshot service',
           href: 'https://github.com/kar1m0vf/trendyol-price-tracker/blob/refactor-bot-structure/services/product_fetch_service.py',
         },
       },
       {
         name: 'Decide',
-        label: 'Rules · History · Quiet hours',
-        title: 'Let the person decide what matters.',
-        summary:
-          'Personal rules separate useful alerts from routine observations. The watchlist stays compact, with in-place product cards and richer details loaded only when requested.',
+        label: 'Rules · Cards · History',
         detail:
-          'A user can choose discount-only, target, range, percentage, or interval-based alerts, then pause a subscription without deleting its history. Quiet hours protect attention before delivery. I kept the regular watchlist in one message with local product numbers instead of internal database IDs. Compact cards prioritize price and the next action; expanded cards request more product information on demand.',
+          'Alert evaluation is separate from collecting a price. Per-product strategies cover target, drop, range, percentage, and interval rules; pause and resume preserve history. The Telegram interface uses local watchlist numbers, updates cards in place, and loads additional product information only when an expanded card is requested.',
         points: [
-          'Per-product controls manage modes, targets, intervals, pause, and resume.',
-          'History charts, comparisons, and CSV/JSON exports make collected data useful.',
-          'The /delete_me flow removes the user’s profile and related stored data.',
+          'The presenter escapes HTML and bounds optional detail blocks to the Telegram caption limit.',
+          'History charts, product comparisons, and CSV/JSON exports expose the stored observations.',
+          'Quiet hours gate delivery; account deletion removes the profile and related local records.',
         ],
-        proof: 'Opening a compact card reads fresh cache without making a network request.',
-        stack: ['aiogram 3', 'SQL', 'Alert rules', 'Product cards'],
+        proof: 'Compact and expanded views use one presenter with controlled, bounded detail sections.',
+        stack: [
+          { name: 'aiogram 3', purpose: 'Telegram handlers, callbacks, inline controls, and message updates.' },
+          { name: 'Matplotlib', purpose: 'Charts generated from recorded price history.' },
+          { name: 'CSV + JSON', purpose: 'Exporting records and importing supported data.' },
+          { name: 'Telegram Stars', purpose: 'Optional payments for access tiers when configured.' },
+        ],
         source: {
-          label: 'Read the architecture',
-          href: 'https://github.com/kar1m0vf/trendyol-price-tracker/blob/refactor-bot-structure/docs/ARCHITECTURE.md',
+          label: 'Inspect the card presenter',
+          href: 'https://github.com/kar1m0vf/trendyol-price-tracker/blob/refactor-bot-structure/presenters/product_card.py',
         },
       },
       {
         name: 'Deliver',
-        label: 'Group · Localize · Operate',
-        title: 'Build for the days after launch.',
-        summary:
-          'Qualified changes become grouped Telegram updates. Four locales, scheduled backups, runtime diagnostics, and admin tools support the service beyond its main tracking flow.',
+        label: 'Localize · Recover · Operate',
         detail:
-          'The bot groups updates instead of sending every qualifying change as a separate interruption. Delivery helpers apply timeouts and fall back to text when photo delivery times out. Russian, English, Azerbaijani, and Turkish share checked locale keys. Owner tools cover reports, access tiers, backups, and broken subscriptions, while readiness checks and behavioral tests cover the paths around the main user flow.',
+          'Qualified changes are grouped into Telegram updates. Delivery helpers apply timeouts and fall back to text when photo delivery times out. Four locales share checked translation keys. Scheduled backups, owner controls for broken subscriptions, and readiness checks support routine operation beyond the main tracking path.',
         points: [
-          'Daily SQLite backups and runtime health counters support ongoing operation.',
-          'Admins can recheck, pause, or remove broken subscriptions.',
-          'Tests cover product parsing, shared fetching, notifications, and payment events.',
+          'Russian, English, Azerbaijani, and Turkish are checked for matching locale keys.',
+          'Rotating technical and action logs keep diagnostics separate; health counters support inspection.',
+          'Behavioral tests cover caching, presenters, callbacks, notifications, and payment events.',
         ],
-        proof: 'Locale checks require each translation key to exist in all four languages.',
-        stack: ['Telegram', 'pytest', 'Four locales', 'Diagnostics'],
+        proof: 'Photo-delivery timeouts have a text fallback rather than losing the entire notification.',
+        stack: [
+          { name: 'Python logging', purpose: 'Rotating files, configured severity levels, and structured action events.' },
+          { name: 'python-dotenv + psutil', purpose: 'Environment configuration and runtime resource diagnostics.' },
+          { name: 'pytest', purpose: 'Behavioral and regression checks around the service.' },
+          { name: 'Locale dictionaries', purpose: 'Four-language messages with key-consistency checks.' },
+        ],
         source: {
-          label: 'Explore features and checks',
-          href: 'https://github.com/kar1m0vf/trendyol-price-tracker/blob/refactor-bot-structure/README.md',
+          label: 'Inspect notification delivery',
+          href: 'https://github.com/kar1m0vf/trendyol-price-tracker/blob/refactor-bot-structure/services/notification_service.py',
         },
       },
     ],
   },
   blaster: {
     title: 'A playable loop backed by a release loop.',
-    overview:
-      'I built the original Blaster as a Python and Pygame desktop shooter, from ship selection and wave combat to local saves and Windows packaging. The small game on this page is a separate browser adaptation of that idea.',
-    scope:
-      'These notes describe the desktop game. Its local Run Mode is an eight-wave offline operation; the portfolio browser version is a shorter, separate experience with a smaller feature set.',
     layers: [
       {
         name: 'Input',
-        label: 'Choose · Move · Fire',
-        title: 'Keep the playfield consistent.',
-        summary:
-          'Mouse and keyboard input feed a virtual 1280 × 720 playfield. Scaling preserves its 16:9 proportions, while ship selection and quality settings change how the run feels.',
+        label: 'Events · Surface · Quality',
         detail:
-          'Rather than placing gameplay directly in desktop window coordinates, the game uses one virtual 16:9 surface. Borderless fullscreen and windowed presentation preserve that frame. Animated menus introduce three ship frames with different weapons, and a local Run Mode carries the player through eight waves and visual sectors. Quality presets adjust background and effects separately from difficulty.',
+          'The desktop game renders to a virtual 1280 × 720 surface, then scales it while preserving 16:9 proportions. Mouse and keyboard events feed the same gameplay frame. Three ship and weapon combinations change the run, while quality presets adjust backgrounds and effects independently of difficulty.',
         points: [
-          'Interceptor, Vanguard, and Lancer use twin pulse, plasma, and rail weapons.',
-          'Performance, Balanced, Cinematic, and Enhanced presets control visual effects.',
-          'Fullscreen, an FPS cap, difficulty, and an optional FPS counter are configurable.',
+          'Interceptor, Vanguard, and Lancer provide twin pulse, plasma, and rail weapons.',
+          'Four quality presets coexist with fullscreen, an FPS cap, and an optional FPS counter.',
+          'The offline Run Mode progresses through eight waves; the portfolio game is a separate browser adaptation.',
         ],
-        proof: 'The same virtual playfield keeps HUD and gameplay proportions consistent across resolutions.',
-        stack: ['Python', 'Pygame', '1280 × 720', 'Quality presets'],
+        proof: 'One virtual surface keeps gameplay and HUD proportions consistent across desktop resolutions.',
+        stack: [
+          { name: 'Python', purpose: 'Game loop, configuration, and wave progression.' },
+          { name: 'Pygame', purpose: 'Input events, display surfaces, rendering, audio, and frame timing.' },
+        ],
         source: {
-          label: 'Explore the desktop game',
-          href: 'https://github.com/kar1m0vf/blaster-game/blob/main/README.md',
+          label: 'Inspect the desktop runtime',
+          href: 'https://github.com/kar1m0vf/blaster-game/blob/main/blaster/main.py',
         },
       },
       {
         name: 'Runtime',
-        label: 'Collide · Telegraph · Retry',
-        title: 'Make a hit readable and fair.',
-        summary:
-          'A dedicated combat system resolves projectiles, enemy collisions, and powerups. Damage feedback includes a short invulnerability window so overlapping hits do not immediately consume more lives.',
+        label: 'Collision · Feedback · Recovery',
         detail:
-          'The runtime combines wave progression, special enemies, boss phases, shields, and weapon powerups. Combat handling was extracted into its own module, where hits trigger particles, sound, screen shake, and a brief invulnerability state. Boss telegraphs and HUD contrast help the player read the fight. A skippable five-second death replay provides a final look at the run before retrying.',
+          'An extracted CombatSystem handles projectiles, enemy collisions, shields, and powerups. Damage paths share a brief invulnerability state, preventing overlapping hits from consuming lives immediately. Particles, sound, shake, and boss telegraphs expose combat state; a skippable five-second death replay supports the retry loop.',
         points: [
-          'Post-hit invulnerability is shared by enemy collisions and enemy projectiles.',
-          'Shields intercept damage, and powerup pickups update the player state.',
-          'Combat tests check invulnerability timing, bullet consumption, and enemy defeat.',
+          'Enemy contact and enemy projectiles consult the same post-hit invulnerability window.',
+          'Shields intercept damage, and pickups update the player’s combat state.',
+          'Regression checks cover invulnerability timing, bullet consumption, and enemy defeat.',
         ],
-        proof: 'A regression test checks that another hit during invulnerability does not remove a life.',
-        stack: ['Pygame sprites', 'CombatSystem', 'State', 'pytest'],
+        proof: 'A combat test checks that a second hit during invulnerability does not remove another life.',
+        stack: [
+          { name: 'Pygame sprites + groups', purpose: 'Entities, projectiles, pickups, and collision handling.' },
+          { name: 'CombatSystem', purpose: 'Isolated damage resolution and combat feedback.' },
+          { name: 'pytest', purpose: 'Combat regression checks and storage behavior tests.' },
+        ],
         source: {
           label: 'Inspect the combat system',
           href: 'https://github.com/kar1m0vf/blaster-game/blob/main/blaster/combat.py',
@@ -189,19 +186,21 @@ export const projectBuilds: Record<ProjectTheme, ProjectBuildStory> = {
       },
       {
         name: 'Release',
-        label: 'Save · Test · Package',
-        title: 'Let a run survive the executable.',
-        summary:
-          'Settings and highscores live in the OS user-data directory. A PowerShell release script runs tests, builds the Windows executable, packages documentation, and writes SHA256 checksums.',
+        label: 'Validate · Migrate · Package',
         detail:
-          'I moved saves out of the source folder into the user’s app-data directory and added migration for older JSON files. Loading sanitizes names, scores, booleans, and settings, with defaults for unreadable data. The release script invokes pytest, builds a windowed PyInstaller executable with a custom icon, and assembles a documented ZIP. Signing is optional when a certificate is configured.',
+          'Settings and highscores live in the OS user-data directory. Loading sanitizes stored values, recovers defaults from unreadable JSON, and migrates legacy saves without replacing an existing save. The release script runs tests by default, builds a windowed executable, and packages documentation with checksums.',
         points: [
-          'Ship choice, difficulty, volume, display settings, and highscores persist locally.',
-          'Storage tests cover malformed data, save/load behavior, and legacy migration.',
-          'Both the executable and release ZIP receive SHA256 checksums.',
+          'Persistence covers ship, difficulty, volume, display settings, and scores, not progress within a run.',
+          'The Windows build uses a custom icon and a one-file PyInstaller package.',
+          'The executable and ZIP receive SHA256 checksums; signing is optional when a certificate is configured.',
         ],
-        proof: 'Legacy saves migrate to the app-data directory without replacing an existing save.',
-        stack: ['JSON', 'PowerShell', 'PyInstaller', 'SHA256'],
+        proof: 'Storage tests cover malformed values, save/load behavior, and legacy migration.',
+        stack: [
+          { name: 'JSON + pathlib', purpose: 'Validated local saves and user-data paths.' },
+          { name: 'PowerShell', purpose: 'Running checks and assembling Windows release artifacts.' },
+          { name: 'PyInstaller', purpose: 'Bundling Python, game code, and assets into an executable.' },
+          { name: 'SHA256', purpose: 'Integrity checksums for the executable and release ZIP.' },
+        ],
         source: {
           label: 'Inspect the release script',
           href: 'https://github.com/kar1m0vf/blaster-game/blob/main/scripts/build_release.ps1',

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { createPortal } from 'react-dom';
 import { useReducedMotion } from 'motion/react';
 import { useSound } from '../audio/SoundProvider';
-import { projectBuilds } from '../data/projectBuilds';
+import { projectStories } from '../data/projectStories';
 import type { ProjectWorld } from '../types';
 import { isControlOverlayOpen, isSceneTransitionActive, setControlOverlayOpen } from '../utils/controlOverlay';
 import { focusWithoutScrolling } from '../utils/sceneNavigation';
@@ -18,7 +18,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
   const reducedMotion = useReducedMotion();
   const { playSound } = useSound();
   const dialogId = `${project.id}-build-details`;
-  const build = projectBuilds[project.id];
+  const story = projectStories[project.id];
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -114,43 +114,42 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
               </div>
               <button aria-label="Close project details" className="project-build__close" onClick={closeDetails} type="button"><CloseIcon /></button>
             </header>
-            <div className="project-build__body">
+            <div aria-label={`${project.title} story`} className="project-build__body" role="region" tabIndex={0}>
               <ol aria-label={`${project.title} loop`} className="project-build__flow">
-                {project.flow.map((step, index) => (
+                {story.flow.map((step, index) => (
                   <li key={step}><span>{String(index + 1).padStart(2, '0')}</span><strong>{step}</strong>
-                    {index < project.flow.length - 1 ? <ArrowRightIcon /> : null}</li>
+                    {index < story.flow.length - 1 ? <ArrowRightIcon /> : null}</li>
                 ))}
               </ol>
-              <p className="project-build__overview">{build.overview}</p>
+              <p className="project-build__overview">{story.overview}</p>
               <div className="project-build__decision">
                 <p className="project-build__label">A decision that mattered</p>
-                <blockquote>{project.decision}</blockquote>
-                {project.releaseNote ? <p className="project-build__release">{project.releaseNote}</p> : null}
+                <blockquote>{story.decision}</blockquote>
               </div>
               <div className="project-build__story">
-                {build.layers.map((layer, index) => (
-                  <section className="project-build__chapter" key={layer.name}
+                {story.chapters.map((chapter, index) => (
+                  <section className="project-build__chapter" key={chapter.label}
                     aria-labelledby={`${dialogId}-${index}-title`}>
-                    <p className="project-build__label">{String(index + 1).padStart(2, '0')} · {layer.name}</p>
-                    <h3 id={`${dialogId}-${index}-title`}>{layer.title}</h3>
-                    <p className="project-build__copy">{layer.detail}</p>
+                    <p className="project-build__label">{String(index + 1).padStart(2, '0')} · {chapter.label}</p>
+                    <h3 id={`${dialogId}-${index}-title`}>{chapter.title}</h3>
+                    <p className="project-build__copy">{chapter.detail}</p>
                     <ul className="project-build__points">
-                      {layer.points.map((point) => <li key={point}>{point}</li>)}
+                      {chapter.points.map((point) => <li key={point}>{point}</li>)}
                     </ul>
-                    <a className="project-build__source" href={layer.source.href} rel="noreferrer" target="_blank">
-                      {layer.source.label}<ArrowIcon />
-                    </a>
                   </section>
                 ))}
               </div>
               <aside className="project-build__scope">
                 <p className="project-build__label">Project scope</p>
-                <p className="project-build__copy">{build.scope}</p>
+                <p className="project-build__copy">{story.scope}</p>
               </aside>
               <dl className="project-build__meta">
-                <div><dt>My part</dt><dd>{project.role}</dd></div>
-                <div><dt>Built with</dt><dd>{project.stack.join(' · ')}</dd></div>
+                <div><dt>My part</dt><dd>{story.contribution}</dd></div>
               </dl>
+              <section aria-labelledby={`${dialogId}-stack-title`} className="project-build__stack">
+                <h3 className="project-build__label" id={`${dialogId}-stack-title`}>Built with</h3>
+                <ul>{project.stack.map((technology) => <li key={technology}>{technology}</li>)}</ul>
+              </section>
             </div>
             <footer className="project-build__footer">
               <span>{project.year}</span>

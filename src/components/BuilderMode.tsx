@@ -182,7 +182,7 @@ export function BuilderLayerPanel({ project }: BuilderLayerPanelProps) {
       >
         <div className="builder-layer-panel__detail-copy">
           <span>{selectedLayer.name} layer · {String(selectedIndex + 1).padStart(2, '0')} / {String(build.layers.length).padStart(2, '0')}</span>
-          <p>{selectedLayer.summary}</p>
+          <p>{selectedLayer.detail}</p>
         </div>
         <ul className="builder-layer-panel__notes">
           {selectedLayer.points.map((point) => <li key={point}>{point}</li>)}
@@ -191,9 +191,11 @@ export function BuilderLayerPanel({ project }: BuilderLayerPanelProps) {
           <span>In practice</span>
           <strong>{selectedLayer.proof}</strong>
         </p>
-        <ul aria-label="Technologies and system concerns" className="builder-layer-panel__stack">
-          {selectedLayer.stack.map((item) => <li key={item}>{item}</li>)}
-        </ul>
+        <dl aria-label={`${selectedLayer.name} technologies and roles`} className="builder-layer-panel__stack">
+          {selectedLayer.stack.map((technology) => (
+            <div key={technology.name}><dt>{technology.name}</dt><dd>{technology.purpose}</dd></div>
+          ))}
+        </dl>
         <a className="builder-layer-panel__source" href={selectedLayer.source.href} rel="noreferrer" target="_blank">
           {selectedLayer.source.label}<ArrowIcon />
         </a>
