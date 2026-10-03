@@ -6,6 +6,7 @@ import { useSound } from '../audio/SoundProvider';
 import { isSceneTransitionActive, setControlOverlayOpen } from '../utils/controlOverlay';
 import { focusWithoutScrolling, navigateToScene } from '../utils/sceneNavigation';
 import { KControlSpine } from './KControlSpine';
+import { KControlLogo } from './KControlLogo';
 
 export interface KControlProps {
   activeSection: SiteSectionId;
@@ -176,8 +177,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
       <button aria-controls="k-control-dialog" aria-expanded={isOpen} aria-haspopup="dialog"
         aria-keyshortcuts="Control+K Meta+K" aria-label="Open K Control" className="k-control__trigger"
         disabled={disabled} onClick={() => openPalette('pointer')} ref={triggerRef} type="button">
-        <svg aria-hidden="true" viewBox="0 0 40 24" fill="none"><path d="M3 17C14 2 21 26 36 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-        <span>K Control</span>
+        <KControlLogo compact />
       </button>
       <dialog aria-describedby="k-control-description" aria-labelledby="k-control-title" className="k-control"
         id="k-control-dialog" onCancel={(event) => { event.preventDefault(); closePalette(); }}
@@ -187,7 +187,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
         onClose={handleClose} onKeyDown={handleDialogKeyDown} ref={dialogRef}>
         <div className="k-control__surface">
           <div className="k-control__header">
-            <div><h2 id="k-control-title">K Control</h2><p id="k-control-description">Find your place in the story.</p></div>
+            <div><h2 id="k-control-title"><KControlLogo /><span className="sr-only">K Control</span></h2><p id="k-control-description">Find your place in the story.</p></div>
             <button aria-label="Close K Control" className="k-control__close" onClick={closePalette} type="button"><CloseIcon /></button>
           </div>
           <nav aria-label="K Control destinations" className="k-control__destinations">

@@ -1,8 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ProjectMedia } from '../types';
-import { ResponsiveImage } from './ResponsiveImage';
+import { LightboxImage, type LightboxImageHandle } from './LightboxImage';
 
 interface MediaLightboxProps {
   activeIndex: number | null;
@@ -11,148 +11,123 @@ interface MediaLightboxProps {
   returnFocusRef: RefObject<HTMLButtonElement | null>;
 }
 
-function ImageViewer({ media, onClose, onStep, suppressClick }: {
-  media: ProjectMedia;
+const photoFadeDuration = 380;
+
+function ImageViewer({ activeIndex, media, onClose, onStep, onDisplayedChange, suppressClick }: {
+  activeIndex: number;
+  media: readonly ProjectMedia[];
   onClose: () => void;
   onStep: (direction: -1 | 1) => void;
+  onDisplayedChange: (index: number) => void;
   suppressClick: () => void;
 }) {
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const dragRef = useRef<{ pointer: number; x: number; y: number; left: number; top: number } | null>(null);
-  const gestureRef = useRef<{ pointer: number; x: number; y: number; fitted: boolean; moved: boolean } | null>(null);
-  const anchorRef = useRef<{ x: number; y: number } | null>(null);
-  const [size, setSize] = useState({ width: 0, height: 0 });
+  const stageRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<LightboxImageHandle>(null);
+  const readyRef = useRef(new Set<number>());
+  const requestedRef = useRef(activeIndex);
+  const [display, setDisplay] = useState({ current: activeIndex, previous: null as number | null });
+  const [readyVersion, setReadyVersion] = useState(0);
+  const [failedIndex, setFailedIndex] = useState<number | null>(null);
+  const [reduced, setReduced] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [zoom, setZoom] = useState(1);
-  const [dragging, setDragging] = useState(false);
-  const fitWidth = Math.min(size.width, size.height * media.width / media.height, media.width);
-  const imageWidth = fitWidth * zoom;
-  const imageHeight = imageWidth * media.height / media.width;
+  requestedRef.current = activeIndex;
 
-  useLayoutEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
-    const measure = () => {
-      const width = viewport.clientWidth;
-      const height = viewport.clientHeight;
-      setSize((previous) => previous.width === width && previous.height === height ? previous : { width, height });
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(viewport);
-    return () => observer.disconnect();
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReduced(preference.matches);
+    update();
+    preference.addEventListener('change', update);
+    return () => preference.removeEventListener('change', update);
   }, []);
 
   useLayoutEffect(() => {
-    const viewport = viewportRef.current;
-    const anchor = anchorRef.current;
-    if (!viewport || !anchor) return;
-    viewport.scrollLeft = anchor.x * imageWidth + Math.max(0, (size.width - imageWidth) / 2) - size.width / 2;
-    viewport.scrollTop = anchor.y * imageHeight + Math.max(0, (size.height - imageHeight) / 2) - size.height / 2;
-    anchorRef.current = null;
-  }, [imageWidth, imageHeight, size.width, size.height]);
+    onDisplayedChange(display.current);
+    const frames = stageRef.current?.querySelectorAll<HTMLElement>('.media-lightbox__frame');
+    let transferFocus = false;
+    frames?.forEach(frame => {
+      const inactive = frame.dataset.current !== 'true';
+      // A programmatically focused zoomed viewport must not become hidden from
+      // assistive technology while retaining focus.
+      if (inactive && frame.contains(document.activeElement)) transferFocus = true;
+      frame.inert = inactive;
+    });
+    if (transferFocus) imageRef.current?.focus();
+  }, [display.current, display.previous, activeIndex, onDisplayedChange]);
 
-  const changeZoom = (value: number) => {
-    const viewport = viewportRef.current;
-    const next = Math.max(1, Math.min(4, value));
-    if (next === zoom || !viewport || !imageWidth || !imageHeight) return;
-    anchorRef.current = {
-      x: (viewport.scrollLeft + size.width / 2 - Math.max(0, (size.width - imageWidth) / 2)) / imageWidth,
-      y: (viewport.scrollTop + size.height / 2 - Math.max(0, (size.height - imageHeight) / 2)) / imageHeight,
-    };
-    setZoom(next);
-  };
+  const handleReady = useCallback((index: number) => {
+    if (readyRef.current.has(index)) return;
+    readyRef.current.add(index);
+    setFailedIndex(previous => previous === index ? null : previous);
+    setReadyVersion(version => version + 1);
+  }, []);
+  const handleDisposed = useCallback((index: number) => { readyRef.current.delete(index); }, []);
+  const handleFailed = useCallback((index: number) => {
+    if (index === requestedRef.current) setFailedIndex(index);
+  }, []);
 
-  const startDrag = (event: PointerEvent<HTMLDivElement>) => {
-    if (!event.isPrimary) {
-      gestureRef.current = null;
-      suppressClick();
+  useEffect(() => {
+    if (display.previous !== null || activeIndex === display.current || !readyRef.current.has(activeIndex)) return;
+    const incoming = stageRef.current?.querySelector<HTMLElement>(`[data-photo-index="${activeIndex}"]`);
+    if (incoming) {
+      // Resolve the pending layer's zero opacity before changing its role. This
+      // also gives cached images and rapid reversals a real opacity transition.
+      void getComputedStyle(incoming).opacity;
+    }
+    setDisplay({ current: activeIndex, previous: reduced ? null : display.current });
+  }, [activeIndex, display, readyVersion, reduced]);
+
+  useEffect(() => {
+    if (display.previous === null) return;
+    const finish = () => setDisplay(current => current === display ? { ...current, previous: null } : current);
+    if (reduced) {
+      finish();
       return;
     }
-    if (event.button !== 0) return;
-    gestureRef.current = { pointer: event.pointerId, x: event.clientX, y: event.clientY, fitted: zoom === 1, moved: false };
-    if (zoom === 1) {
-      event.currentTarget.setPointerCapture(event.pointerId);
-      return;
-    }
-    // Touch uses the viewport's native scrolling, including momentum and bounds.
-    if (event.pointerType === 'touch') return;
-    event.preventDefault();
-    const viewport = event.currentTarget;
-    viewport.focus({ preventScroll: true });
-    dragRef.current = { pointer: event.pointerId, x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
-    viewport.setPointerCapture(event.pointerId);
-    setDragging(true);
-  };
+    const timer = window.setTimeout(finish, photoFadeDuration + 40);
+    return () => window.clearTimeout(timer);
+  }, [display, reduced]);
 
-  const moveDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const gesture = gestureRef.current;
-    if (gesture?.pointer === event.pointerId && Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 8) {
-      gesture.moved = true;
-    }
-    const drag = dragRef.current;
-    if (!drag || drag.pointer !== event.pointerId) return;
-    event.currentTarget.scrollLeft = drag.left - (event.clientX - drag.x);
-    event.currentTarget.scrollTop = drag.top - (event.clientY - drag.y);
-  };
-
-  const endPointer = (event: PointerEvent<HTMLDivElement>) => {
-    gestureRef.current = null;
-    dragRef.current = null;
-    setDragging(false);
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
-  };
-
-  const stopDrag = (event: PointerEvent<HTMLDivElement>) => {
-    const gesture = gestureRef.current;
-    if (gesture?.pointer !== event.pointerId) return;
-    const dx = event.clientX - gesture.x;
-    const dy = event.clientY - gesture.y;
-    if (gesture.moved || Math.hypot(dx, dy) > 8) suppressClick();
-    const threshold = Math.max(40, Math.min(80, size.width * .15));
-    const swiped = gesture.fitted && zoom === 1 && Math.abs(dx) >= threshold && Math.abs(dx) > Math.abs(dy) * 1.25;
-    endPointer(event);
-    if (swiped) onStep(dx < 0 ? 1 : -1);
-  };
-
-  const cancelDrag = (event: PointerEvent<HTMLDivElement>) => {
-    if (gestureRef.current?.pointer !== event.pointerId) return;
-    suppressClick();
-    endPointer(event);
-  };
+  const frames = Array.from(new Set([display.previous, display.current, activeIndex])).filter((index): index is number => index !== null);
+  const shownMedia = media[display.current] ?? media[activeIndex];
+  const loading = activeIndex !== display.current && failedIndex !== activeIndex;
+  if (!shownMedia) return null;
 
   return (
     <>
       <div className="media-lightbox__header">
         <div aria-label="Image zoom controls" className="media-lightbox__zoom">
-          <button aria-label="Zoom out" disabled={zoom === 1} onClick={() => changeZoom(zoom - .5)} type="button">−</button>
+          <button aria-label="Zoom out" disabled={zoom === 1} onClick={() => imageRef.current?.changeZoom(zoom - .5)} type="button">−</button>
           <output aria-label="Image zoom" aria-live="polite">{Math.round(zoom * 100)}%</output>
-          <button aria-label="Zoom in" disabled={zoom === 4} onClick={() => changeZoom(zoom + .5)} type="button">+</button>
-          <button aria-label="Fit image" disabled={zoom === 1} onClick={() => changeZoom(1)} type="button">Fit</button>
+          <button aria-label="Zoom in" disabled={zoom === 4} onClick={() => imageRef.current?.changeZoom(zoom + .5)} type="button">+</button>
+          <button aria-label="Fit image" disabled={zoom === 1} onClick={() => imageRef.current?.changeZoom(1)} type="button">Fit</button>
         </div>
         <button className="media-lightbox__close" onClick={onClose} type="button">Close</button>
       </div>
-      <div
-        aria-label={zoom === 1
-          ? 'Project image. Swipe left or right to change photos. Enlarge with the zoom controls to explore.'
-          : 'Enlarged project image. Scroll or drag to explore. Use Previous and Next to change photos.'}
-        className="media-lightbox__image"
-        data-dragging={dragging}
-        data-zoom={zoom}
-        onDoubleClick={() => changeZoom(zoom === 1 ? 2.5 : 1)}
-        onLostPointerCapture={() => { gestureRef.current = null; dragRef.current = null; setDragging(false); }}
-        onPointerCancel={cancelDrag}
-        onPointerDown={startDrag}
-        onPointerMove={moveDrag}
-        onPointerUp={stopDrag}
-        ref={viewportRef}
-        role="region"
-        tabIndex={zoom > 1 ? 0 : -1}
-      >
-        <div className="media-lightbox__canvas" style={{ width: Math.max(size.width, imageWidth), height: Math.max(size.height, imageHeight) }}>
-          <div className="media-lightbox__capture" style={{ width: imageWidth, height: imageHeight }}>
-            <ResponsiveImage eager media={media} sizes={`${Math.max(1, Math.ceil(imageWidth))}px`} />
+      <div aria-busy={loading} className="media-lightbox__stage" data-transitioning={display.previous !== null} ref={stageRef}>
+        {frames.map(index => {
+          const photo = media[index];
+          if (!photo) return null;
+          const current = index === display.current;
+          return (
+            <div aria-hidden={!current} className="media-lightbox__frame" data-current={current}
+              data-photo-index={index} data-previous={index === display.previous} key={photo.src}>
+              <LightboxImage active={current} index={index} media={photo} onDisposed={handleDisposed}
+                onFailed={handleFailed} onReady={handleReady} onStep={onStep} onZoomChange={setZoom}
+                ref={current ? imageRef : undefined} suppressClick={suppressClick} />
+            </div>
+          );
+        })}
+      </div>
+      <div className="media-lightbox__footer">
+        <span>{String(display.current + 1).padStart(2, '0')} / {String(media.length).padStart(2, '0')}</span>
+        <strong aria-live="polite" aria-atomic="true">{shownMedia.caption}</strong>
+        {media.length > 1 ? (
+          <div>
+            <button onClick={() => onStep(-1)} type="button">Previous</button>
+            <button onClick={() => onStep(1)} type="button">Next</button>
           </div>
-        </div>
+        ) : null}
+        <span className="sr-only" role="status">{failedIndex === activeIndex ? 'This image could not be loaded. Try another photo.' : ''}</span>
       </div>
     </>
   );
@@ -162,10 +137,12 @@ export function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: 
   const dialogRef = useRef<HTMLDivElement>(null);
   const activeIndexRef = useRef(activeIndex);
   const suppressClickUntilRef = useRef(0);
+  const [displayedIndex, setDisplayedIndex] = useState<number | null>(activeIndex);
   const isOpen = activeIndex !== null;
 
   useEffect(() => {
     activeIndexRef.current = activeIndex;
+    if (activeIndex === null) setDisplayedIndex(null);
   }, [activeIndex]);
 
   useEffect(() => {
@@ -181,7 +158,7 @@ export function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: 
       const currentIndex = activeIndexRef.current;
       if (currentIndex === null) return;
       if (event.key === 'Escape') onChange(null);
-      const image = dialog?.querySelector<HTMLElement>('.media-lightbox__image');
+      const image = dialog?.querySelector<HTMLElement>('.media-lightbox__frame[data-current="true"] .media-lightbox__image');
       const panning = image && image.dataset.zoom !== '1';
       if (!panning && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
         event.preventDefault();
@@ -191,7 +168,7 @@ export function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: 
       if (event.key === 'Tab' && dialog) {
         const focusable = Array.from(
           dialog.querySelectorAll<HTMLElement>('button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'),
-        ).filter((element) => !element.hasAttribute('hidden'));
+        ).filter((element) => !element.hasAttribute('hidden') && !element.closest('[inert], [aria-hidden="true"]'));
         const first = focusable[0];
         const last = focusable.at(-1);
         if (!first || !last) return;
@@ -230,13 +207,13 @@ export function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: 
       {activeIndex !== null && media[activeIndex] ? (
         <motion.div
           animate={{ opacity: 1 }}
-          aria-label={`${media[activeIndex].caption} image viewer`}
+          aria-label={`${media[displayedIndex ?? activeIndex]?.caption ?? media[activeIndex]?.caption ?? 'Project'} image viewer`}
           aria-modal="true"
           className="media-lightbox"
           exit={{ opacity: 0 }}
           initial={{ opacity: 0 }}
           onClickCapture={(event) => {
-            // Changing the image unmounts the swipe target before the browser's following click.
+            // A completed swipe must not turn its following click into a backdrop close.
             if (event.detail > 0 && performance.now() < suppressClickUntilRef.current &&
                 !(event.target instanceof Element && event.target.closest('button, a'))) {
               event.preventDefault();
@@ -256,22 +233,13 @@ export function MediaLightbox({ activeIndex, media, onChange, returnFocusRef }: 
           role="dialog"
         >
           <ImageViewer
-            key={media[activeIndex].src}
-            media={media[activeIndex]}
+            activeIndex={activeIndex}
+            media={media}
             onClose={() => onChange(null)}
+            onDisplayedChange={setDisplayedIndex}
             onStep={(direction) => onChange((activeIndex + direction + media.length) % media.length)}
             suppressClick={() => { suppressClickUntilRef.current = performance.now() + 350; }}
           />
-          <div className="media-lightbox__footer">
-            <span>{String(activeIndex + 1).padStart(2, '0')} / {String(media.length).padStart(2, '0')}</span>
-            <strong>{media[activeIndex].caption}</strong>
-            {media.length > 1 ? (
-              <div>
-                <button onClick={() => onChange((activeIndex - 1 + media.length) % media.length)} type="button">Previous</button>
-                <button onClick={() => onChange((activeIndex + 1) % media.length)} type="button">Next</button>
-              </div>
-            ) : null}
-          </div>
         </motion.div>
       ) : null}
     </AnimatePresence>,

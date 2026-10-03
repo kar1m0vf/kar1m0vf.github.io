@@ -36,7 +36,6 @@
   .closing-story__email-address { font-size: .85rem; }
   .closing-story__profiles { gap: 1.2rem; margin-top: 3rem; }
   .closing-story__foot { margin-top: 3rem; padding-bottom: 4rem; flex-wrap: wrap; }
-  html[data-experience-section='contact'] .k-control__trigger { left: auto; right: var(--gutter); }
 }
 @media(max-width:360px) {
   .closing-story__email-copy { padding: .6rem; }

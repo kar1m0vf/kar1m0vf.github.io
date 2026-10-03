@@ -45,7 +45,6 @@
     background: linear-gradient(135deg, var(--theme-surface), var(--theme-deep) 70%);
     box-shadow: inset 0 1px var(--theme-faint), 0 5px 25px #0006;
   }
-  .k-control__trigger > svg { color: var(--experience-accent); filter: drop-shadow(0 0 5px var(--theme-glow)); }
   .k-control__trigger:hover { border-color: var(--theme-soft); box-shadow: inset 0 1px var(--theme-faint), 0 0 24px var(--theme-wash); }
   .k-control {
     border-color: var(--theme-line);

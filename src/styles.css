@@ -1744,6 +1744,16 @@ html[data-experience-section='contact'] .experience-rail {
   scrollbar-width: none;
 }
 
+.media-lightbox__stage { position: relative; min-width: 0; min-height: 0; isolation: isolate; }
+.media-lightbox__frame { position: absolute; inset: 0; background: #030405; opacity: 0; pointer-events: none; transition: none; }
+.media-lightbox__frame[data-current='true'] { z-index: 2; opacity: 1; pointer-events: auto; transition: opacity 380ms cubic-bezier(.22,1,.36,1); }
+/* An opaque outgoing photo prevents a dark flash beneath the incoming fade. */
+.media-lightbox__frame[data-previous='true'] { z-index: 1; opacity: 1; }
+.media-lightbox__frame > .media-lightbox__image { width: 100%; height: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .media-lightbox__frame[data-current='true'] { opacity: 1 !important; transition: none !important; }
+}
+
 .media-lightbox__image::-webkit-scrollbar { display: none; }
 .media-lightbox__image[data-zoom='1'] { touch-action: pan-y; }
 .media-lightbox__image:not([data-zoom='1']) { cursor: grab; }
