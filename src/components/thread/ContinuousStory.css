@@ -70,11 +70,22 @@
 .continuous-story .blaster-evidence__heading strong { font-size: 1.7rem; }
 .continuous-story .blaster-evidence__heading > span { color: #a0cdff; }
 .continuous-story .blaster-evidence__shot { border-radius: 1rem; }
-.continuous-story .life-story__place::after { background: linear-gradient(0deg,#050709 0%,#05070900 45%,#050709b3 95%),linear-gradient(90deg,#05070920,transparent 50%,#050709); }
-.continuous-story .life-story__moments::before { content: ''; position: absolute; z-index: -1; inset: 0; pointer-events: none; background: linear-gradient(90deg,#050709e0 50%,transparent); }
+.continuous-story .life-story__scenery::after { background: linear-gradient(0deg,#050709 0%,#05070900 45%,#050709b3 95%),linear-gradient(90deg,#05070920,transparent 50%,#050709); }
+.continuous-story .life-story__moments::before {
+  content: ''; position: absolute; z-index: -1; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg,#050709e0 50%,transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 5rem, #000 calc(100% - 5rem), transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 5rem, #000 calc(100% - 5rem), transparent);
+}
 .experience-rail { --rail-accent: #71b4ff; }
 
 @media (min-width:960px) {
+  .continuous-story .life-story__moments::before {
+    -webkit-mask-image: linear-gradient(180deg, transparent, #000 5rem, #000 calc(100% - 5rem), transparent), linear-gradient(90deg, transparent, #000 4rem);
+    mask-image: linear-gradient(180deg, transparent, #000 5rem, #000 calc(100% - 5rem), transparent), linear-gradient(90deg, transparent, #000 4rem);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
   .continuous-story .project--nar .project__inner,.continuous-story .project--blaster .project__inner { grid-template-columns: minmax(0,.43fr) minmax(0,.57fr); grid-template-rows: min-content 1fr; grid-template-areas: 'header visual' 'notes visual'; gap: 2.4rem 5vw; align-items: start; }
   .continuous-story .project--nar .project__header,.continuous-story .project--blaster .project__header { display: block; padding-top: 4rem; }
   .continuous-story .project--nar .project__identity h2 { font-size: clamp(5rem,6.6vw,7.2rem); line-height: .94; }

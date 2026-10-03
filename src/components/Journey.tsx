@@ -17,10 +17,12 @@ export function Journey() {
   return (
     <section aria-labelledby="journey-heading" className="life-story" id="journey" ref={root}>
       <div className="life-story__place">
-        <motion.picture aria-hidden="true" style={reduced ? {} : { y }}>
-          <source srcSet="/media/journey/baku-1280.avif 1280w, /media/journey/baku-1920.avif 1672w" type="image/avif" />
-          <img alt="" decoding="async" height="941" loading="lazy" sizes="(min-width:960px) 50vw, 100vw" src="/media/journey/baku-1920.webp" width="1672" />
-        </motion.picture>
+        <div aria-hidden="true" className="life-story__scenery">
+          <motion.picture style={{ y: reduced ? 0 : y }}>
+            <source srcSet="/media/journey/baku-1280.avif 1280w, /media/journey/baku-1920.avif 1672w" type="image/avif" />
+            <img alt="" decoding="async" height="941" loading="lazy" sizes="(min-width:960px) 50vw, 100vw" src="/media/journey/baku-1920.webp" width="1672" />
+          </motion.picture>
+        </div>
         <div className="life-story__title"><p className="story-label">Beyond the work</p><h2 id="journey-heading">Built in Baku.<br /><em>Still becoming.</em></h2><p>A place to start.<br />Plenty left to discover.</p></div>
         <span className="life-story__location">Baku, Azerbaijan · 40.4° N, 49.9° E</span>
       </div>
