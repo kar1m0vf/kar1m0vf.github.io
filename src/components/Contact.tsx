@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useInView, useReducedMotion, useScroll, useTransform } from 'motion/react';
+import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'motion/react';
 import { ArrowIcon, ArrowUpIcon, GitHubIcon, LinkedInIcon } from './Icons';
 import { ThreadSculpture } from './thread/ThreadSculpture';
 import './ClosingStory.css';
@@ -12,8 +12,9 @@ export function Contact({ prepare = false, onReady }: { prepare?: boolean; onRea
   const visible = useInView(root, { margin: '300px', once: true });
   const reduced = Boolean(useReducedMotion());
   const { scrollYProgress } = useScroll({ target: root, offset: ['start end', 'start start'] });
-  // Trim the reverse sequence at the ring; preserve the remaining scroll timing.
-  const progress = useTransform(scrollYProgress, [0, .45, .9], [.5, .5, 0]);
+  const progress = useTransform(scrollYProgress, [0, .9], [1, 0]);
+  // Conceal the stray thread before the original dark-to-ring reveal.
+  const sculptureOpacity = useTransform(progress, [.62, .66], [1, 0]);
 
   useEffect(() => {
     if (copyStatus !== 'copied') return;
@@ -33,7 +34,7 @@ export function Contact({ prepare = false, onReady }: { prepare?: boolean; onRea
 
   return (
     <footer className="closing-story" id="contact" ref={root}>
-      <div className="closing-story__sculpture" aria-hidden="true">{visible || prepare ? <ThreadSculpture framing="closing" onReady={onReady} progress={progress} reduced={reduced} /> : null}</div>
+      <motion.div className="closing-story__sculpture" aria-hidden="true" style={{ opacity: reduced ? 1 : sculptureOpacity }}>{visible || prepare ? <ThreadSculpture framing="closing" onReady={onReady} progress={progress} reduced={reduced} /> : null}</motion.div>
       <div className="section-shell closing-story__inner">
         <p className="story-label">The next chapter</p>
         <h2>What could<br />we <em>make next?</em></h2>
