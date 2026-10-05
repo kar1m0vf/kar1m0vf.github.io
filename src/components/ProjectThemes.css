@@ -1,4 +1,4 @@
-/* Project colours extend the existing glass identity without changing its geometry. */
+/* Project colours follow each chapter; editorial overlays use restrained accents. */
 @property --experience-accent {
   syntax: '<color>';
   inherits: true;
@@ -39,51 +39,6 @@
   .header-cta > svg { color: var(--experience-accent); }
   .continuity-stage { background: radial-gradient(ellipse at 78% 50%, var(--theme-wash), transparent 65%); }
 
-  /* The palette follows the current chapter even when K Control is in the top layer. */
-  .k-control__trigger {
-    border-color: var(--theme-line);
-    background: linear-gradient(135deg, var(--theme-surface), var(--theme-deep) 70%);
-    box-shadow: inset 0 1px var(--theme-faint), 0 5px 25px #0006;
-  }
-  .k-control__trigger:hover { border-color: var(--theme-soft); box-shadow: inset 0 1px var(--theme-faint), 0 0 24px var(--theme-wash); }
-  .k-control {
-    border-color: var(--theme-line);
-    background: radial-gradient(ellipse at 0 0, var(--theme-faint), transparent 50%), linear-gradient(145deg, var(--theme-surface), var(--theme-deep));
-    box-shadow: inset 0 1px 1px var(--theme-faint), inset 0 0 28px var(--theme-wash), 0 24px 100px #0009;
-    scrollbar-color: var(--theme-line) transparent;
-  }
-  .k-control__header p, .k-control__hint, .k-control__setting-copy small { color: var(--theme-muted); }
-  .k-control__close { border-color: var(--theme-line); background: var(--theme-wash); color: var(--theme-soft); }
-  .k-control__close:hover { background: var(--theme-faint); }
-  .k-control__spine path { stroke: var(--experience-accent); filter: drop-shadow(0 0 3px var(--theme-glow)); }
-  .k-control__destination:hover::before, .k-control__destination:focus-visible::before { background: var(--theme-wash); }
-  .k-control__destination[aria-current='location']::before { background: linear-gradient(100deg, var(--theme-faint), var(--theme-wash)); border-color: var(--theme-faint); }
-  .k-control__point { stroke: var(--experience-accent); fill: var(--theme-deep); }
-  .k-control__point[data-active='true'] { fill: var(--experience-accent); stroke: var(--theme-soft); filter: drop-shadow(0 0 6px var(--theme-glow)); }
-  .k-control__destination > span { color: var(--theme-muted); }
-  .k-control__destination > svg, .k-control__setting { color: var(--theme-soft); }
-  .k-control__settings { border-color: var(--theme-faint); }
-  .k-control__switch { border-color: var(--theme-line); background: var(--theme-deep); }
-  .k-control__switch span { background: var(--theme-muted); }
-  .k-control__setting[aria-checked='true'] .k-control__switch { background: var(--experience-accent); border-color: var(--theme-soft); box-shadow: 0 0 16px var(--theme-wash); }
-  .k-control__quick a:hover { color: var(--theme-soft); }
-  .k-control :is(a,button):focus-visible, .k-control__trigger:focus-visible { outline-color: var(--theme-soft); }
-
-  /* How I built it retains its own project palette throughout open/close. */
-  .project-build__surface {
-    border-color: var(--theme-line);
-    background: radial-gradient(ellipse at 0 0, var(--theme-faint), transparent 60%), linear-gradient(140deg, var(--theme-surface), var(--theme-deep) 75%);
-    box-shadow: inset 0 1px 1px var(--theme-faint), 0 24px 100px #0009, 0 0 80px var(--theme-wash);
-  }
-  .project-build__intro > p, .project-build__footer > span { color: var(--theme-muted); }
-  .project-build__intro > p > span, .project-build__flow li > svg { color: var(--theme-accent); }
-  .project-build__intro h2 em, .project-build__flow li > strong, .project-build__footer > button { color: var(--theme-soft); }
-  .project-build__close { border-color: var(--theme-line); background: var(--theme-wash); color: var(--theme-soft); }
-  .project-build__close:hover { border-color: var(--theme-soft); background: var(--theme-faint); }
-  .project-build__body { scrollbar-color: var(--theme-line) transparent; }
-  .project-build__flow, .project-build__meta, .project-build__footer { border-color: var(--theme-faint); }
-  .project-build__flow li > span, .project-build__label, .project-build__meta dt { color: var(--theme-muted); }
-  .project-build__footer { background: var(--theme-wash); }
   .media-lightbox { --blue-bright: var(--theme-soft); }
   .media-lightbox__close { border-color: var(--theme-line); }
   .media-lightbox__zoom button, .media-lightbox__footer button { border-color: var(--theme-line); color: var(--theme-soft); }

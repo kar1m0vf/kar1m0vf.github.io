@@ -11,6 +11,11 @@
   --muted-soft: #6f7377;
   --line: rgb(233 227 218 / 18%);
   --line-strong: rgb(233 227 218 / 36%);
+  --overlay-surface: #080b0f;
+  --overlay-ink: #f5f0e8;
+  --overlay-muted: #a6a9ad;
+  --overlay-line: rgb(233 227 218 / 18%);
+  --overlay-line-strong: rgb(233 227 218 / 36%);
   --blue: #4b9cff;
   --blue-bright: #82bfff;
   --nar: #ff4167;
