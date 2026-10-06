@@ -1,7 +1,7 @@
 /* One continuous world. Its content is composed in open space, with contrast local to text. */
 .continuous-story { position: relative; isolation: isolate; background: #050709; --scene-shadow: 0 2px 5px #020408,0 0 22px #020408cc; }
 .continuity-layer { position: absolute; z-index: 0; inset: 0; pointer-events: none; overflow: clip; }
-.continuity-stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: radial-gradient(ellipse at 78% 50%,#10377528,transparent 65%); }
+.continuity-stage { position: sticky; top: 0; height: 100svh; height: 100dvh; overflow: hidden; background: radial-gradient(ellipse at 78% 50%,#10377528,transparent 65%); }
 .continuity-stage::after { content: ''; position: absolute; inset: -20%; pointer-events: none; background: radial-gradient(ellipse at center,#9ad4ed70 0%,#4c96d24d 12%,#2457992e 32%,transparent 66%); opacity: var(--passage-light,0); transform: scale(calc(.65 + var(--passage-light,0) * .6)); }
 .continuity-canvas,.continuity-canvas canvas,.continuity-fallback { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
 .continuity-fallback { opacity: .65; }
@@ -25,8 +25,8 @@
 .work-intro p { max-width: 28rem; font: 400 clamp(2rem,3.1vw,3.5rem)/1.08 var(--serif); color: #c5d5e8; text-shadow: var(--scene-shadow); }
 .work-intro > span { color: #a5b2c4; font-size: .7rem; letter-spacing: .13em; text-transform: uppercase; }
 
-.thread-passage { position: relative; height: 340svh; margin-bottom: -100svh; --passage-copy: 1; }
-.thread-passage .thread-passage__sticky { position: sticky; top: 0; display: flex; align-items: center; height: 100svh; }
+.thread-passage { position: relative; height: 340svh; margin-bottom: -100svh; margin-bottom: -100dvh; --passage-copy: 1; }
+.thread-passage .thread-passage__sticky { position: sticky; top: 0; display: flex; align-items: center; height: 100svh; height: 100dvh; }
 .thread-passage__copy { position: relative; width: 62%; padding-bottom: 2rem; opacity: var(--passage-copy); transform: translateY(calc((1 - var(--passage-copy)) * -20px)); }
 .thread-passage h2 { color: var(--ink-bright); font: 400 clamp(4.3rem,7.3vw,8rem)/.96 var(--serif); letter-spacing: -.04em; }
 .thread-passage h2 em { color: #c2e5ff; font-weight: 400; }
@@ -130,7 +130,13 @@
 .continuous-story .project--trendyol:focus-within { opacity: 1; pointer-events: auto; }
 .continuous-story[data-renderer='fallback'] .thread-passage { height: auto; margin-bottom: 0; }
 .continuous-story[data-renderer='fallback'] .thread-passage__sticky { position: relative; min-height: 42rem; }
-@media (prefers-reduced-motion:reduce), (max-height:649px) {
+@media (max-height:649px) {
+  .thread-passage__copy { width: 54%; padding-block: 4rem; }
+  .thread-passage h2 { font-size: clamp(2.2rem, 9svh, 4rem); }
+  .thread-passage__copy > p { margin-top: 1rem; font-size: .875rem; line-height: 1.5; }
+  .thread-passage .thread-passage__skip { bottom: 1rem; left: max(calc(var(--gutter) + 3.25rem), calc(env(safe-area-inset-left) + 4.25rem)); min-height: 44px; }
+}
+@media (prefers-reduced-motion:reduce) {
   .continuity-stage::after { display: none; }
   .thread-passage { height: auto; margin-bottom: 0; }
   .thread-passage .thread-passage__sticky { position: relative; min-height: 42rem; height: auto; padding-block: 6rem 10rem; }

@@ -13,6 +13,7 @@ import { WorkSequence } from './components/WorkSequence';
 import { MiddleThread } from './components/thread/MiddleThread';
 import { siteSections } from './data/siteSections';
 import { useActiveSection } from './hooks/useActiveSection';
+import { useOrientationAnchor } from './hooks/useOrientationAnchor';
 
 const builderPreferenceKey = 'portfolio:builder:v1';
 
@@ -28,6 +29,7 @@ export default function App() {
   const [closingReady, setClosingReady] = useState(false);
   const [builderMode, setBuilderMode] = useState(readBuilderPreference);
   const activeSectionId = useActiveSection(isLoading);
+  useOrientationAnchor(isLoading);
   const activeSection = siteSections.find((section) => section.id === activeSectionId) ?? siteSections[0];
   const handleHeroReady = useCallback(() => setHeroReady(true), []);
   const handleMiddleReady = useCallback(() => setMiddleReady(true), []);

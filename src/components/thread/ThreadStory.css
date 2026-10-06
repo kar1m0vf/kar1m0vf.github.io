@@ -1,5 +1,5 @@
 .thread-story { position: relative; height: 340svh; background: #050709; isolation: isolate; }
-.thread-story__sticky { position: sticky; top: 0; height: 100svh; overflow: clip; background: radial-gradient(ellipse at 73% 48%, #0b1623 0%, #060b12 32%, #050709 70%); }
+.thread-story__sticky { position: sticky; top: 0; height: 100svh; height: 100dvh; overflow: clip; background: radial-gradient(ellipse at 73% 48%, #0b1623 0%, #060b12 32%, #050709 70%); }
 .thread-sculpture, .thread-sculpture__canvas { position: absolute; inset: 0; pointer-events: none; }
 .thread-sculpture { z-index: 1; }
 .thread-sculpture canvas { display: block; width: 100%; height: 100%; }
@@ -7,7 +7,7 @@
 .thread-sculpture[data-renderer='ready'] .thread-sculpture__canvas { opacity: 1; }
 .thread-sculpture__fallback { position: absolute; top: 4%; left: 43%; width: 62%; height: 86%; overflow: visible; transition: opacity 700ms ease; }
 .thread-sculpture[data-renderer='ready'] .thread-sculpture__fallback { opacity: 0; }
-.thread-story__intro { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; height: calc(100svh - 6rem); width: min(100%, 100rem); padding: clamp(6.5rem, 13svh, 9.25rem) var(--gutter) clamp(1.5rem, 4svh, 3.5rem); margin-inline: auto; transform-origin: 0 30%; pointer-events: none; }
+.thread-story__intro { position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: space-between; height: calc(100svh - 6rem); height: calc(100dvh - 6rem); width: min(100%, 100rem); padding: clamp(6.5rem, 13svh, 9.25rem) var(--gutter) clamp(1.5rem, 4svh, 3.5rem); margin-inline: auto; transform-origin: 0 30%; pointer-events: none; }
 .thread-story .hero__name { font-size: clamp(5rem, 11.4vw, 11.7rem); }
 .thread-story .hero__message { align-self: start; width: min(36rem, 46vw); padding: 2rem 0 0; }
 .thread-story .hero__promise { font-size: clamp(2.6rem, 4.5vw, 4.5rem); }
@@ -37,7 +37,7 @@
 @keyframes thread-scroll-cue { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
 @media (max-width: 767px) {
   .thread-story { height: 300svh; }
-  .thread-story__intro { height: calc(100svh - 5rem); padding-top: 6.5rem; padding-bottom: 1.3rem; }
+  .thread-story__intro { height: calc(100svh - 5rem); height: calc(100dvh - 5rem); padding-top: 6.5rem; padding-bottom: 1.3rem; }
   .thread-story .hero__name { font-size: clamp(4.1rem, 18.6vw, 8rem); }
   .thread-story .hero__message { width: 100%; padding-top: 1rem; background: linear-gradient(0deg, rgb(5 7 9 / 88%) 60%, transparent); }
   .thread-story .hero__promise { font-size: clamp(2.2rem, 8.8vw, 3.5rem); }
@@ -68,10 +68,46 @@
   .thread-story .hero__summary { margin-top: .7rem; }
   .thread-story .hero__actions { margin-top: .7rem; }
 }
+/* A rotated phone keeps every chapter and action inside its shorter stage. */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 600px) and (pointer: coarse) {
+  .thread-story__intro {
+    display: grid;
+    grid-template-columns: minmax(0, .34fr) minmax(0, .66fr);
+    align-items: center;
+    gap: clamp(1rem, 3vw, 2rem);
+    height: calc(100dvh - 3.1rem);
+    padding: 5.15rem max(var(--gutter), env(safe-area-inset-right)) .5rem max(var(--gutter), env(safe-area-inset-left));
+  }
+  .thread-story .hero__name { font-size: clamp(2.75rem, min(8vw, 17dvh), 4.5rem); }
+  .thread-story .hero__message { align-self: center; width: 100%; min-width: 0; padding: 0; background: none; }
+  .thread-story .hero__promise { max-width: none; font-size: clamp(1.6rem, 7.5dvh, 2.5rem); }
+  .thread-story .hero__summary { max-width: none; margin-top: .5rem; font-size: clamp(.8125rem, 3.5dvh, .90625rem); line-height: 1.4; }
+  .thread-story .hero__role { margin-top: .4rem; font-size: clamp(.7rem, 3.2dvh, .8rem); }
+  .thread-story .hero__role::after { display: none; }
+  .thread-story .hero__actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; max-width: none; margin-top: .55rem; }
+  .thread-story .button { width: 100%; min-width: 0; min-height: 44px; gap: .5rem; padding: .45rem .55rem; font-size: clamp(.75rem, 3.4dvh, .875rem); }
+  .thread-story .button svg { flex-shrink: 0; width: .75rem; }
+  .thread-story__perspective, .thread-story__closing {
+    padding: 5.1rem max(var(--gutter), env(safe-area-inset-right)) 3.6rem max(var(--gutter), env(safe-area-inset-left));
+  }
+  .thread-story__perspective h2, .thread-story__closing h2 { font-size: clamp(2rem, 10.5dvh, 3.6rem); }
+  .thread-story__chapter-label { margin-bottom: .45rem; font-size: .65rem; }
+  .thread-story__personal { margin-top: .6rem; font-size: .8rem; line-height: 1.35; }
+  .thread-story__personal--secondary { max-width: none; margin-top: .35rem; font-size: .72rem; }
+  .thread-story__closing > p:not(.thread-story__chapter-label) { margin-top: .6rem; font-size: .85rem; }
+  .thread-story__work-link { min-height: 44px; margin-top: .5rem; padding-block: .4rem; font-size: .8rem; }
+  .thread-story__navigation { left: max(var(--gutter), env(safe-area-inset-left)); right: max(var(--gutter), env(safe-area-inset-right)); height: 3.1rem; font-size: .65rem; }
+  .thread-story__scroll-cue { gap: .5rem; padding-left: 4.5rem; }
+  .thread-story__scroll-cue > svg { width: 1rem; height: 1rem; }
+  .thread-story__scroll-cue > span, .thread-story__chapters button > span:last-child { position: static; width: auto; height: auto; overflow: visible; clip-path: none; }
+  .thread-story__chapters { gap: .6rem; }
+  .thread-story__chapters button { min-width: 0; min-height: 44px; gap: .35rem; padding: .4rem .2rem; font-size: .65rem; }
+  .thread-story__chapters button > span:first-child { font-size: .65rem; }
+}
 @media (prefers-reduced-motion: reduce) {
   .thread-story { height: auto; }
   .thread-story__sticky { position: relative; height: auto; }
-  .thread-story__intro { min-height: 100svh; height: auto; gap: 5rem; padding-bottom: 4rem; }
+  .thread-story__intro { display: flex; min-height: 100svh; height: auto; gap: 5rem; padding-bottom: 4rem; }
   .thread-story__perspective, .thread-story__closing { position: relative; min-height: 70svh; padding-block: 5rem; opacity: 1; transform: none; }
   .thread-sculpture { height: 100svh; }
   .thread-story__perspective { background: #050709; }

@@ -156,7 +156,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     const unspool = smooth(0.66, 0.94, p);
     const approach = smooth(0.42, 0.69, p) * (1 - unspool);
     smoothedPointer.lerp(pointer, 1 - Math.exp(-dt * 3));
-    const phone = width < 768;
+    const phone = width < 768 && width < height;
     const viewWidth = 2 * 9.3 * Math.tan(19 * Math.PI / 180) * camera.aspect;
     const initialX = phone ? 0.05 : viewWidth * 0.245;
     const closingPhone = phone && options.framing === 'closing';

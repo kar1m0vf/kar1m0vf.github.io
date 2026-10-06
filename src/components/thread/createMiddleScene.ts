@@ -224,8 +224,9 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     const arcade = anchored('.mini-blaster__arena, .blaster-runtime-poster', 5, 1.02);
     if (!phone) arcade.y -= .025;
     const passageSticky = bounds('.thread-passage__sticky');
-    const helix: Pose = { shape: 3, x: phone ? .54 : .72, y: phone ? .72 : .52,
-      scale: phone ? .5 : Math.min(1.14, width / height * .7), angle: 0, camera: 9.3, visibility: 1 };
+    const compact = height < 650;
+    const helix: Pose = { shape: 3, x: compact ? .74 : phone ? .54 : .72, y: compact ? .5 : phone ? .72 : .52,
+      scale: compact ? Math.min(.8, width / height * .35) : phone ? .5 : Math.min(1.14, width / height * .7), angle: 0, camera: 9.3, visibility: 1 };
     helix.y += (passageSticky?.top ?? 0) / height;
     const exit = anchored('.life-story__place', 6, 0.8);
     // Journey has a quieter trailing strand at the outside edge of the composition.
@@ -256,7 +257,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
       angle: mix(prev.pose.angle, next.pose.angle, t), camera: mix(prev.pose.camera, next.pose.camera, t), visibility: 1 };
     phase = t < 0.5 ? prev.phase : next.phase;
     passageTarget = clamp((scroll - top(passage)) / Math.max(1, travel));
-    passageEnabled = !options.reduced && height >= 650 && travel > 1;
+    passageEnabled = !options.reduced && travel > 1;
     passageInView = scroll >= top(passage) && scroll < top(passage) + travel;
     // Finish an unseen handoff when a scrollbar jump skips the whole passage;
     // its delayed camera must never replace an unrelated visible project.
@@ -375,6 +376,11 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
     const nextWidth = host.clientWidth, nextHeight = host.clientHeight;
     if (!nextWidth || !nextHeight) return;
     if (width !== nextWidth || height !== nextHeight) {
+      if (width > 1 && height > 1 && (width > height) !== (nextWidth > nextHeight)) {
+        firstMeasure = true;
+        pointer.set(0, 0); pointerSoft.set(0, 0);
+        lastTime = 0;
+      }
       width = nextWidth; height = nextHeight;
       camera.aspect = width / height; camera.updateProjectionMatrix();
       renderer.setSize(width, height, false); composer.setSize(width, height);
