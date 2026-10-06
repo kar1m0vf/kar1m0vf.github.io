@@ -84,7 +84,8 @@ test('modal traps focus, ignores input shortcuts, and remains accessible on shor
   await page.keyboard.press('Control+k');
   await expect(dialog(page)).toBeHidden();
   await trigger(page).click();
-  await expect(page.getByRole('button', { name: 'Close K Control', exact: true })).toBeFocused();
+  await expect(dialog(page).locator('#k-control-title')).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Close K Control', exact: true })).not.toBeFocused();
   await page.keyboard.press('Shift+Tab');
   await expect(dialog(page).getByRole('link', { name: 'LinkedIn', exact: true })).toBeFocused();
   await page.keyboard.press('Tab');
@@ -104,6 +105,74 @@ test('modal traps focus, ignores input shortcuts, and remains accessible on shor
   await expect(dialog(page)).toBeHidden();
   await expect(trigger(page)).toBeFocused();
   expect(errors).toEqual([]);
+});
+
+test('K Control header stays still while its destinations and settings scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 360, height: 640 });
+  await ready(page, '#nar');
+  await trigger(page).click();
+  await dialog(page).evaluate(async el => { await Promise.all(el.getAnimations().map(animation => animation.finished)); });
+  const header = dialog(page).locator('.k-control__header');
+  const close = dialog(page).getByRole('button', { name: 'Close K Control', exact: true });
+  const body = dialog(page).locator('.k-control__body');
+  const initialHeader = await header.boundingBox();
+  const initialClose = await close.boundingBox();
+  expect(initialHeader).not.toBeNull();
+  expect(initialClose).not.toBeNull();
+  for (const fraction of [.5, 1]) {
+    await body.evaluate((el, progress) => { el.scrollTop = (el.scrollHeight - el.clientHeight) * progress; }, fraction);
+    expect(await body.evaluate(el => el.scrollTop)).toBeGreaterThan(0);
+    const currentHeader = await header.boundingBox();
+    const currentClose = await close.boundingBox();
+    expect(Math.abs(currentHeader!.y - initialHeader!.y)).toBeLessThan(1);
+    expect(Math.abs(currentClose!.y - initialClose!.y)).toBeLessThan(1);
+    await expect(close).toBeInViewport();
+  }
+  expect(await body.evaluate(el => el.scrollWidth > el.clientWidth)).toBe(false);
+  await expect(dialog(page).locator('#k-control-title')).toBeFocused();
+  await expect(close).not.toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(close).toBeFocused();
+  expect(await close.evaluate(el => el.matches(':focus-visible'))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(trigger(page)).toBeFocused();
+  await trigger(page).click();
+  await page.keyboard.press('Shift+Tab');
+  await expect(dialog(page).getByRole('link', { name: 'LinkedIn', exact: true })).toBeFocused();
+  await expect(dialog(page).getByRole('link', { name: 'LinkedIn', exact: true })).toBeInViewport();
+  await page.keyboard.press('Escape');
+  await expect(trigger(page)).toBeFocused();
+});
+
+test('project details open without selecting close and preserve keyboard focus', async ({ page }) => {
+  await ready(page, '#nar');
+  const opener = page.locator('#nar .project-build-trigger');
+  const details = page.locator('#nar-build-details');
+  const close = details.getByRole('button', { name: 'Close project details', exact: true });
+  const back = details.getByRole('button', { name: 'Back to project', exact: true });
+  await opener.click();
+  await expect(details.locator('#nar-build-details-title')).toBeFocused();
+  await expect(close).not.toBeFocused();
+  expect(await close.evaluate(el => el.matches(':focus-visible'))).toBe(false);
+  await expect(details.locator('#nar-build-details-title')).toHaveCSS('outline-style', 'none');
+  await page.keyboard.press('Tab');
+  await expect(close).toBeFocused();
+  expect(await close.evaluate(el => el.matches(':focus-visible'))).toBe(true);
+  await page.keyboard.press('Tab');
+  await expect(details.locator('.project-build__body')).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(close).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(back).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(details).toBeHidden();
+  await expect(opener).toBeFocused();
+  await opener.click();
+  await page.keyboard.press('Shift+Tab');
+  await expect(back).toBeFocused();
+  await back.click();
+  await expect(details).toBeHidden();
+  await expect(opener).toBeFocused();
 });
 
 test('reduced motion and blocked storage keep controls and game icons usable', async ({ page }) => {

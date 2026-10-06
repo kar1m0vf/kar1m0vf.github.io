@@ -72,6 +72,7 @@
 .project-build__intro > p { display: flex; align-items: baseline; gap: .7rem; color: var(--overlay-muted, #a6a9ad); font-size: .8rem; line-height: 1.5; }
 .project-build__intro > p > span { color: var(--theme-accent); font-variant-numeric: tabular-nums; }
 .project-build__intro h2 { margin-top: .75rem; color: var(--overlay-ink, #f5f0e8); font: 400 clamp(3.6rem, 5.5vw, 5.1rem)/.98 var(--serif); letter-spacing: -.035em; }
+.project-build__intro h2:focus { outline: none; }
 .project-build__intro h2 em { color: inherit; font-weight: 400; }
 .project-build__close {
   display: grid;

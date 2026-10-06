@@ -98,13 +98,16 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
     destinationRef.current = null;
     outsidePointerRef.current = false;
     dialog.showModal();
+    const body = dialog.querySelector<HTMLElement>('.k-control__body');
+    if (body) body.scrollTop = 0;
     setControlOverlayOpen(true);
     setIsOpen(true);
     playSound('open');
     const firstFocus = source === 'keyboard'
       ? dialog.querySelector<HTMLElement>(`.k-control__destination[href="#${visibleSection}"]`)
-      : dialog.querySelector<HTMLElement>('.k-control__close');
+      : dialog.querySelector<HTMLElement>('#k-control-title');
     firstFocus?.focus({ preventScroll: true });
+    if (source === 'keyboard') firstFocus?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     return true;
   }, [activeSection, closePalette, disabled, playSound]);
 
@@ -153,6 +156,10 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
       const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not(:disabled)'));
       const first = controls[0];
       const last = controls[controls.length - 1];
+      if (document.activeElement === event.currentTarget.querySelector('#k-control-title')) {
+        event.preventDefault(); (event.shiftKey ? last : first)?.focus();
+        return;
+      }
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault(); last?.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -176,7 +183,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
     <>
       <button aria-controls="k-control-dialog" aria-expanded={isOpen} aria-haspopup="dialog"
         aria-keyshortcuts="Control+K Meta+K" aria-label="Open K Control" className="k-control__trigger"
-        disabled={disabled} onClick={() => openPalette('pointer')} ref={triggerRef} type="button">
+        disabled={disabled} onClick={(event) => openPalette(event.detail === 0 ? 'keyboard' : 'pointer')} ref={triggerRef} type="button">
         <KControlLogo compact />
       </button>
       <dialog aria-describedby="k-control-description" aria-labelledby="k-control-title" className="k-control"
@@ -187,51 +194,53 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
         onClose={handleClose} onKeyDown={handleDialogKeyDown} ref={dialogRef}>
         <div className="k-control__surface">
           <div className="k-control__header">
-            <div><h2 id="k-control-title"><KControlLogo /><span className="sr-only">K Control</span></h2><p id="k-control-description">Find your place in the story.</p></div>
+            <div><h2 id="k-control-title" tabIndex={-1}><KControlLogo /><span className="sr-only">K Control</span></h2><p id="k-control-description">Find your place in the story.</p></div>
             <button aria-label="Close K Control" className="k-control__close" onClick={closePalette} type="button"><CloseIcon /></button>
           </div>
-          <nav aria-label="K Control destinations" className="k-control__destinations">
-            <KControlSpine activeSection={activeSection} enabled={isOpen} />
-            {kControlSections.map((section) => (
-              <a aria-current={section.id === activeSection ? 'location' : undefined}
-                className="k-control__destination" href={section.href} key={section.id}
-                onClick={(event) => {
-                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                  const target = document.getElementById(section.id);
-                  if (!target) return;
-                  event.preventDefault();
-                  destinationRef.current = section.id;
-                  closePalette();
-                  navigateToScene(section.id);
-                }}>
-                <i aria-hidden="true" /><span aria-hidden="true">{section.index}</span>
-                <strong>{section.control.label}</strong><ArrowRightIcon />
-              </a>
-            ))}
-          </nav>
-          <div className="k-control__settings">
-            <button aria-checked={builderMode} aria-labelledby="k-control-builder-label" aria-describedby="k-control-builder-description"
-              className="k-control__setting" onClick={() => {
-                playSound(builderMode ? 'toggle-off' : 'toggle-on'); onBuilderModeChange(!builderMode);
-              }} role="switch" type="button">
-              <BuilderCubeIcon /><span className="k-control__setting-copy"><strong id="k-control-builder-label">Builder Mode</strong>
-                <small id="k-control-builder-description">See how the projects work</small></span>
-              <i aria-hidden="true" className="k-control__switch"><span /></i>
-            </button>
-            <button aria-checked={soundEnabled} aria-labelledby="k-control-sound-label" aria-describedby="k-control-sound-description"
-              className="k-control__setting" onClick={() => setSoundEnabled(!soundEnabled)} role="switch" type="button">
-              <SoundIcon enabled={soundEnabled} /><span className="k-control__setting-copy"><strong id="k-control-sound-label">Interface Sound</strong>
-                <small id="k-control-sound-description">Subtle feedback for your actions</small></span>
-              <i aria-hidden="true" className="k-control__switch"><span /></i>
-            </button>
+          <div className="k-control__body">
+            <nav aria-label="K Control destinations" className="k-control__destinations">
+              <KControlSpine activeSection={activeSection} enabled={isOpen} />
+              {kControlSections.map((section) => (
+                <a aria-current={section.id === activeSection ? 'location' : undefined}
+                  className="k-control__destination" href={section.href} key={section.id}
+                  onClick={(event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                    const target = document.getElementById(section.id);
+                    if (!target) return;
+                    event.preventDefault();
+                    destinationRef.current = section.id;
+                    closePalette();
+                    navigateToScene(section.id);
+                  }}>
+                  <i aria-hidden="true" /><span aria-hidden="true">{section.index}</span>
+                  <strong>{section.control.label}</strong><ArrowRightIcon />
+                </a>
+              ))}
+            </nav>
+            <div className="k-control__settings">
+              <button aria-checked={builderMode} aria-labelledby="k-control-builder-label" aria-describedby="k-control-builder-description"
+                className="k-control__setting" onClick={() => {
+                  playSound(builderMode ? 'toggle-off' : 'toggle-on'); onBuilderModeChange(!builderMode);
+                }} role="switch" type="button">
+                <BuilderCubeIcon /><span className="k-control__setting-copy"><strong id="k-control-builder-label">Builder Mode</strong>
+                  <small id="k-control-builder-description">See how the projects work</small></span>
+                <i aria-hidden="true" className="k-control__switch"><span /></i>
+              </button>
+              <button aria-checked={soundEnabled} aria-labelledby="k-control-sound-label" aria-describedby="k-control-sound-description"
+                className="k-control__setting" onClick={() => setSoundEnabled(!soundEnabled)} role="switch" type="button">
+                <SoundIcon enabled={soundEnabled} /><span className="k-control__setting-copy"><strong id="k-control-sound-label">Interface Sound</strong>
+                  <small id="k-control-sound-description">Subtle feedback for your actions</small></span>
+                <i aria-hidden="true" className="k-control__switch"><span /></i>
+              </button>
+            </div>
+            <nav aria-label="Contact links" className="k-control__quick">
+              {quickActions.map((action) => (
+                <a {...(action.href.startsWith('https:') ? { target: '_blank', rel: 'noreferrer' } : {})}
+                  href={action.href} key={action.label}><span>{action.label}</span><ArrowIcon /></a>
+              ))}
+            </nav>
+            <p className="k-control__hint"><kbd>{shortcut}</kbd> to open <span aria-hidden="true">·</span> <kbd>Esc</kbd> to close</p>
           </div>
-          <nav aria-label="Contact links" className="k-control__quick">
-            {quickActions.map((action) => (
-              <a {...(action.href.startsWith('https:') ? { target: '_blank', rel: 'noreferrer' } : {})}
-                href={action.href} key={action.label}><span>{action.label}</span><ArrowIcon /></a>
-            ))}
-          </nav>
-          <p className="k-control__hint"><kbd>{shortcut}</kbd> to open <span aria-hidden="true">·</span> <kbd>Esc</kbd> to close</p>
         </div>
       </dialog>
     </>

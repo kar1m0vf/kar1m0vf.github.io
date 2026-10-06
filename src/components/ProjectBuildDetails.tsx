@@ -43,7 +43,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
     if (body) body.scrollTop = 0;
     setControlOverlayOpen(true);
     setIsOpen(true);
-    dialog.querySelector<HTMLButtonElement>('.project-build__close')?.focus({ preventScroll: true });
+    dialog.querySelector<HTMLElement>('.project-build__intro h2')?.focus({ preventScroll: true });
     playSound('open');
   };
 
@@ -79,6 +79,10 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
     const controls = event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]');
     const first = controls[0];
     const last = controls[controls.length - 1];
+    if (document.activeElement === event.currentTarget.querySelector('.project-build__intro h2')) {
+      event.preventDefault(); (event.shiftKey ? last : first)?.focus({ preventScroll: true });
+      return;
+    }
     if (event.shiftKey && document.activeElement === first) {
       event.preventDefault(); last?.focus({ preventScroll: true });
     } else if (!event.shiftKey && document.activeElement === last) {
@@ -110,7 +114,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
             <header className="project-build__header">
               <div className="project-build__intro">
                 <p id={`${dialogId}-project`}><span>{project.index}</span>{project.title}</p>
-                <h2 id={`${dialogId}-title`}>How I <em>built it.</em></h2>
+                <h2 id={`${dialogId}-title`} tabIndex={-1}>How I <em>built it.</em></h2>
               </div>
               <button aria-label="Close project details" className="project-build__close" onClick={closeDetails} type="button"><CloseIcon /></button>
             </header>
