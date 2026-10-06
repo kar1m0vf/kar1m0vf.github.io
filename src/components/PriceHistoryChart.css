@@ -1,0 +1,27 @@
+.price-history-chart { min-width: 0; margin: 1.35rem 0 0; padding: .85rem 0 0; border-top: 1px solid color-mix(in srgb, var(--theme-soft, #ffc08a) 19%, transparent); text-shadow: none; }
+.price-history-chart__heading { display: flex; align-items: baseline; justify-content: space-between; gap: .65rem; min-width: 0; }
+.price-history-chart__heading strong { color: #f3e9df; font-size: .82rem; font-weight: 550; line-height: 1.5; }
+.price-history-chart__heading > span { color: var(--theme-soft, #ffc08a); font-size: .63rem; line-height: 1.5; white-space: nowrap; }
+.price-history-chart__legend { display: flex; flex-wrap: wrap; gap: .35rem .75rem; align-items: center; margin-top: .4rem; color: #d6c8bd; font-size: .66rem; line-height: 1.6; font-variant-numeric: tabular-nums; }
+.price-history-chart__legend > span { display: inline-flex; align-items: center; flex-wrap: wrap; gap: .3rem; }
+.price-history-chart__legend strong { color: var(--theme-soft, #ffc08a); font-weight: 500; }
+.price-history-chart__legend i { display: block; flex: 0 0 auto; width: 13px; height: 0; }
+.price-history-chart__price-key { border-top: 2px solid var(--theme-accent, #ff7a1a); }
+.price-history-chart__target-key { border-top: 1.5px dashed var(--theme-soft, #ffc08a); }
+.price-history-chart__plot { display: block; width: 100%; height: 88px; overflow: visible; margin-top: .25rem; fill: none; }
+.price-history-chart__grid { stroke: var(--theme-soft, #ffc08a); stroke-width: 1; opacity: .1; }
+.price-history-chart__fill-start { stop-color: var(--theme-accent, #ff7a1a); stop-opacity: .3; }
+.price-history-chart__fill-end { stop-color: var(--theme-accent, #ff7a1a); stop-opacity: .025; }
+.price-history-chart__target { stroke: var(--theme-soft, #ffc08a); stroke-width: 1.25; stroke-dasharray: 4 5; stroke-linecap: round; opacity: .8; }
+.price-history-chart__line { stroke: var(--theme-accent, #ff7a1a); stroke-width: 2.75; stroke-linecap: round; stroke-linejoin: round; }
+.price-history-chart__endpoint { fill: var(--theme-soft, #ffc08a); stroke: var(--theme-deep, #100b07); stroke-width: 1.8; }
+.price-history-chart__timeline { display: flex; justify-content: space-between; margin-inline: 3.75%; color: #c3b5aa; font-size: .63rem; line-height: 1.5; }
+@media (forced-colors: active) {
+  .price-history-chart { border-top-color: GrayText; }
+  .price-history-chart__heading strong, .price-history-chart__heading > span, .price-history-chart__legend, .price-history-chart__legend strong, .price-history-chart__timeline { color: CanvasText; }
+  .price-history-chart__price-key, .price-history-chart__target-key { border-top-color: CanvasText; }
+  .price-history-chart__grid { stroke: GrayText; opacity: .5; }
+  .price-history-chart__area { display: none; }
+  .price-history-chart__line, .price-history-chart__target { stroke: CanvasText; }
+  .price-history-chart__endpoint { fill: CanvasText; stroke: Canvas; }
+}

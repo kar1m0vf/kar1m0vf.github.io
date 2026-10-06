@@ -59,8 +59,7 @@
   .nar-world .nar-save-choice > svg { color: var(--theme-soft); }
 
   /* Trendyol: warm surfaces and signal accents; range controls inherit this palette. */
-  .signal-world .price-history-preview svg { stroke: var(--theme-soft); }
-  .signal-world__rule-island, .signal-world__outcome {
+  .signal-world__observation, .signal-world__rule-island, .signal-world__outcome {
     border-color: var(--theme-line);
     background: linear-gradient(140deg, var(--theme-faint), var(--theme-deep) 55%, var(--theme-surface));
     box-shadow: inset 0 1px 3px var(--theme-line), inset 0 -12px 30px var(--theme-wash), 0 25px 60px #0004, 0 5px 35px var(--theme-glow);

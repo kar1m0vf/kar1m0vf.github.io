@@ -3,6 +3,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import type { PriceObservatoryConfig, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { useSound } from '../audio/SoundProvider';
 import { ArrowRightIcon, DisclosureIcon, TelegramIcon } from './Icons';
+import { PriceHistoryChart } from './PriceHistoryChart';
 
 interface PriceObservatoryProps {
   config: PriceObservatoryConfig;
@@ -135,31 +136,29 @@ export function PriceObservatory({
           <label className="signal-world__price-control">
             <span>Current price</span>
             <output>{formatPrice(currentPrice)}</output>
-            <input aria-label="Illustrative current price" disabled={running}
-              max={config.simulation.max} min={config.simulation.min} step={config.simulation.step}
-              style={rangeStyle(currentPrice)} type="range" value={currentPrice} onChange={(event) => {
-                setCurrentPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1);
-              }} />
+            <span className="signal-world__range" style={rangeStyle(currentPrice)}>
+              <input aria-label="Illustrative current price" disabled={running}
+                max={config.simulation.max} min={config.simulation.min} step={config.simulation.step}
+                type="range" value={currentPrice} onChange={(event) => {
+                  setCurrentPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1);
+                }} />
+            </span>
             <span className="signal-world__range-limits" aria-hidden="true">
               <span>{formatPrice(config.simulation.min)}</span><span>{formatPrice(config.simulation.max)}</span>
             </span>
           </label>
-          <div className="price-history-preview">
-            <svg aria-label="Illustrative prices over seven checks" role="img" viewBox="0 0 700 140" preserveAspectRatio="none">
-              <title>Illustrative prices over seven checks</title>
-              <path className="price-history-preview__target" d={`M0 ${130 - (targetPrice - config.simulation.min) / (config.simulation.max - config.simulation.min) * 120}H700`} />
-              <motion.path initial={false} animate={{ d: [1250, 1210, 1260, 1170, 1190, config.simulation.previousPrice, currentPrice].map((price, index) => `${index ? 'L' : 'M'}${index * 116.66},${130 - (price - config.simulation.min) / (config.simulation.max - config.simulation.min) * 120}`).join(' ') }} transition={{ duration: reduceMotion ? 0 : .25 }} />
-            </svg>
-            <span className="price-history-preview__caption">Illustrative price history · dashed line = your target</span>
-          </div>
+          <PriceHistoryChart currentPrice={currentPrice} targetPrice={targetPrice}
+            previousPrice={config.simulation.previousPrice} min={config.simulation.min} max={config.simulation.max} />
         </div>
 
         <div className="signal-world__rule-island">
           <label className="signal-world__target price-target-control">
             <span>Your target <strong>{formatPrice(targetPrice)}</strong></span>
-            <input aria-label="Your target price" disabled={running} max={config.simulation.max}
-              min={config.simulation.min} step={config.simulation.step} style={rangeStyle(targetPrice)} type="range" value={targetPrice}
-              onChange={(event) => { setTargetPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1); }} />
+            <span className="signal-world__range" style={rangeStyle(targetPrice)}>
+              <input aria-label="Your target price" disabled={running} max={config.simulation.max}
+                min={config.simulation.min} step={config.simulation.step} type="range" value={targetPrice}
+                onChange={(event) => { setTargetPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1); }} />
+            </span>
             <span className="signal-world__range-limits" aria-hidden="true">
               <span>{formatPrice(config.simulation.min)}</span><span>{formatPrice(config.simulation.max)}</span>
             </span>
