@@ -14,6 +14,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { createThreadCore, createThreadGlass } from './threadMaterial';
 import { RoundThread, THREAD_RADIUS } from './RoundThread';
+import { SceneBufferResize } from './SceneBufferResize';
 
 interface SceneOptions {
   framing: 'intro' | 'closing';
@@ -195,7 +196,13 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
     });
     const phase = p < 0.29 ? 'knot' : p < 0.68 ? 'aperture' : 'thread';
     if (canvas.dataset.phase !== phase) canvas.dataset.phase = phase;
-    try { composer.render(dt); }
+    try {
+      bufferResize.flush((nextWidth, nextHeight) => {
+        renderer.setSize(nextWidth, nextHeight, false);
+        composer.setSize(nextWidth, nextHeight);
+      });
+      composer.render(dt);
+    }
     catch {
       contextAvailable = false;
       options.onUnavailable();
@@ -214,6 +221,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       frameId = requestAnimationFrame(render);
     }
   };
+  const bufferResize = new SceneBufferResize(schedule);
   const resize = () => {
     pointerBounds = null;
     const nextWidth = host.clientWidth, nextHeight = host.clientHeight;
@@ -222,8 +230,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
       width = nextWidth; height = nextHeight;
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(width, height, false);
-      composer.setSize(width, height);
+      bufferResize.request(width, height);
     }
     schedule();
   };
@@ -280,6 +287,7 @@ export function createThreadScene(host: HTMLElement, options: SceneOptions): (()
 
   return () => {
     disposed = true;
+    bufferResize.dispose();
     cancelAnimationFrame(frameId);
     observer.disconnect();
     resizeObserver.disconnect();

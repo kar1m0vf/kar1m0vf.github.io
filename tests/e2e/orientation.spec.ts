@@ -87,3 +87,84 @@ test('short landscape keeps hero actions, chapters and overlay controls usable',
   await expect(page.locator('#trendyol-build-details')).toBeHidden();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
+
+test('changing browser toolbar height never exposes a cleared scene buffer', async ({ page }) => {
+  await ready(page);
+  await expect(page.locator('#top .thread-sculpture')).toHaveAttribute('data-renderer', 'ready');
+  await page.evaluate(async () => {
+    const audit = { outsideFrameResets: 0, missedDraws: [] as string[], resets: { hero: 0, middle: 0 } };
+    Object.assign(window, { sceneBufferAudit: audit });
+    let armed = false;
+    let frameResets: Map<HTMLCanvasElement, boolean> | null = null;
+    const sceneOf = (canvas: HTMLCanvasElement) => canvas.matches('.continuity-canvas canvas') ? 'middle'
+      : canvas.matches('.thread-sculpture canvas') ? 'hero' : null;
+    const originalRaf = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = callback => originalRaf(time => {
+      const previousFrame = frameResets;
+      const currentFrame = new Map<HTMLCanvasElement, boolean>();
+      frameResets = currentFrame;
+      try { callback(time); }
+      finally {
+        for (const [canvas, drawn] of currentFrame) {
+          if (!drawn) audit.missedDraws.push(`${sceneOf(canvas)} ${canvas.width}x${canvas.height}`);
+        }
+        frameResets = previousFrame;
+      }
+    });
+    for (const dimension of ['width', 'height'] as const) {
+      const descriptor = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, dimension)!;
+      Object.defineProperty(HTMLCanvasElement.prototype, dimension, {
+        ...descriptor,
+        set(this: HTMLCanvasElement, value: number) {
+          const scene = armed ? sceneOf(this) : null;
+          if (scene) {
+            audit.resets[scene] += 1;
+            if (frameResets) frameResets.set(this, false);
+            else audit.outsideFrameResets += 1;
+          }
+          descriptor.set!.call(this, value);
+        },
+      });
+    }
+    for (const method of ['drawArrays', 'drawElements'] as const) {
+      const originalDraw = WebGL2RenderingContext.prototype[method];
+      WebGL2RenderingContext.prototype[method] = function (this: WebGL2RenderingContext, ...args: unknown[]) {
+        Reflect.apply(originalDraw, this, args);
+        const canvas = this.canvas;
+        if (armed && canvas instanceof HTMLCanvasElement && frameResets?.has(canvas)
+          && this.getParameter(this.DRAW_FRAMEBUFFER_BINDING) === null) frameResets.set(canvas, true);
+      };
+    }
+    // Existing scene loops may already have queued callbacks before the wrapper.
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    armed = true;
+  });
+
+  const hero = page.locator('#top .thread-sculpture canvas');
+  for (const height of [832, 820, 808, 796, 784, 772, 760, 748, 760, 776]) {
+    await page.setViewportSize({ width: 390, height });
+  }
+  await expect.poll(() => hero.evaluate(el => {
+    const canvas = el as HTMLCanvasElement;
+    return Math.abs(canvas.height - canvas.clientHeight * canvas.width / canvas.clientWidth);
+  })).toBeLessThan(2);
+  await expect(page.locator('#top .thread-sculpture')).toHaveAttribute('data-renderer', 'ready');
+  await travel(page, .45);
+  const middle = page.locator('.continuity-canvas canvas');
+  await expect(middle).toHaveAttribute('data-phase', 'through');
+  for (const height of [788, 800, 812, 824, 836, 844, 832, 820, 808, 796]) {
+    await page.setViewportSize({ width: 390, height });
+  }
+  await expect.poll(() => middle.evaluate(el => {
+    const canvas = el as HTMLCanvasElement;
+    return Math.abs(canvas.height - canvas.clientHeight * canvas.width / canvas.clientWidth);
+  })).toBeLessThan(2);
+  await expect(page.locator('.continuous-story')).toHaveAttribute('data-renderer', 'ready');
+  const audit = await page.evaluate(() => (window as Window & {
+    sceneBufferAudit: { outsideFrameResets: number; missedDraws: string[]; resets: { hero: number; middle: number } };
+  }).sceneBufferAudit);
+  expect(audit.resets.hero).toBeGreaterThan(0);
+  expect(audit.resets.middle).toBeGreaterThan(0);
+  expect(audit.outsideFrameResets).toBe(0);
+  expect(audit.missedDraws).toEqual([]);
+});

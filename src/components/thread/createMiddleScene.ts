@@ -14,6 +14,7 @@ import { advancePassage, passageTrajectory } from './passageTrajectory';
 import { RoundThread, THREAD_RADIUS } from './RoundThread';
 import { TunnelCurve } from './TunnelCurve';
 import { SceneLayout } from './SceneLayout';
+import { SceneBufferResize } from './SceneBufferResize';
 import { sampleSceneTheme, sceneThemes, type ThemeBlend, type SceneTheme } from '../../data/sceneThemes';
 
 interface Options { reduced: boolean; onReady: () => void; onUnavailable: () => void }
@@ -360,7 +361,13 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
       cable.getPointAt(t, bead.position);
     });
     bloom.strength = 0.28 + tunnel * 0.1;
-    try { composer.render(dt); }
+    try {
+      bufferResize.flush((nextWidth, nextHeight) => {
+        renderer.setSize(nextWidth, nextHeight, false);
+        composer.setSize(nextWidth, nextHeight);
+      });
+      composer.render(dt);
+    }
     catch { fail(); return; }
     reportSceneFrame(host);
     if (firstRender) { firstRender = false; options.onReady(); }
@@ -369,6 +376,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
   const schedule = () => {
     if (!frameId && !disposed && !unavailable && compiled && (visible || firstRender) && !document.hidden && !isSceneRenderingSuspended()) frameId = requestAnimationFrame(render);
   };
+  const bufferResize = new SceneBufferResize(schedule);
   const requestMeasure = () => { needsMeasure = true; schedule(); };
   const invalidateLayout = () => { layout.dirty = true; requestMeasure(); };
   const jump = () => { firstMeasure = true; requestMeasure(); };
@@ -383,7 +391,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
       }
       width = nextWidth; height = nextHeight;
       camera.aspect = width / height; camera.updateProjectionMatrix();
-      renderer.setSize(width, height, false); composer.setSize(width, height);
+      bufferResize.request(width, height);
     }
     invalidateLayout();
   };
@@ -429,6 +437,7 @@ export function createMiddleScene(host: HTMLElement, root: HTMLElement, options:
 
   return () => {
     disposed = true; cancelAnimationFrame(frameId);
+    bufferResize.dispose();
     observer.disconnect(); resizeObserver.disconnect(); layoutObserver.disconnect(); mutations.disconnect();
     root.removeEventListener('pointermove', move); root.removeEventListener('pointerleave', leave);
     window.removeEventListener('scroll', requestMeasure); document.removeEventListener('visibilitychange', visibility);
