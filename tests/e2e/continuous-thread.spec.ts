@@ -45,5 +45,10 @@ test('middle content and the next-project link survive unavailable WebGL', async
   await page.getByRole('link', { name: 'Next · Trendyol Price Tracker' }).click();
   await expect(page).toHaveURL(/#trendyol$/);
   await page.getByRole('slider', { name: 'Your target price', exact: true }).fill('1300');
-  await expect(page.locator('.signal-world__outcome')).toContainText('tell you at 07:00.');
+  await expect(page.locator('.signal-world__outcome')).toContainText('Waiting for your check.');
+  await page.getByRole('button', { name: 'Check price', exact: true }).click();
+  await expect(page.locator('.signal-world')).toHaveAttribute('data-check-status', 'checking');
+  await expect(page.locator('.signal-world')).toHaveAttribute('data-check-status', 'complete');
+  await expect(page.locator('.signal-world__outcome')).toContainText('Quiet hours are on.');
+  await expect(page.locator('.signal-world__outcome')).toContainText('07:00');
 });

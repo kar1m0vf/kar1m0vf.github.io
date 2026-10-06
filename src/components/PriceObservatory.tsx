@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import type { PriceObservatoryConfig, TrackerHandoffState, TrackerSignalResult } from '../types';
 import { useSound } from '../audio/SoundProvider';
 import { ArrowRightIcon, DisclosureIcon, TelegramIcon } from './Icons';
@@ -14,6 +14,13 @@ interface PriceObservatoryProps {
 
 const priceFormatter = new Intl.NumberFormat('en-US');
 const formatPrice = (value: number) => `₺${priceFormatter.format(value)}`;
+const checkSteps = [
+  { label: 'Read price', title: 'Reading the product price.' },
+  { label: 'Compare', title: 'Comparing with your target.' },
+  { label: 'Quiet hours', title: 'Checking quiet hours.' },
+  { label: 'Alert', title: 'Preparing your alert.' },
+] as const;
+type CompletedCheck = TrackerSignalResult & { targetPrice: number };
 
 export function PriceObservatory({
   config,
@@ -26,9 +33,10 @@ export function PriceObservatory({
   const [currentPrice, setCurrentPrice] = useState(config.simulation.currentPrice);
   const [targetPrice, setTargetPrice] = useState(config.simulation.targetPrice);
   const [quietHours, setQuietHours] = useState(true);
-  const [position, setPosition] = useState(2);
-  const [selectedGate, setSelectedGate] = useState(2);
+  const [position, setPosition] = useState(-1);
+  const [selectedGate, setSelectedGate] = useState(0);
   const [running, setRunning] = useState(false);
+  const [completedCheck, setCompletedCheck] = useState<CompletedCheck | null>(null);
   const rangeStyle = (value: number): CSSProperties & { '--range-progress': string } => ({
     '--range-progress': `${(value - config.simulation.min) / (config.simulation.max - config.simulation.min) * 100}%`,
   });
@@ -42,20 +50,14 @@ export function PriceObservatory({
       : 'released';
 
   const reportSignal = useCallback(() => {
-    onHandoffResolved({ currentPrice, outcome: outcomeKey });
+    const result = { currentPrice, outcome: outcomeKey };
+    setCompletedCheck({ ...result, targetPrice });
+    onHandoffResolved(result);
     playSound('complete');
-  }, [currentPrice, onHandoffResolved, outcomeKey, playSound]);
+  }, [currentPrice, targetPrice, onHandoffResolved, outcomeKey, playSound]);
 
   useEffect(() => {
     if (!running) return;
-
-    if (reduceMotion) {
-      setPosition(stopPosition);
-      setSelectedGate(Math.min(stopPosition, 2));
-      setRunning(false);
-      reportSignal();
-      return;
-    }
 
     if (position >= stopPosition) {
       const finishTimer = window.setTimeout(() => {
@@ -69,50 +71,58 @@ export function PriceObservatory({
       const nextPosition = position + 1;
       setPosition(nextPosition);
       setSelectedGate(Math.min(Math.max(nextPosition, 0), 2));
-    }, position < 0 ? 280 : 620);
+    }, 620);
 
     return () => window.clearTimeout(nextTimer);
-  }, [position, reduceMotion, reportSignal, running, stopPosition]);
+  }, [position, reportSignal, running, stopPosition]);
 
-  const outcome = !targetMatched
+  const checkStatus = running ? 'checking' : completedCheck ? 'complete' : 'idle';
+  const stepIndex = Math.max(0, Math.min(position, checkSteps.length - 1));
+  const preview = running
     ? {
-        key: 'memory',
-        title: 'Still waiting for your price.',
-        reason: `${formatPrice(currentPrice)} is still above your ${formatPrice(targetPrice)} target.`,
+        key: `checking-${stepIndex}`,
+        title: (checkSteps[stepIndex] ?? checkSteps[0]).title,
+        reason: [
+          'Getting the current price for this check.',
+          `${formatPrice(currentPrice)} against your ${formatPrice(targetPrice)} target.`,
+          `${config.simulation.time} · Quiet hours are ${quietHours ? 'on' : 'off'}.`,
+          'The price matches and notifications are allowed.',
+        ][stepIndex] ?? 'Checking your price and alert rules.',
       }
-    : quietHours
-      ? {
-          key: 'held',
-          title: 'Good price. We’ll tell you at 07:00.',
-          reason: `The target is crossed at ${config.simulation.time}, inside quiet hours.`,
-        }
-      : {
-          key: 'released',
-          title: 'Your price is here.',
-          reason: 'You would receive one price alert in Telegram.',
-        };
+    : completedCheck
+      ? completedCheck.outcome === 'memory'
+        ? {
+            key: 'memory',
+            title: 'Not at your target yet.',
+            reason: `${formatPrice(completedCheck.currentPrice)} is above your ${formatPrice(completedCheck.targetPrice)} target.`,
+          }
+        : completedCheck.outcome === 'held'
+          ? { key: 'held', title: 'Quiet hours are on.', reason: 'The price matches. Your alert would wait until 07:00.' }
+          : { key: 'released', title: 'Your price is here.', reason: 'The price matches. You would receive an alert in Telegram.' }
+      : { key: 'idle', title: 'Waiting for your check.', reason: 'Set the price and target, then press Check price.' };
+
+  const checkStepStatus = (index: number) => {
+    if (checkStatus === 'idle' || index > stepIndex) return 'pending';
+    if (index < stepIndex) return 'done';
+    if (running) return 'active';
+    return completedCheck?.outcome === 'released' ? 'done' : 'held';
+  };
 
   const runSignal = () => {
+    if (running || handoffStatus === 'pending') return;
     playSound('signal');
     onHandoffReset();
-
-    if (reduceMotion) {
-      setPosition(stopPosition);
-      setSelectedGate(Math.min(stopPosition, 2));
-      setRunning(false);
-      reportSignal();
-      return;
-    }
-
-    setPosition(-1);
+    setCompletedCheck(null);
+    setPosition(0);
     setSelectedGate(0);
     setRunning(true);
   };
 
-  const resetSignal = (nextPosition = -1) => {
+  const resetSignal = () => {
     onHandoffReset();
     setRunning(false);
-    setPosition(nextPosition);
+    setCompletedCheck(null);
+    setPosition(-1);
   };
 
   const chooseGate = (index: number) => {
@@ -130,7 +140,7 @@ export function PriceObservatory({
 
   return (
     <div className={`signal-world${running ? ' is-running' : ''}`} data-handoff={handoffStatus}
-      data-outcome={outcome.key} data-signal-position={position}>
+      data-outcome={completedCheck?.outcome ?? checkStatus} data-check-status={checkStatus} data-signal-position={position}>
       <div className="signal-world__constellation">
         <div className="signal-world__observation">
           <label className="signal-world__price-control">
@@ -172,24 +182,29 @@ export function PriceObservatory({
         </div>
 
         <div className="signal-world__delivery">
-          <div className="signal-world__outcome" aria-live="polite" aria-atomic="true">
+          <div className="signal-world__outcome">
             <span className="price-notice-label"><TelegramIcon />Telegram preview · no real message is sent</span>
-            <AnimatePresence initial={false} mode="wait">
-              <motion.div animate={{ opacity: 1, y: 0 }} initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                exit={{ opacity: reduceMotion ? 1 : 0 }} key={outcome.key} transition={{ duration: .2 }}>
-                <strong>{outcome.title}</strong>
-                <p>{outcome.reason}</p>
+            <ol className="signal-world__check-steps" aria-label="Price check progress">
+              {checkSteps.map((step, index) => <li key={step.label} data-status={checkStepStatus(index)}
+                aria-current={running && index === stepIndex ? 'step' : undefined}
+                aria-label={`${step.label}: ${checkStepStatus(index)}`}><span>{step.label}</span></li>)}
+            </ol>
+            <div className="signal-world__check-copy" role="status" aria-atomic="true">
+              <motion.div animate={{ opacity: 1, y: 0 }} initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+                key={preview.key} transition={{ duration: reduceMotion ? 0 : .16 }}>
+                <strong>{preview.title}</strong>
+                <p>{preview.reason}</p>
               </motion.div>
-            </AnimatePresence>
+            </div>
           </div>
         </div>
 
         <div className="signal-world__launch">
           <button className="signal-world__run" disabled={running || handoffStatus === 'pending'} onClick={runSignal} type="button">
-            <span>{running ? 'Checking…' : handoffStatus === 'pending' ? 'Ready' : handoffStatus === 'settled' ? 'Check again' : 'Try this price'}</span>
+            <span>{running ? 'Checking…' : completedCheck ? 'Check again' : 'Check price'}</span>
             <ArrowRightIcon />
           </button>
-          <p aria-live="polite">{running ? config.gates[Math.max(0, Math.min(position, 2))]?.detail : config.instruction}</p>
+          <p>{running ? 'A quick check of the price and your rules.' : completedCheck ? 'Adjust the settings to try another check.' : config.instruction}</p>
         </div>
       </div>
 

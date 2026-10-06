@@ -39,18 +39,103 @@ test('Nar remembers a visitor’s choice across reloads', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Save chocolate cake' })).toHaveAttribute('aria-pressed', 'false');
 });
 
-test('target and quiet hours change the simulated notification', async ({ page }) => {
+test('price checks show progress before a result and reset when rules change', async ({ page }) => {
+  test.setTimeout(60_000);
   await loaded(page, '#trendyol');
+  const world = page.locator('.signal-world');
+  const preview = world.locator('.signal-world__outcome');
+  const current = page.getByRole('slider', { name: 'Illustrative current price', exact: true });
   const target = page.getByRole('slider', { name: 'Your target price', exact: true });
+  const quiet = page.getByRole('button', { name: /Quiet hours/ });
+  const expectIdle = async () => {
+    await expect(world).toHaveAttribute('data-check-status', 'idle');
+    await expect(world).toHaveAttribute('data-outcome', 'idle');
+    await expect(preview).toContainText('Waiting for your check.');
+    await expect(preview).not.toContainText('Your price is here.');
+    await expect(page.getByRole('button', { name: 'Check price', exact: true })).toBeEnabled();
+  };
+  const expectChecking = async () => {
+    await expect(world).toHaveAttribute('data-check-status', 'checking');
+    await expect(world).toHaveAttribute('data-outcome', 'checking');
+    await expect(page.getByRole('button', { name: 'Checking…', exact: true })).toBeDisabled();
+    await expect(current).toBeDisabled();
+    await expect(target).toBeDisabled();
+    await expect(quiet).toBeDisabled();
+  };
+
+  await expectIdle();
   await target.fill('1000');
-  await expect(page.locator('.signal-world__outcome')).toContainText('Still waiting for your price.');
+  await expectIdle();
+  await page.getByRole('button', { name: 'Check price', exact: true }).click();
+  await expectChecking();
+  await expect(preview).not.toContainText('Not at your target yet.');
+  await expect(world).toHaveAttribute('data-check-status', 'complete');
+  await expect(world).toHaveAttribute('data-outcome', 'memory');
+  await expect(preview).toContainText('Not at your target yet.');
+  await expect(preview).toContainText('₺1,099');
+  await expect(preview).toContainText('₺1,000');
+
   await target.fill('1300');
-  await expect(page.locator('.signal-world__outcome')).toContainText('tell you at 07:00.');
+  await expectIdle();
+  await expect(preview).not.toContainText('Not at your target yet.');
+  await page.getByRole('button', { name: 'Check price', exact: true }).click();
+  await expectChecking();
+  await expect(world).toHaveAttribute('data-check-status', 'complete');
+  await expect(world).toHaveAttribute('data-outcome', 'held');
+  await expect(preview).toContainText('Quiet hours are on.');
+  await expect(preview).toContainText('07:00');
+
+  await quiet.click();
+  await expectIdle();
+  await expect(preview).not.toContainText('Quiet hours are on.');
+  await page.getByRole('button', { name: 'Check price', exact: true }).click();
+  await expectChecking();
+  await expect(preview).not.toContainText('Your price is here.');
+  await expect(world).toHaveAttribute('data-check-status', 'complete');
+  await expect(world).toHaveAttribute('data-outcome', 'released');
+  await expect(preview).toContainText('Your price is here.');
+  await expect(preview).toContainText('no real message is sent');
+  await expect(current).toBeEnabled();
+  await expect(target).toBeEnabled();
+  await expect(quiet).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Check again', exact: true }).click();
+  await expectChecking();
+  await expect(world).toHaveAttribute('data-check-status', 'complete');
+  await expect(world).toHaveAttribute('data-outcome', 'released');
+  await expect(preview).toContainText('Your price is here.');
+  await expect(page.getByRole('button', { name: 'Check again', exact: true })).toBeEnabled();
+});
+
+test('narrow reduced-motion price checks still progress and clear a changed price', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await loaded(page, '#trendyol');
+  const world = page.locator('.signal-world');
+  const preview = world.locator('.signal-world__outcome');
+  const current = page.getByRole('slider', { name: 'Illustrative current price', exact: true });
+
+  await expect(preview).toContainText('Waiting for your check.');
   await page.getByRole('button', { name: /Quiet hours/ }).click();
-  await expect(page.locator('.signal-world__outcome')).toContainText('Your price is here.');
-  await page.getByRole('button', { name: 'Try this price' }).click();
-  await expect(page.getByRole('button', { name: 'Check again' })).toBeEnabled({ timeout: 10_000 });
-  await expect(page.locator('.signal-world__outcome')).toContainText('no real message is sent');
+  await page.getByRole('button', { name: 'Check price', exact: true }).click();
+  await expect(world).toHaveAttribute('data-check-status', 'checking');
+  await expect(preview).not.toContainText('Your price is here.');
+  await expect(world).toHaveAttribute('data-check-status', 'complete');
+  await expect(world).toHaveAttribute('data-outcome', 'released');
+  await expect(preview).toContainText('Your price is here.');
+
+  await current.fill('1350');
+  await expect(world).toHaveAttribute('data-check-status', 'idle');
+  await expect(world).toHaveAttribute('data-outcome', 'idle');
+  await expect(preview).toContainText('Waiting for your check.');
+  await expect(preview).not.toContainText('Your price is here.');
+  await page.getByRole('button', { name: 'Check price', exact: true }).click();
+  await expect(world).toHaveAttribute('data-check-status', 'checking');
+  await expect(world).toHaveAttribute('data-check-status', 'complete');
+  await expect(world).toHaveAttribute('data-outcome', 'memory');
+  await expect(preview).toContainText('Not at your target yet.');
+  await expect(preview).toContainText('₺1,350');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
 
 test('Blaster stays compact on desktop and plays and pauses in place', async ({ page }) => {
