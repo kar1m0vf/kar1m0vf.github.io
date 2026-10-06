@@ -140,6 +140,9 @@ export function PriceObservatory({
               style={rangeStyle(currentPrice)} type="range" value={currentPrice} onChange={(event) => {
                 setCurrentPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1);
               }} />
+            <span className="signal-world__range-limits" aria-hidden="true">
+              <span>{formatPrice(config.simulation.min)}</span><span>{formatPrice(config.simulation.max)}</span>
+            </span>
           </label>
           <div className="price-history-preview">
             <svg aria-label="Illustrative prices over seven checks" role="img" viewBox="0 0 700 140" preserveAspectRatio="none">
@@ -157,6 +160,9 @@ export function PriceObservatory({
             <input aria-label="Your target price" disabled={running} max={config.simulation.max}
               min={config.simulation.min} step={config.simulation.step} style={rangeStyle(targetPrice)} type="range" value={targetPrice}
               onChange={(event) => { setTargetPrice(Number(event.currentTarget.value)); resetSignal(); setSelectedGate(1); }} />
+            <span className="signal-world__range-limits" aria-hidden="true">
+              <span>{formatPrice(config.simulation.min)}</span><span>{formatPrice(config.simulation.max)}</span>
+            </span>
           </label>
           <button aria-pressed={quietHours} className="signal-world__quiet" disabled={running} type="button"
             onClick={() => { playSound('select'); setQuietHours((enabled) => !enabled); resetSignal(); setSelectedGate(2); }}>
