@@ -27,8 +27,8 @@ test.describe('The living blue thread', () => {
     await expect(page.getByText('Skip intro', { exact: false })).toHaveCount(0);
     await chapters.getByRole('button', { name: 'Selected work' }).click();
     await page.getByRole('link', { name: /Discover the work/ }).click();
-    await expect(page).toHaveURL(/#method$/);
-    await expect(page.locator('#method')).toBeInViewport();
+    await expect(page).toHaveURL(/#work$/);
+    await expect(page.locator('#work')).toBeInViewport();
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
     expect(errors).toEqual([]);
   });
@@ -49,7 +49,7 @@ test.describe('The living blue thread', () => {
     await expect(page.getByRole('heading', { name: /More than one dimension/ })).toBeVisible();
     await page.getByRole('button', { name: 'Selected work' }).click();
     await page.getByRole('link', { name: /Discover the work/ }).click();
-    await expect(page.locator('#method')).toBeInViewport();
+    await expect(page.locator('#work')).toBeInViewport();
   });
 
   test('shows every introduction chapter in normal flow with reduced motion', async ({ page }) => {
@@ -66,6 +66,6 @@ test.describe('The living blue thread', () => {
     await expect(closing).toBeInViewport();
     await expect(page.getByRole('navigation', { name: 'Introduction chapters' })).toHaveCount(0);
     await page.getByRole('link', { name: /Discover the work/ }).click();
-    await expect(page.locator('#method')).toBeInViewport();
+    await expect(page.locator('#work')).toBeInViewport();
   });
 });
