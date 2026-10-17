@@ -198,7 +198,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
             <div><h2 id="k-control-title" tabIndex={-1}><KControlLogo /><span className="sr-only">K Control</span></h2><p id="k-control-description">Find your place in the story.</p></div>
             <button aria-label="Close K Control" className="k-control__close" onClick={closePalette} type="button"><CloseIcon /></button>
           </div>
-          <OverlayScrollArea active={isOpen} ariaLabel="Scroll K Control" viewportClassName="k-control__body" viewportLabel="K Control content">
+          <OverlayScrollArea active={isOpen} ariaLabel="Scroll K Control" showScrollbar={false} viewportClassName="k-control__body" viewportLabel="K Control content">
             <nav aria-label="K Control destinations" className="k-control__destinations">
               <KControlSpine activeSection={activeSection} enabled={isOpen} />
               {kControlSections.map((section) => (

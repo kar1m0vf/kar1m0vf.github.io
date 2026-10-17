@@ -237,20 +237,34 @@ const exerciseScrollbar = async ({ page, dialog, viewport, scrollbarName, header
   await expect(opener).toBeFocused();
 };
 
-test('K Control custom rail follows keyboard, dragging and native wheel scrolling', async ({ page }) => {
+test('K Control scrolls without a custom or native scrollbar', async ({ page }) => {
   test.setTimeout(60_000);
   await page.setViewportSize({ width: 360, height: 640 });
   await ready(page, '#nar');
   const opener = page.getByRole('button', { name: 'Open K Control', exact: true });
   const dialog = page.getByRole('dialog', { name: 'K Control', exact: true });
   await opener.click();
-  await exerciseScrollbar({
-    page, dialog, opener,
-    viewport: dialog.locator('.k-control__body'),
-    scrollbarName: 'Scroll K Control',
-    headerSelector: '.k-control__header',
-    closeName: 'Close K Control',
-  });
+  const viewport = dialog.locator('.k-control__body');
+  const header = dialog.locator('.k-control__header');
+  await expect(dialog.getByRole('scrollbar')).toHaveCount(0);
+  await expect(dialog.locator('.overlay-scroll-area__rail')).toHaveCount(0);
+  await expect(viewport).toHaveCSS('scrollbar-width', 'none');
+  await expect.poll(() => viewport.evaluate(el => el.scrollHeight - el.clientHeight)).toBeGreaterThan(0);
+  await dialog.evaluate(async el => { await Promise.all(el.getAnimations().map(animation => animation.finished)); });
+  const headerTop = await header.evaluate(el => el.getBoundingClientRect().top);
+  await viewport.hover();
+  await page.mouse.wheel(0, 180);
+  await expect.poll(() => viewport.evaluate(el => el.scrollTop)).toBeGreaterThan(10);
+  await viewport.focus();
+  await viewport.press('End');
+  await expect.poll(() => viewport.evaluate(el => Math.abs(el.scrollTop - (el.scrollHeight - el.clientHeight)))).toBeLessThanOrEqual(2);
+  await expect(dialog.getByRole('link', { name: 'LinkedIn' })).toBeInViewport();
+  expect(Math.abs(await header.evaluate(el => el.getBoundingClientRect().top) - headerTop)).toBeLessThan(1);
+  await viewport.press('Home');
+  await expect.poll(() => viewport.evaluate(el => el.scrollTop)).toBeLessThanOrEqual(1);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
 });
 
 test('project custom rail stays synchronized without moving its header', async ({ page }) => {

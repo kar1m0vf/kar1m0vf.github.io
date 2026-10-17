@@ -6,6 +6,7 @@ interface OverlayScrollAreaProps {
   ariaLabel: string;
   children: ReactNode;
   className?: string;
+  showScrollbar?: boolean;
   viewportClassName?: string;
   viewportLabel?: string;
 }
@@ -25,7 +26,7 @@ interface DragState {
 const clamp = (value: number, maximum: number) => Math.min(maximum, Math.max(0, value));
 
 /** Keeps native content scrolling, with a shared rail for the site's overlays. */
-export function OverlayScrollArea({ active, ariaLabel, children, className, viewportClassName, viewportLabel }: OverlayScrollAreaProps) {
+export function OverlayScrollArea({ active, ariaLabel, children, className, showScrollbar = true, viewportClassName, viewportLabel }: OverlayScrollAreaProps) {
   const viewportId = useId();
   const viewportRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLDivElement>(null);
@@ -39,7 +40,7 @@ export function OverlayScrollArea({ active, ariaLabel, children, className, view
     const viewport = viewportRef.current;
     const rail = railRef.current;
     const thumb = thumbRef.current;
-    if (!active || !viewport || !rail || !thumb) {
+    if (!active || !showScrollbar || !viewport || !rail || !thumb) {
       if (overflowRef.current) {
         overflowRef.current = false;
         setHasOverflow(false);
@@ -121,7 +122,7 @@ export function OverlayScrollArea({ active, ariaLabel, children, className, view
       pause();
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [active]);
+  }, [active, showScrollbar]);
 
   const startDrag = (event: PointerEvent<HTMLDivElement>) => {
     const viewport = viewportRef.current;
@@ -180,12 +181,12 @@ export function OverlayScrollArea({ active, ariaLabel, children, className, view
         id={viewportId} ref={viewportRef} role={viewportLabel ? 'region' : undefined} tabIndex={0}>
         {children}
       </div>
-      <div className="overlay-scroll-area__rail" hidden={!hasOverflow} onLostPointerCapture={endDrag}
+      {showScrollbar && <div className="overlay-scroll-area__rail" hidden={!hasOverflow} onLostPointerCapture={endDrag}
         onPointerCancel={endDrag} onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={endDrag} ref={railRef}>
         <div aria-controls={viewportId} aria-label={ariaLabel} aria-orientation="vertical"
           aria-valuemax={100} aria-valuemin={0} aria-valuenow={0} className="overlay-scroll-area__thumb"
           aria-disabled={!hasOverflow || undefined} onKeyDown={handleKeyDown} ref={thumbRef} role="scrollbar" tabIndex={hasOverflow ? 0 : -1} />
-      </div>
+      </div>}
     </div>
   );
 }
