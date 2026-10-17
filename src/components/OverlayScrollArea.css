@@ -1,0 +1,88 @@
+.overlay-scroll-area {
+  --overlay-scroll-accent: var(--theme-accent, var(--experience-accent, #82bfff));
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.overlay-scroll-area > .overlay-scroll-area__viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  scrollbar-gutter: auto;
+}
+.overlay-scroll-area__viewport::-webkit-scrollbar { display: none; width: 0; height: 0; }
+.overlay-scroll-area__viewport:focus-visible { outline: 1px solid var(--overlay-scroll-accent); outline-offset: -2px; }
+.overlay-scroll-area__rail {
+  position: absolute;
+  z-index: 3;
+  top: .5rem;
+  right: .15rem;
+  bottom: .5rem;
+  width: 24px;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+.overlay-scroll-area__rail[hidden] { display: none; }
+.overlay-scroll-area__rail::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1.5px);
+  width: 3px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--overlay-scroll-accent) 12%, transparent);
+  content: '';
+}
+.overlay-scroll-area__thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--overlay-scroll-accent);
+  cursor: grab;
+  touch-action: none;
+}
+.overlay-scroll-area__thumb::before {
+  position: absolute;
+  inset: 0 calc(50% - 2px);
+  border-radius: 3px;
+  background: currentColor;
+  opacity: .6;
+  transition: opacity 180ms ease;
+  content: '';
+}
+.overlay-scroll-area__thumb:hover::before,
+.overlay-scroll-area__thumb:focus-visible::before,
+.overlay-scroll-area__rail[data-dragging='true'] .overlay-scroll-area__thumb::before { opacity: 1; }
+.overlay-scroll-area__rail[data-dragging='true'] .overlay-scroll-area__thumb { cursor: grabbing; }
+.overlay-scroll-area .overlay-scroll-area__thumb:focus-visible {
+  outline: none;
+}
+.overlay-scroll-area__thumb:focus-visible::before { outline: 1px solid currentColor; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .overlay-scroll-area__thumb::before { transition: none; }
+}
+@media (forced-colors: active) {
+  .overlay-scroll-area__rail::before { background: GrayText; forced-color-adjust: none; }
+  .overlay-scroll-area__thumb { color: Highlight; forced-color-adjust: none; }
+  .overlay-scroll-area__thumb::before { opacity: 1; }
+  .overlay-scroll-area__viewport:focus-visible { outline-color: Highlight; }
+  .overlay-scroll-area__thumb:focus-visible::before { outline-color: Highlight; }
+}

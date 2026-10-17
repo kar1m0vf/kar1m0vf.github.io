@@ -7,6 +7,7 @@ import { isSceneTransitionActive, setControlOverlayOpen } from '../utils/control
 import { focusWithoutScrolling, navigateToScene } from '../utils/sceneNavigation';
 import { KControlSpine } from './KControlSpine';
 import { KControlLogo } from './KControlLogo';
+import { OverlayScrollArea } from './OverlayScrollArea';
 
 export interface KControlProps {
   activeSection: SiteSectionId;
@@ -153,7 +154,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
 
   const handleDialogKeyDown = (event: ReactKeyboardEvent<HTMLDialogElement>) => {
     if (event.key === 'Tab' && !event.altKey && !event.ctrlKey && !event.metaKey) {
-      const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not(:disabled)'));
+      const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('a[href], button:not(:disabled), [role="scrollbar"][tabindex="0"]'));
       const first = controls[0];
       const last = controls[controls.length - 1];
       if (document.activeElement === event.currentTarget.querySelector('#k-control-title')) {
@@ -197,7 +198,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
             <div><h2 id="k-control-title" tabIndex={-1}><KControlLogo /><span className="sr-only">K Control</span></h2><p id="k-control-description">Find your place in the story.</p></div>
             <button aria-label="Close K Control" className="k-control__close" onClick={closePalette} type="button"><CloseIcon /></button>
           </div>
-          <div className="k-control__body">
+          <OverlayScrollArea active={isOpen} ariaLabel="Scroll K Control" viewportClassName="k-control__body" viewportLabel="K Control content">
             <nav aria-label="K Control destinations" className="k-control__destinations">
               <KControlSpine activeSection={activeSection} enabled={isOpen} />
               {kControlSections.map((section) => (
@@ -240,7 +241,7 @@ export function KControl({ activeSection, builderMode, disabled = false, onBuild
               ))}
             </nav>
             <p className="k-control__hint"><kbd>{shortcut}</kbd> to open <span aria-hidden="true">·</span> <kbd>Esc</kbd> to close</p>
-          </div>
+          </OverlayScrollArea>
         </div>
       </dialog>
     </>

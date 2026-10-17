@@ -7,6 +7,10 @@ async function ready(page: Page, hash = '') {
 }
 const trigger = (page: Page) => page.getByRole('button', { name: 'Open K Control', exact: true });
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'K Control', exact: true });
+const lastControl = async (page: Page) => {
+  const scrollbar = dialog(page).getByRole('scrollbar', { name: 'Scroll K Control', exact: true });
+  return await scrollbar.isVisible() ? scrollbar : dialog(page).getByRole('link', { name: 'LinkedIn', exact: true });
+};
 
 test('loader waits for media, then reveals the introduction without Skip intro', async ({ page }) => {
   let release!: () => void;
@@ -87,7 +91,7 @@ test('modal traps focus, ignores input shortcuts, and remains accessible on shor
   await expect(dialog(page).locator('#k-control-title')).toBeFocused();
   await expect(page.getByRole('button', { name: 'Close K Control', exact: true })).not.toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(dialog(page).getByRole('link', { name: 'LinkedIn', exact: true })).toBeFocused();
+  await expect(await lastControl(page)).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: 'Close K Control', exact: true })).toBeFocused();
   await expect(dialog(page).getByRole('link', { name: 'Email', exact: true })).toHaveAttribute('href', 'mailto:hello@kamilkerimov.com');
@@ -138,8 +142,8 @@ test('K Control header stays still while its destinations and settings scroll', 
   await expect(trigger(page)).toBeFocused();
   await trigger(page).click();
   await page.keyboard.press('Shift+Tab');
-  await expect(dialog(page).getByRole('link', { name: 'LinkedIn', exact: true })).toBeFocused();
-  await expect(dialog(page).getByRole('link', { name: 'LinkedIn', exact: true })).toBeInViewport();
+  await expect(await lastControl(page)).toBeFocused();
+  await expect(await lastControl(page)).toBeInViewport();
   await page.keyboard.press('Escape');
   await expect(trigger(page)).toBeFocused();
 });

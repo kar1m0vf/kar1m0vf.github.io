@@ -6,7 +6,9 @@ import { projectStories } from '../data/projectStories';
 import type { ProjectWorld } from '../types';
 import { isControlOverlayOpen, isSceneTransitionActive, setControlOverlayOpen } from '../utils/controlOverlay';
 import { focusWithoutScrolling } from '../utils/sceneNavigation';
-import { ArrowIcon, ArrowRightIcon, CloseIcon } from './Icons';
+import { ArrowIcon, CloseIcon } from './Icons';
+import { ProjectProcess } from './ProjectProcess';
+import { OverlayScrollArea } from './OverlayScrollArea';
 import './ProjectBuildDetails.css';
 
 export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
@@ -76,7 +78,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
 
   const trapFocus = (event: KeyboardEvent<HTMLDialogElement>) => {
     if (event.key !== 'Tab') return;
-    const controls = event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), a[href]');
+    const controls = event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], [role="scrollbar"][tabindex="0"]');
     const first = controls[0];
     const last = controls[controls.length - 1];
     if (document.activeElement === event.currentTarget.querySelector('.project-build__intro h2')) {
@@ -118,14 +120,8 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
               </div>
               <button aria-label="Close project details" className="project-build__close" onClick={closeDetails} type="button"><CloseIcon /></button>
             </header>
-            <div aria-label={`${project.title} story`} className="project-build__body" role="region" tabIndex={0}>
-              <ol aria-label={`${project.title} loop`} className="project-build__flow">
-                {story.flow.map((step, index) => (
-                  <li key={step}><span>{String(index + 1).padStart(2, '0')}</span>
-                    <i aria-hidden="true" className="project-build__flow-point" /><strong>{step}</strong>
-                    {index < story.flow.length - 1 ? <ArrowRightIcon /> : null}</li>
-                ))}
-              </ol>
+            <OverlayScrollArea active={isOpen} ariaLabel={`Scroll ${project.title} story`} viewportClassName="project-build__body" viewportLabel={`${project.title} story`}>
+              {isOpen ? <ProjectProcess steps={story.flow} title={project.title} /> : null}
               <div className="project-build__reading">
                 <p className="project-build__overview">{story.overview}</p>
                 <div className="project-build__decision">
@@ -157,7 +153,7 @@ export function ProjectBuildDetails({ project }: { project: ProjectWorld }) {
                   <ul>{project.stack.map((technology) => <li key={technology}>{technology}</li>)}</ul>
                 </section>
               </div>
-            </div>
+            </OverlayScrollArea>
             <footer className="project-build__footer">
               <span>{project.year}</span>
               <button onClick={closeDetails} type="button">Back to project<ArrowIcon /></button>
