@@ -98,7 +98,7 @@ const expectHorizontalProcessFits = async (process: Locator) => {
   }
 };
 
-test('project process passes through every stage, restarts and fits narrow screens', async ({ page }) => {
+test('project process runs once, survives resizing and restarts only when reopened', async ({ page }) => {
   test.setTimeout(60_000);
   await page.setViewportSize({ width: 320, height: 740 });
   await page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -110,12 +110,27 @@ test('project process passes through every stage, restarts and fits narrow scree
   await expect(process).toHaveAttribute('data-active-step', '01');
   await expect(process).toHaveAttribute('data-motion', 'running');
   await expect(process.locator('li[data-state="active"]')).toHaveCount(1);
+  const connector = process.locator('li').first().locator('.project-process__fill');
+  const animationTime = () => connector.evaluate(el => Number(el.getAnimations().find(animation => (animation as CSSAnimation).animationName === 'project-process-travel')?.currentTime ?? 0));
+  await expect.poll(animationTime).toBeGreaterThan(250);
+  const beforeResize = await animationTime();
+  await page.setViewportSize({ width: 1024, height: 740 });
+  expect(await animationTime()).toBeGreaterThanOrEqual(beforeResize - 25);
+  await page.setViewportSize({ width: 320, height: 740 });
   for (const step of ['02', '03', '04', '05']) {
     await expect(process).toHaveAttribute('data-active-step', step);
     await expect(process.locator('li[data-state="complete"]')).toHaveCount(Number(step) - 1);
   }
-  await expect(process).toHaveAttribute('data-active-step', '01');
-  await expect(process.locator('li[data-state="complete"]')).toHaveCount(0);
+  await expect(process).toHaveAttribute('data-motion', 'complete');
+  await expect(process.locator('li[data-state="complete"]')).toHaveCount(5);
+  // Stay past the old loop delay: a completed process must not return to 01.
+  await page.waitForTimeout(3000);
+  await expect(process).toHaveAttribute('data-active-step', '05');
+  await expect(process).toHaveAttribute('data-motion', 'complete');
+  const body = dialog.locator('.project-build__body');
+  await body.evaluate(el => { el.scrollTop = el.scrollHeight; });
+  await body.evaluate(el => { el.scrollTop = 0; });
+  await expect(process).toHaveAttribute('data-motion', 'complete');
   await expectHorizontalProcessFits(process);
   await page.setViewportSize({ width: 390, height: 844 });
   await expectHorizontalProcessFits(process);
@@ -141,6 +156,11 @@ test('reduced-motion process presents all stages without an animated handoff', a
   await expect(process.locator('li[data-state="active"]')).toHaveCount(0);
   expect(await process.locator('.project-process__fill').evaluateAll((fills) => fills.every((fill) => getComputedStyle(fill).animationName === 'none'))).toBe(true);
   await expectHorizontalProcessFits(process);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect(process).toHaveAttribute('data-motion', /^(static|complete)$/);
+  await expect(process.locator('li[data-state="complete"]')).toHaveCount(5);
+  await expect(process.locator('li[data-state="active"]')).toHaveCount(0);
+  expect(await process.evaluate(el => el.getAnimations({ subtree: true }).filter(animation => animation.playState === 'running').length)).toBe(0);
 });
 
 const exerciseScrollbar = async ({ page, dialog, viewport, scrollbarName, headerSelector, closeName, opener }: {
